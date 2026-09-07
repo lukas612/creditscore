@@ -608,6 +608,54 @@ body {
   font-size: 17px;
 }
 
+.share-section {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.share-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.share-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.share-btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.share-btn-primary:hover {
+  color: #fff;
+  background: var(--primary-dark);
+}
+
+.share-icon {
+  width: 15px;
+  height: 15px;
+}
+
 .capacity-section {
   background: rgba(31, 169, 107, 0.06);
   border: 1px solid var(--border);

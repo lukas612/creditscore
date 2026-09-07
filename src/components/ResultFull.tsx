@@ -1,6 +1,7 @@
 import type { Answers } from "../data/questions";
 import type { BreakdownItem } from "../lib/types";
 import { ScoreBreakdownChart } from "./ScoreBreakdownChart";
+import { ShareResult } from "./ShareResult";
 import { WhatIfSimulator } from "./WhatIfSimulator";
 
 interface Props {
@@ -56,6 +57,8 @@ export function ResultFull({
       <span className="score-value">{score}</span>
       <span className="score-band">{copy.title}</span>
       <p className="result-sub">{copy.tip}</p>
+
+      <ShareResult score={score} scoreBand={scoreBand} />
 
       <div className="capacity-section">
         <p className="breakdown-title">Capacidad de crédito estimada</p>

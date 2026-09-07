@@ -77,6 +77,27 @@ export function IconCheckCircle({ className }: IconProps) {
   );
 }
 
+export function IconShare({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="6" cy="12" r="2.4" />
+      <circle cx="18" cy="6" r="2.4" />
+      <circle cx="18" cy="18" r="2.4" />
+      <path d="m8.1 10.9 7.8-3.8M8.1 13.1l7.8 3.8" />
+    </svg>
+  );
+}
+
+export function IconLink({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M9.5 14.5 14.5 9.5" />
+      <path d="M11 7l1.2-1.2a3.5 3.5 0 0 1 5 5L16 12" />
+      <path d="M13 17l-1.2 1.2a3.5 3.5 0 0 1-5-5L8 12" />
+    </svg>
+  );
+}
+
 export function IconUsers({ className }: IconProps) {
   return (
     <svg {...base} className={className}>
