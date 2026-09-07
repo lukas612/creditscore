@@ -55,6 +55,8 @@ export function QuestionStep({ question, value, onAnswer }: Props) {
       <div className="question-input-wrap">
         <input
           type={question.type === "date" ? "date" : question.type === "number" ? "number" : "text"}
+          inputMode={question.type === "number" ? "decimal" : undefined}
+          enterKeyHint="next"
           value={draft}
           placeholder={question.placeholder}
           min={question.min}

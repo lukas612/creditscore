@@ -4,6 +4,7 @@ import { Footer } from "./Footer";
 import { IconBolt, IconCheckCircle, IconDocCheck, IconGauge, IconHeadset, IconShieldCheck } from "./Icons";
 import { ScoreExplainer } from "./ScoreExplainer";
 import { ScorePreview } from "./ScorePreview";
+import { StickyMobileCta } from "./StickyMobileCta";
 import { Testimonials } from "./Testimonials";
 import { TrustSection } from "./TrustSection";
 
@@ -72,9 +73,8 @@ export function Landing({ widget }: Props) {
             <span className="eyebrow">🇪🇸 El primer CreditScore gratuito de España</span>
             <h1>Descubre tu puntuación crediticia antes de pedir un préstamo</h1>
             <p className="landing-sub">
-              Responde unas preguntas rápidas sobre tu situación financiera y te decimos,
-              al instante, qué puntuación tendrías y qué opciones de financiación encajan
-              contigo.
+              Responde unas preguntas rápidas y descubre, al instante, tu puntuación y qué
+              financiación encaja contigo.
             </p>
             <ul className="trust-row">
               {TRUST_ITEMS.map((item) => (
@@ -87,15 +87,16 @@ export function Landing({ widget }: Props) {
           <div className="hero-widget-col">
             <div className="widget-intro">
               <p>
-                <strong>¿Qué es tu puntuación crediticia?</strong> Un número entre 300 y
-                850 que resume tu perfil financiero. Respóndenos esto y la calculamos al
-                instante:
+                <strong>¿Qué es tu puntuación crediticia?</strong> Un número de 300 a 850
+                que resume tu perfil. La calculamos al instante:
               </p>
             </div>
             {widget}
           </div>
         </div>
       </section>
+
+      <StickyMobileCta />
 
       <section className="section">
         <p className="section-label">Cómo funciona</p>

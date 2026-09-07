@@ -66,6 +66,7 @@ export function ResultGate({ quizSessionId, score, scoreBand, zipCode, onUnlock 
             type="text"
             placeholder="Nombre"
             autoComplete="given-name"
+            enterKeyHint="next"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             required
@@ -74,6 +75,7 @@ export function ResultGate({ quizSessionId, score, scoreBand, zipCode, onUnlock 
             type="text"
             placeholder="Apellidos"
             autoComplete="family-name"
+            enterKeyHint="next"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
           />
@@ -82,6 +84,8 @@ export function ResultGate({ quizSessionId, score, scoreBand, zipCode, onUnlock 
           type="email"
           placeholder="Correo electrónico"
           autoComplete="email"
+          inputMode="email"
+          enterKeyHint="next"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -90,6 +94,8 @@ export function ResultGate({ quizSessionId, score, scoreBand, zipCode, onUnlock 
           type="tel"
           placeholder="Teléfono"
           autoComplete="tel"
+          inputMode="tel"
+          enterKeyHint="done"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           required
