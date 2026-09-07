@@ -383,6 +383,13 @@ body {
   font-size: 16px;
 }
 
+.question-input-wrap input:focus,
+.lead-form input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(46, 92, 255, 0.12);
+}
+
 .question-suffix {
   position: absolute;
   right: 16px;
@@ -531,10 +538,11 @@ body {
 .lead-form input[type="email"],
 .lead-form input[type="tel"] {
   width: 100%;
-  padding: 12px 14px;
-  border-radius: 10px;
+  padding: 14px 16px;
+  border-radius: 12px;
   border: 1px solid var(--border);
-  font-size: 15px;
+  font-size: 16px;
+  font-family: inherit;
 }
 
 .consent-row {

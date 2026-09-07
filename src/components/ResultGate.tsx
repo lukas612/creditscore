@@ -63,13 +63,17 @@ export function ResultGate({ quizSessionId, score, scoreBand, zipCode, onUnlock 
       <form className="lead-form" onSubmit={handleSubmit}>
         <div className="lead-form-row">
           <input
+            type="text"
             placeholder="Nombre"
+            autoComplete="given-name"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             required
           />
           <input
+            type="text"
             placeholder="Apellidos"
+            autoComplete="family-name"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
           />
@@ -77,6 +81,7 @@ export function ResultGate({ quizSessionId, score, scoreBand, zipCode, onUnlock 
         <input
           type="email"
           placeholder="Correo electrónico"
+          autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -84,6 +89,7 @@ export function ResultGate({ quizSessionId, score, scoreBand, zipCode, onUnlock 
         <input
           type="tel"
           placeholder="Teléfono"
+          autoComplete="tel"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           required
