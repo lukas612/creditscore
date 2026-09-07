@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import { Faq } from "./Faq";
 import { Footer } from "./Footer";
+import { Glossary } from "./Glossary";
 import { IconBolt, IconCheckCircle, IconDocCheck, IconGauge, IconHeadset, IconShieldCheck } from "./Icons";
+import { ImproveScoreTips } from "./ImproveScoreTips";
 import { ScoreExplainer } from "./ScoreExplainer";
 import { ScorePreview } from "./ScorePreview";
 import { StickyMobileCta } from "./StickyMobileCta";
@@ -114,6 +116,10 @@ export function Landing({ widget }: Props) {
       <ScoreExplainer />
 
       <ScorePreview />
+
+      <ImproveScoreTips />
+
+      <Glossary />
 
       <section className="section">
         <p className="section-label">Por qué CreditScore</p>

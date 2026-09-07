@@ -875,21 +875,24 @@ body {
 }
 
 .steps-grid,
-.benefits-grid {
+.benefits-grid,
+.tips-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 20px;
 }
 
 .step-card,
-.benefit-card {
+.benefit-card,
+.tip-card {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 24px;
 }
 
-.step-number {
+.step-number,
+.tip-number {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -911,16 +914,43 @@ body {
 }
 
 .step-card h3,
-.benefit-card h3 {
+.benefit-card h3,
+.tip-card h3 {
   font-size: 17px;
   margin: 0 0 8px;
 }
 
 .step-card p,
-.benefit-card p {
+.benefit-card p,
+.tip-card p {
   color: var(--text-muted);
   font-size: 14px;
   line-height: 1.5;
+  margin: 0;
+}
+
+.glossary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.glossary-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.glossary-card h3 {
+  font-size: 15px;
+  margin: 0 0 8px;
+}
+
+.glossary-card p {
+  color: var(--text-muted);
+  font-size: 13.5px;
+  line-height: 1.55;
   margin: 0;
 }
 
