@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Answers } from "./data/questions";
 import { supabase } from "./lib/supabase";
+import { Header } from "./components/Header";
 import { Landing } from "./components/Landing";
 import { Quiz } from "./components/Quiz";
 import { ResultGate } from "./components/ResultGate";
@@ -56,34 +57,44 @@ export default function App() {
     setStage("gate");
   };
 
+  if (stage === "landing") {
+    return (
+      <>
+        <Header />
+        <Landing onStart={() => setStage("quiz")} />
+      </>
+    );
+  }
+
   return (
-    <main className="app-shell">
-      {stage === "landing" && <Landing onStart={() => setStage("quiz")} />}
+    <>
+      <Header />
+      <main className="app-shell">
+        {stage === "quiz" && <Quiz onComplete={handleQuizComplete} />}
 
-      {stage === "quiz" && <Quiz onComplete={handleQuizComplete} />}
+        {stage === "loading" && <p className="loading-text">Calculando tu puntuación…</p>}
 
-      {stage === "loading" && <p className="loading-text">Calculando tu puntuación…</p>}
+        {stage === "gate" && result && (
+          <ResultGate
+            quizSessionId={result.quizSessionId}
+            score={result.score}
+            scoreBand={result.scoreBand}
+            zipCode={result.zipCode}
+            onUnlock={() => setStage("unlocked")}
+          />
+        )}
 
-      {stage === "gate" && result && (
-        <ResultGate
-          quizSessionId={result.quizSessionId}
-          score={result.score}
-          scoreBand={result.scoreBand}
-          zipCode={result.zipCode}
-          onUnlock={() => setStage("unlocked")}
-        />
-      )}
+        {stage === "unlocked" && result && (
+          <ResultFull score={result.score} scoreBand={result.scoreBand} />
+        )}
 
-      {stage === "unlocked" && result && (
-        <ResultFull score={result.score} scoreBand={result.scoreBand} />
-      )}
-
-      {stage === "error" && (
-        <p className="loading-text">
-          Ha ocurrido un error al calcular tu puntuación. Recarga la página e inténtalo de
-          nuevo.
-        </p>
-      )}
-    </main>
+        {stage === "error" && (
+          <p className="loading-text">
+            Ha ocurrido un error al calcular tu puntuación. Recarga la página e inténtalo
+            de nuevo.
+          </p>
+        )}
+      </main>
+    </>
   );
 }
