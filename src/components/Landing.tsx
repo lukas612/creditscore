@@ -3,6 +3,7 @@ import { Faq } from "./Faq";
 import { Footer } from "./Footer";
 import { IconBolt, IconCheckCircle, IconDocCheck, IconGauge, IconHeadset, IconShieldCheck } from "./Icons";
 import { ScoreExplainer } from "./ScoreExplainer";
+import { ScorePreview } from "./ScorePreview";
 import { Testimonials } from "./Testimonials";
 import { TrustSection } from "./TrustSection";
 
@@ -110,6 +111,8 @@ export function Landing({ widget }: Props) {
       </section>
 
       <ScoreExplainer />
+
+      <ScorePreview />
 
       <section className="section">
         <p className="section-label">Por qué CreditScore</p>

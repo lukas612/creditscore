@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Answers } from "./data/questions";
 import { supabase } from "./lib/supabase";
-import type { ScoreResult, Stage } from "./lib/types";
+import type { BreakdownItem, ScoreResult, Stage } from "./lib/types";
 import { Header } from "./components/Header";
 import { Landing } from "./components/Landing";
 import { ScoreWidget } from "./components/ScoreWidget";
@@ -31,7 +31,7 @@ export default function App() {
 
     const { data: scored, error: scoreError } = await supabase
       .rpc("calculate_score", { p_answers: answers })
-      .single<{ score: number; score_band: string }>();
+      .single<{ score: number; score_band: string; breakdown: BreakdownItem[] }>();
 
     if (scoreError || !scored) {
       setStage("error");
@@ -43,6 +43,7 @@ export default function App() {
       score: scored.score,
       scoreBand: scored.score_band,
       zipCode: String(answers.codigo_postal ?? ""),
+      breakdown: scored.breakdown,
     });
     setStage("gate");
   };

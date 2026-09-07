@@ -1,6 +1,10 @@
+import type { BreakdownItem } from "../lib/types";
+import { ScoreBreakdownChart } from "./ScoreBreakdownChart";
+
 interface Props {
   score: number;
   scoreBand: string;
+  breakdown: BreakdownItem[];
 }
 
 const BAND_COPY: Record<string, { title: string; tip: string }> = {
@@ -22,7 +26,7 @@ const BAND_COPY: Record<string, { title: string; tip: string }> = {
   },
 };
 
-export function ResultFull({ score, scoreBand }: Props) {
+export function ResultFull({ score, scoreBand, breakdown }: Props) {
   const copy = BAND_COPY[scoreBand] ?? BAND_COPY.regular;
   const pct = Math.round(((score - 300) / (850 - 300)) * 100);
 
@@ -34,6 +38,12 @@ export function ResultFull({ score, scoreBand }: Props) {
       <span className="score-value">{score}</span>
       <span className="score-band">{copy.title}</span>
       <p className="result-sub">{copy.tip}</p>
+
+      <div className="breakdown-section">
+        <p className="breakdown-title">Desglose de tu puntuación</p>
+        <ScoreBreakdownChart breakdown={breakdown} />
+      </div>
+
       <a className="btn-primary btn-large" href="https://creditio.es" target="_blank" rel="noreferrer">
         Hablar con un asesor
       </a>

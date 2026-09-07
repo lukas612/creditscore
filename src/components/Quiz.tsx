@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { ageFromBirthdate, visibleQuestions, type Answers } from "../data/questions";
+import { PhaseStepper } from "./PhaseStepper";
 import { ProgressBar } from "./ProgressBar";
+import { ProgressRing } from "./ProgressRing";
 import { QuestionStep } from "./QuestionStep";
 import { Tooltip } from "./Tooltip";
 
@@ -42,7 +44,11 @@ export function Quiz({ onComplete }: Props) {
 
   return (
     <div className="quiz-card">
-      <ProgressBar current={stepIndex + 1} total={steps.length} />
+      <PhaseStepper current={question.phase} />
+      <div className="quiz-progress-row">
+        <ProgressBar current={stepIndex + 1} total={steps.length} />
+        <ProgressRing percent={progress * 100} />
+      </div>
       <div className="quiz-step-row">
         <p className="quiz-step-count">
           Pregunta {stepIndex + 1} de {steps.length}

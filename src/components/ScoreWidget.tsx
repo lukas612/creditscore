@@ -33,7 +33,11 @@ export function ScoreWidget({ stage, result, onComplete, onUnlock }: Props) {
       )}
 
       {stage === "unlocked" && result && (
-        <ResultFull score={result.score} scoreBand={result.scoreBand} />
+        <ResultFull
+          score={result.score}
+          scoreBand={result.scoreBand}
+          breakdown={result.breakdown}
+        />
       )}
 
       {stage === "error" && (
