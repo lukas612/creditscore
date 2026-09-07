@@ -1,3 +1,4 @@
+import { tipFor } from "../data/scoreTips";
 import type { BreakdownItem } from "../lib/types";
 
 interface Props {
@@ -26,6 +27,7 @@ export function ScoreBreakdownChart({ breakdown }: Props) {
               {isPositive ? "+" : ""}
               {item.points}
             </span>
+            {item.points < 0 && <p className="breakdown-tip">💡 {tipFor(item.key)}</p>}
           </div>
         );
       })}

@@ -1267,6 +1267,17 @@ body {
   color: var(--danger);
 }
 
+.breakdown-tip {
+  grid-column: 1 / -1;
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  background: rgba(229, 72, 77, 0.06);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
 .preview-wrap {
   display: grid;
   grid-template-columns: 1fr 1fr;
