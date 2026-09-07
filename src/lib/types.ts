@@ -12,4 +12,6 @@ export interface ScoreResult {
   scoreBand: string;
   zipCode: string;
   breakdown: BreakdownItem[];
+  capacidadMensual: number;
+  capacidadMaxima: number;
 }

@@ -31,7 +31,13 @@ export default function App() {
 
     const { data: scored, error: scoreError } = await supabase
       .rpc("calculate_score", { p_answers: answers })
-      .single<{ score: number; score_band: string; breakdown: BreakdownItem[] }>();
+      .single<{
+        score: number;
+        score_band: string;
+        breakdown: BreakdownItem[];
+        capacidad_mensual: number;
+        capacidad_maxima: number;
+      }>();
 
     if (scoreError || !scored) {
       setStage("error");
@@ -44,6 +50,8 @@ export default function App() {
       scoreBand: scored.score_band,
       zipCode: String(answers.codigo_postal ?? ""),
       breakdown: scored.breakdown,
+      capacidadMensual: scored.capacidad_mensual,
+      capacidadMaxima: scored.capacidad_maxima,
     });
     setStage("gate");
   };

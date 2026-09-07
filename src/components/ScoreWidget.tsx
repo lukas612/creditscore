@@ -37,6 +37,8 @@ export function ScoreWidget({ stage, result, onComplete, onUnlock }: Props) {
           score={result.score}
           scoreBand={result.scoreBand}
           breakdown={result.breakdown}
+          capacidadMensual={result.capacidadMensual}
+          capacidadMaxima={result.capacidadMaxima}
         />
       )}
 
