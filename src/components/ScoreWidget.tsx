@@ -7,11 +7,12 @@ import { ResultFull } from "./ResultFull";
 interface Props {
   stage: Stage;
   result: ScoreResult | null;
+  quizAnswers: Answers | null;
   onComplete: (answers: Answers) => void;
   onUnlock: () => void;
 }
 
-export function ScoreWidget({ stage, result, onComplete, onUnlock }: Props) {
+export function ScoreWidget({ stage, result, quizAnswers, onComplete, onUnlock }: Props) {
   return (
     <div className="widget" id="widget">
       {stage === "quiz" && <Quiz onComplete={onComplete} />}
@@ -32,13 +33,14 @@ export function ScoreWidget({ stage, result, onComplete, onUnlock }: Props) {
         />
       )}
 
-      {stage === "unlocked" && result && (
+      {stage === "unlocked" && result && quizAnswers && (
         <ResultFull
           score={result.score}
           scoreBand={result.scoreBand}
           breakdown={result.breakdown}
           capacidadMensual={result.capacidadMensual}
           capacidadMaxima={result.capacidadMaxima}
+          baseAnswers={quizAnswers}
         />
       )}
 

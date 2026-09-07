@@ -1,5 +1,7 @@
+import type { Answers } from "../data/questions";
 import type { BreakdownItem } from "../lib/types";
 import { ScoreBreakdownChart } from "./ScoreBreakdownChart";
+import { WhatIfSimulator } from "./WhatIfSimulator";
 
 interface Props {
   score: number;
@@ -7,6 +9,7 @@ interface Props {
   breakdown: BreakdownItem[];
   capacidadMensual: number;
   capacidadMaxima: number;
+  baseAnswers: Answers;
 }
 
 const BAND_COPY: Record<string, { title: string; tip: string }> = {
@@ -40,6 +43,7 @@ export function ResultFull({
   breakdown,
   capacidadMensual,
   capacidadMaxima,
+  baseAnswers,
 }: Props) {
   const copy = BAND_COPY[scoreBand] ?? BAND_COPY.regular;
   const pct = Math.round(((score - 300) / (850 - 300)) * 100);
@@ -75,6 +79,8 @@ export function ResultFull({
         <p className="breakdown-title">Desglose de tu puntuación</p>
         <ScoreBreakdownChart breakdown={breakdown} />
       </div>
+
+      <WhatIfSimulator baseAnswers={baseAnswers} baseScore={score} />
 
       <a className="btn-primary btn-large" href="https://creditio.es" target="_blank" rel="noreferrer">
         Hablar con un asesor

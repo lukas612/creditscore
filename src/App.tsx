@@ -9,9 +9,11 @@ import { ScoreWidget } from "./components/ScoreWidget";
 export default function App() {
   const [stage, setStage] = useState<Stage>("quiz");
   const [result, setResult] = useState<ScoreResult | null>(null);
+  const [quizAnswers, setQuizAnswers] = useState<Answers | null>(null);
 
   const handleQuizComplete = async (answers: Answers) => {
     setStage("loading");
+    setQuizAnswers(answers);
 
     const params = new URLSearchParams(window.location.search);
 
@@ -64,6 +66,7 @@ export default function App() {
           <ScoreWidget
             stage={stage}
             result={result}
+            quizAnswers={quizAnswers}
             onComplete={handleQuizComplete}
             onUnlock={() => setStage("unlocked")}
           />
