@@ -48,6 +48,24 @@ rm -rf docs && cp -r dist docs && touch docs/.nojekyll
 git add docs && git commit -m "chore: rebuild docs for GitHub Pages" && git push
 ```
 
+## Panel interno (estadísticas y leads)
+
+**https://lukas612.github.io/creditscore/admin.html**
+
+Protegido con una contraseña compartida (no es una cuenta de usuario real): se
+comprueba en el servidor vía funciones `admin_*` (SECURITY DEFINER), así que
+`leads`/`quiz_sessions` nunca son legibles directamente por el cliente, con o sin
+contraseña. Sin límite de intentos ni expiración de sesión más allá de
+`sessionStorage` — suficiente para un panel interno de un solo administrador, pero
+si esto crece conviene pasar a Supabase Auth real (como en el cuadro de mando de
+finanzas).
+
+Para cambiar la contraseña, desde la consola SQL de Supabase o vía RPC:
+
+```sql
+select admin_set_password('contraseña_actual', 'contraseña_nueva');
+```
+
 ## Pendiente / siguientes pasos
 
 - Conectar el lead capturado en `leads` con el CRM/pingtree interno.
