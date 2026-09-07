@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
 import { Faq } from "./Faq";
 import { Footer } from "./Footer";
+import { IconBolt, IconCheckCircle, IconDocCheck, IconGauge, IconHeadset, IconShieldCheck } from "./Icons";
 import { ScoreExplainer } from "./ScoreExplainer";
+import { Testimonials } from "./Testimonials";
+import { TrustSection } from "./TrustSection";
 
 interface Props {
   widget: ReactNode;
@@ -34,18 +37,22 @@ const STEPS = [
 
 const BENEFITS = [
   {
+    icon: IconBolt,
     title: "Rápido",
     desc: "Resultado orientativo en menos de 2 minutos, sin papeleo.",
   },
   {
+    icon: IconDocCheck,
     title: "Sin compromiso",
     desc: "No es una solicitud de crédito. Rellenar el test no te obliga a nada.",
   },
   {
+    icon: IconShieldCheck,
     title: "Sin impacto en tu historial",
     desc: "Es una estimación propia, no una consulta a ningún buró de crédito real.",
   },
   {
+    icon: IconHeadset,
     title: "Asesoramiento personalizado",
     desc: "Un equipo humano revisa tu perfil y te contacta con opciones reales.",
   },
@@ -57,6 +64,10 @@ export function Landing({ widget }: Props) {
       <section className="hero">
         <div className="hero-grid">
           <div className="hero-copy">
+            <div className="hero-gauge">
+              <IconGauge className="hero-gauge-icon" />
+              <span>300 – 850</span>
+            </div>
             <span className="eyebrow">Test gratuito · 2 minutos</span>
             <h1>Descubre tu puntuación crediticia antes de pedir un préstamo</h1>
             <p className="landing-sub">
@@ -67,7 +78,7 @@ export function Landing({ widget }: Props) {
             <ul className="trust-row">
               {TRUST_ITEMS.map((item) => (
                 <li key={item}>
-                  <span className="trust-check">✓</span> {item}
+                  <IconCheckCircle className="trust-check-icon" /> {item}
                 </li>
               ))}
             </ul>
@@ -96,12 +107,17 @@ export function Landing({ widget }: Props) {
         <div className="benefits-grid">
           {BENEFITS.map((b) => (
             <div className="benefit-card" key={b.title}>
+              <b.icon className="benefit-card-icon" />
               <h3>{b.title}</h3>
               <p>{b.desc}</p>
             </div>
           ))}
         </div>
       </section>
+
+      <Testimonials />
+
+      <TrustSection />
 
       <Faq />
 
