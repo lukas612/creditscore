@@ -34,8 +34,22 @@ npm run dev
 Las reglas viven en la tabla `scoring_rules` de Supabase (columna `config`, en JSON).
 Cambiarlas ahí no requiere desplegar código nuevo.
 
+## Publicado en GitHub Pages
+
+**https://lukas612.github.io/creditscore/**
+
+Se sirve como página estática desde la carpeta `/docs` de `main` (Source: rama `main`,
+carpeta `/docs`, en Settings → Pages del repo). No hay build automático: tras cualquier
+cambio hay que regenerar `docs/` a mano y commitear:
+
+```bash
+npm run build
+rm -rf docs && cp -r dist docs && touch docs/.nojekyll
+git add docs && git commit -m "chore: rebuild docs for GitHub Pages" && git push
+```
+
 ## Pendiente / siguientes pasos
 
-- Definir marca/dominio definitivo y desplegar (Vercel/Netlify recomendado para un SPA Vite).
 - Conectar el lead capturado en `leads` con el CRM/pingtree interno.
 - Sustituir el enlace de "Hablar con un asesor" en `ResultFull` por el destino real.
+- Si el volumen crece, pasar a un pipeline de build automático (Action) en vez de commitear `docs/` a mano.
