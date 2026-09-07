@@ -41,24 +41,28 @@ export function ScoreExplainer() {
         </div>
         <div className="explainer-table-wrap">
           <p className="explainer-table-title">Qué influye en tu resultado</p>
-          <table className="factors-table">
-            <thead>
-              <tr>
-                <th>Factor</th>
-                <th>Peso</th>
-              </tr>
-            </thead>
-            <tbody>
-              {FACTORS.map((f) => (
-                <tr key={f.factor}>
-                  <td>{f.factor}</td>
-                  <td>
-                    <span className={`peso-badge peso-${f.peso.toLowerCase()}`}>{f.peso}</span>
-                  </td>
+          <div className="table-scroll">
+            <table className="factors-table">
+              <thead>
+                <tr>
+                  <th>Factor</th>
+                  <th>Peso</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {FACTORS.map((f) => (
+                  <tr key={f.factor}>
+                    <td>{f.factor}</td>
+                    <td>
+                      <span className={`peso-badge peso-${f.peso.toLowerCase()}`}>
+                        {f.peso}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>

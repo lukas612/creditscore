@@ -68,7 +68,7 @@ export function Landing({ widget }: Props) {
               <IconGauge className="hero-gauge-icon" />
               <span>300 – 850</span>
             </div>
-            <span className="eyebrow">Test gratuito · 2 minutos</span>
+            <span className="eyebrow">🇪🇸 El primer CreditScore gratuito de España</span>
             <h1>Descubre tu puntuación crediticia antes de pedir un préstamo</h1>
             <p className="landing-sub">
               Responde unas preguntas rápidas sobre tu situación financiera y te decimos,
@@ -83,7 +83,16 @@ export function Landing({ widget }: Props) {
               ))}
             </ul>
           </div>
-          {widget}
+          <div className="hero-widget-col">
+            <div className="widget-intro">
+              <p>
+                <strong>¿Qué es tu puntuación crediticia?</strong> Un número entre 300 y
+                850 que resume tu perfil financiero. Respóndenos esto y la calculamos al
+                instante:
+              </p>
+            </div>
+            {widget}
+          </div>
         </div>
       </section>
 

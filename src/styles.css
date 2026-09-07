@@ -70,6 +70,31 @@ body {
   padding-top: 8px;
 }
 
+.hero-widget-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.widget-intro {
+  background: rgba(46, 92, 255, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.widget-intro p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.widget-intro strong {
+  color: var(--primary);
+}
+
 .widget {
   width: 100%;
 }
@@ -94,11 +119,22 @@ body {
 }
 
 .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--primary);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  background: rgba(46, 92, 255, 0.08);
+  border-radius: 999px;
+  padding: 6px 14px;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 880px) {
+  .eyebrow {
+    margin: 0 auto;
+  }
 }
 
 .hero-copy h1 {
@@ -162,6 +198,14 @@ body {
   max-width: 480px;
   box-shadow: 0 8px 30px rgba(20, 20, 43, 0.06);
   text-align: center;
+}
+
+@media (max-width: 480px) {
+  .quiz-card,
+  .result-card {
+    padding: 22px 18px;
+    border-radius: 14px;
+  }
 }
 
 .progress-track {
@@ -411,6 +455,16 @@ body {
   border-top: 1px solid var(--border);
 }
 
+@media (max-width: 480px) {
+  .hero {
+    padding: 32px 16px 40px;
+  }
+
+  .section {
+    padding: 36px 16px;
+  }
+}
+
 .section-label {
   text-align: center;
   font-size: 13px;
@@ -618,6 +672,7 @@ body {
   left: 50%;
   transform: translateX(-50%);
   width: 240px;
+  max-width: calc(100vw - 64px);
   background: var(--text);
   color: #fff;
   font-size: 12.5px;
@@ -627,6 +682,16 @@ body {
   border-radius: 10px;
   text-align: left;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+@media (max-width: 480px) {
+  .tooltip-box {
+    left: auto;
+    right: 0;
+    transform: none;
+    width: 220px;
+    max-width: calc(100vw - 76px);
+  }
 }
 
 /* Score explainer section */
@@ -656,6 +721,19 @@ body {
   border-radius: 10px;
   overflow: hidden;
   margin-top: 20px;
+}
+
+@media (max-width: 480px) {
+  .score-range-bar {
+    flex-wrap: wrap;
+    border-radius: 10px;
+    gap: 2px;
+  }
+
+  .score-range-segment {
+    flex: 1 1 calc(50% - 1px) !important;
+    border-radius: 0;
+  }
 }
 
 .score-range-segment {
@@ -699,8 +777,13 @@ body {
   margin: 0 0 12px;
 }
 
+.table-scroll {
+  overflow-x: auto;
+}
+
 .factors-table {
   width: 100%;
+  min-width: 300px;
   border-collapse: collapse;
   background: var(--card);
   border: 1px solid var(--border);
