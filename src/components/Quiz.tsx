@@ -2,10 +2,13 @@ import { useState } from "react";
 import { ageFromBirthdate, visibleQuestions, type Answers } from "../data/questions";
 import { ProgressBar } from "./ProgressBar";
 import { QuestionStep } from "./QuestionStep";
+import { Tooltip } from "./Tooltip";
 
 interface Props {
   onComplete: (answers: Answers) => void;
 }
+
+const GENERIC_REASSURANCE = "🔒 Tus respuestas están cifradas y protegidas.";
 
 export function Quiz({ onComplete }: Props) {
   const [answers, setAnswers] = useState<Answers>({});
@@ -13,6 +16,8 @@ export function Quiz({ onComplete }: Props) {
 
   const steps = visibleQuestions(answers);
   const question = steps[stepIndex];
+  const progress = (stepIndex + 1) / steps.length;
+  const isLast = stepIndex === steps.length - 1;
 
   const handleAnswer = (value: string | number) => {
     const next: Answers = { ...answers, [question.key]: value };
@@ -38,16 +43,27 @@ export function Quiz({ onComplete }: Props) {
   return (
     <div className="quiz-card">
       <ProgressBar current={stepIndex + 1} total={steps.length} />
-      <p className="quiz-step-count">
-        Pregunta {stepIndex + 1} de {steps.length}
-      </p>
-      <h2 className="quiz-question">{question.label}</h2>
+      <div className="quiz-step-row">
+        <p className="quiz-step-count">
+          Pregunta {stepIndex + 1} de {steps.length}
+        </p>
+        {isLast ? (
+          <span className="quiz-encouragement">Última pregunta 🎉</span>
+        ) : (
+          progress >= 0.6 && <span className="quiz-encouragement">Ya casi terminas 💪</span>
+        )}
+      </div>
+      <h2 className="quiz-question">
+        {question.label}
+        {question.helpText && <Tooltip text={question.helpText} />}
+      </h2>
       <QuestionStep
         key={question.key}
         question={question}
         value={answers[question.key]}
         onAnswer={handleAnswer}
       />
+      <p className="reassurance-line">{question.reassurance ?? GENERIC_REASSURANCE}</p>
       {stepIndex > 0 && (
         <button className="btn-link" onClick={handleBack}>
           ← Atrás

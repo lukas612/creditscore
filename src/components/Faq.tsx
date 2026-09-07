@@ -17,6 +17,18 @@ const FAQ_ITEMS = [
     q: "¿Quién hay detrás de CreditScore?",
     a: "Un equipo especializado en asesoramiento de crédito que compara distintas opciones de financiación para ayudarte a encontrar la que mejor se adapta a tu situación.",
   },
+  {
+    q: "¿Qué diferencia hay con la puntuación de un buró de crédito real?",
+    a: "La nuestra es un cálculo propio y orientativo basado únicamente en las respuestas del test. No consulta ni sustituye el informe oficial de Asnef, Experian, Equifax ni ningún otro buró de crédito.",
+  },
+  {
+    q: "¿Puedo repetir el test si cambia mi situación?",
+    a: "Sí, tantas veces como quieras. El resultado se recalcula al instante con tus respuestas de ese momento.",
+  },
+  {
+    q: "¿Cómo puedo mejorar mi puntuación?",
+    a: "Los factores con más peso en el cálculo son tus ingresos y el nivel de deuda respecto a ellos. Reducir deudas o mantener una fuente de ingresos estable son las palancas que más ayudan.",
+  },
 ];
 
 function FaqItem({ q, a }: { q: string; a: string }) {

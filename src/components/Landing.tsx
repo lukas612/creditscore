@@ -1,8 +1,10 @@
+import type { ReactNode } from "react";
 import { Faq } from "./Faq";
 import { Footer } from "./Footer";
+import { ScoreExplainer } from "./ScoreExplainer";
 
 interface Props {
-  onStart: () => void;
+  widget: ReactNode;
 }
 
 const TRUST_ITEMS = [
@@ -49,26 +51,29 @@ const BENEFITS = [
   },
 ];
 
-export function Landing({ onStart }: Props) {
+export function Landing({ widget }: Props) {
   return (
     <div className="page">
       <section className="hero">
-        <span className="eyebrow">Test gratuito · 2 minutos</span>
-        <h1>Descubre tu puntuación crediticia antes de pedir un préstamo</h1>
-        <p className="landing-sub">
-          Responde unas preguntas rápidas sobre tu situación financiera y te decimos, al
-          instante, qué puntuación tendrías y qué opciones de financiación encajan contigo.
-        </p>
-        <button className="btn-primary btn-large" onClick={onStart}>
-          Calcular mi puntuación
-        </button>
-        <ul className="trust-row">
-          {TRUST_ITEMS.map((item) => (
-            <li key={item}>
-              <span className="trust-check">✓</span> {item}
-            </li>
-          ))}
-        </ul>
+        <div className="hero-grid">
+          <div className="hero-copy">
+            <span className="eyebrow">Test gratuito · 2 minutos</span>
+            <h1>Descubre tu puntuación crediticia antes de pedir un préstamo</h1>
+            <p className="landing-sub">
+              Responde unas preguntas rápidas sobre tu situación financiera y te decimos,
+              al instante, qué puntuación tendrías y qué opciones de financiación encajan
+              contigo.
+            </p>
+            <ul className="trust-row">
+              {TRUST_ITEMS.map((item) => (
+                <li key={item}>
+                  <span className="trust-check">✓</span> {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+          {widget}
+        </div>
       </section>
 
       <section className="section">
@@ -83,6 +88,8 @@ export function Landing({ onStart }: Props) {
           ))}
         </div>
       </section>
+
+      <ScoreExplainer />
 
       <section className="section">
         <p className="section-label">Por qué CreditScore</p>
@@ -100,9 +107,9 @@ export function Landing({ onStart }: Props) {
 
       <section className="section cta-band">
         <h2>¿Listo para conocer tu puntuación?</h2>
-        <button className="btn-primary btn-large" onClick={onStart}>
-          Calcular mi puntuación
-        </button>
+        <a className="btn-primary btn-large" href="#widget">
+          Empezar el test ↑
+        </a>
       </section>
 
       <Footer />

@@ -103,6 +103,9 @@ export function ResultGate({ quizSessionId, score, scoreBand, zipCode, onUnlock 
         <button className="btn-primary btn-large" type="submit" disabled={submitting}>
           {submitting ? "Enviando…" : "Ver mi informe completo"}
         </button>
+        <p className="reassurance-line">
+          🔒 Conexión cifrada · Tus datos nunca se venden a terceros
+        </p>
       </form>
     </div>
   );

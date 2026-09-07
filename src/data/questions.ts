@@ -16,6 +16,10 @@ export interface QuestionDef {
   suffix?: string;
   min?: number;
   max?: number;
+  /** Shown behind a "?" tooltip next to the question, to explain why we ask. */
+  helpText?: string;
+  /** Short reassurance line under the input. Falls back to a generic one. */
+  reassurance?: string;
   condition?: (answers: Answers) => boolean;
 }
 
@@ -74,6 +78,9 @@ export const questions: QuestionDef[] = [
     min: 0,
     max: 50000,
     placeholder: "1500",
+    helpText:
+      "Es el dato con más peso en tu puntuación. No hace falta que sea exacto, una estimación es suficiente.",
+    reassurance: "Nunca compartimos esta cifra con terceros.",
   },
   {
     key: "tienes_vivienda_en_propiedad",
@@ -93,18 +100,21 @@ export const questions: QuestionDef[] = [
     min: 0,
     max: 500000,
     placeholder: "5000",
+    helpText: "Una estimación basta. Cuanta menos deuda tengas respecto a tus ingresos, mejor puntuación.",
     condition: (a) => a.tienes_otros_creditos === "si",
   },
   {
     key: "fecha_de_nacimiento",
     label: "¿Cuál es tu fecha de nacimiento?",
     type: "date",
+    helpText: "Solo usamos tu edad para el cálculo. Nunca guardamos ni compartimos esta fecha con terceros.",
   },
   {
     key: "codigo_postal",
     label: "¿Cuál es tu código postal?",
     type: "text",
     placeholder: "28001",
+    helpText: "Nos ayuda a mostrarte, más adelante, ofertas disponibles en tu zona.",
   },
 ];
 
