@@ -60,6 +60,19 @@ contraseña. Sin límite de intentos ni expiración de sesión más allá de
 si esto crece conviene pasar a Supabase Auth real (como en el cuadro de mando de
 finanzas).
 
+El panel incluye un embudo de conversión (visita → completa el quiz → deja sus
+datos) y, por debajo, cuántas visitas llegan a cada pregunta del quiz, para ver
+en qué paso se cae más gente. Se alimenta de una tabla nueva, `funnel_events`,
+que registra `page_view` (al cargar la página) y `question_reached` (al llegar
+a cada pregunta) con un id de sesión de navegador (`sessionStorage`, no
+identifica a la persona). El envío es "best effort": si falla, nunca bloquea ni
+rompe el quiz. Las preguntas condicionales (`antiguedad_laboral`,
+`importe_total_de_la_deuda`) no muestran una caída propia, porque no todo el
+mundo las ve; el siguiente paso obligatorio calcula su caída respecto al último
+paso que sí ven todos. El orden/etiquetas de las preguntas está hardcodeado en
+`src/admin/main.ts` (`STEP_DEFS`) — si cambia el quiz en `src/data/questions.ts`,
+hay que actualizar esa lista a mano.
+
 Para cambiar la contraseña, desde la consola SQL de Supabase o vía RPC:
 
 ```sql

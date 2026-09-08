@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ageFromBirthdate, visibleQuestions, type Answers } from "../data/questions";
+import { trackFunnelEvent } from "../lib/funnel";
 import { PhaseStepper } from "./PhaseStepper";
 import { ProgressBar } from "./ProgressBar";
 import { ProgressRing } from "./ProgressRing";
@@ -20,6 +21,10 @@ export function Quiz({ onComplete }: Props) {
   const question = steps[stepIndex];
   const progress = (stepIndex + 1) / steps.length;
   const isLast = stepIndex === steps.length - 1;
+
+  useEffect(() => {
+    trackFunnelEvent("question_reached", question.key);
+  }, [question.key]);
 
   const handleAnswer = (value: string | number) => {
     const next: Answers = { ...answers, [question.key]: value };

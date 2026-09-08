@@ -22,6 +22,43 @@ interface Stats {
   band_bajo: number;
 }
 
+interface FunnelOverview {
+  total_visits: number;
+  total_quiz_completed: number;
+  total_leads: number;
+  visit_to_quiz_rate: number;
+  visit_to_lead_rate: number;
+  quiz_to_lead_rate: number;
+}
+
+interface FunnelStepRow {
+  question_key: string;
+  reached: number;
+}
+
+interface StepDef {
+  key: string;
+  label: string;
+  conditional?: boolean;
+}
+
+// Orden y etiquetas reflejan src/data/questions.ts. Si cambia el orden o las
+// preguntas del quiz, hay que actualizar esta lista a mano.
+const STEP_DEFS: StepDef[] = [
+  { key: "fecha_de_nacimiento", label: "Fecha de nacimiento" },
+  { key: "codigo_postal", label: "Código postal" },
+  { key: "fuente_principal_de_ingreso", label: "Fuente de ingresos" },
+  { key: "antiguedad_laboral", label: "Antigüedad laboral", conditional: true },
+  { key: "tienes_vivienda_en_propiedad", label: "Vivienda en propiedad" },
+  { key: "ingreso_mensual", label: "Ingreso mensual" },
+  { key: "esta_en_asnef", label: "Asnef" },
+  { key: "tienes_otros_creditos", label: "Otros créditos" },
+  { key: "importe_total_de_la_deuda", label: "Importe de la deuda", conditional: true },
+  { key: "proposito_del_prestamo", label: "Propósito del préstamo" },
+  { key: "creditos_cantidad_a_solicitar", label: "Importe a solicitar" },
+  { key: "en_cuantos_meses_deseas_devolverlo", label: "Plazo de devolución" },
+];
+
 interface Lead {
   id: string;
   created_at: string;
@@ -55,6 +92,20 @@ async function fetchStats(password: string): Promise<Stats> {
     .single<Stats>();
   if (error || !data) throw error ?? new Error("No data");
   return data;
+}
+
+async function fetchFunnelOverview(password: string): Promise<FunnelOverview> {
+  const { data, error } = await supabase
+    .rpc("admin_get_funnel_overview", { p_password: password })
+    .single<FunnelOverview>();
+  if (error || !data) throw error ?? new Error("No data");
+  return data;
+}
+
+async function fetchFunnelSteps(password: string): Promise<FunnelStepRow[]> {
+  const { data, error } = await supabase.rpc("admin_get_funnel_steps", { p_password: password });
+  if (error) throw error;
+  return (data ?? []) as FunnelStepRow[];
 }
 
 async function fetchLeads(password: string): Promise<Lead[]> {
@@ -108,11 +159,61 @@ function bandRow(label: string, count: number, total: number, cls: string) {
   `;
 }
 
+function funnelStepsHtml(overview: FunnelOverview, steps: FunnelStepRow[]): string {
+  const reachedByKey = new Map(steps.map((s) => [s.question_key, Number(s.reached)]));
+  const base = overview.total_visits;
+
+  let rows = "";
+  let baselineKey = STEP_DEFS[0]?.key;
+
+  STEP_DEFS.forEach((def, i) => {
+    const reached = reachedByKey.get(def.key) ?? 0;
+    const pctOfVisits = base > 0 ? Math.round((reached / base) * 100) : 0;
+
+    let dropoffHtml = "";
+    if (i > 0 && !def.conditional) {
+      const baselineReached = reachedByKey.get(baselineKey) ?? 0;
+      if (baselineReached > 0) {
+        const dropPct = Math.round((1 - reached / baselineReached) * 100);
+        const cls = dropPct >= 25 ? "high" : dropPct >= 10 ? "mid" : "low";
+        dropoffHtml =
+          dropPct > 0
+            ? `<span class="funnel-drop funnel-drop-${cls}">-${dropPct}% respecto al paso anterior</span>`
+            : `<span class="funnel-drop funnel-drop-low">sin caída</span>`;
+      }
+    }
+
+    rows += `
+      <div class="funnel-step">
+        <div class="funnel-step-top">
+          <span class="funnel-step-label">${i + 1}. ${escapeHtml(def.label)}${
+            def.conditional
+              ? ' <span class="funnel-conditional">(condicional, no todos la ven)</span>'
+              : ""
+          }</span>
+          <span class="funnel-step-count">${reached} · ${pctOfVisits}%</span>
+        </div>
+        <div class="admin-band-track"><div class="admin-band-fill funnel-fill" style="width:${pctOfVisits}%"></div></div>
+        ${dropoffHtml}
+      </div>
+    `;
+
+    if (!def.conditional) baselineKey = def.key;
+  });
+
+  return rows;
+}
+
 async function renderDashboard(password: string) {
   root.innerHTML = `<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>`;
 
   try {
-    const [stats, leads] = await Promise.all([fetchStats(password), fetchLeads(password)]);
+    const [stats, leads, funnelOverview, funnelSteps] = await Promise.all([
+      fetchStats(password),
+      fetchLeads(password),
+      fetchFunnelOverview(password),
+      fetchFunnelSteps(password),
+    ]);
     const totalBands = stats.band_excelente + stats.band_bueno + stats.band_regular + stats.band_bajo;
 
     root.innerHTML = `
@@ -132,6 +233,26 @@ async function renderDashboard(password: string) {
           ${statCard("Sesiones de quiz", String(stats.total_sessions))}
           ${statCard("Tasa de conversión", `${stats.conversion_rate}%`)}
           ${statCard("Score medio", stats.avg_score != null ? String(stats.avg_score) : "—")}
+        </section>
+
+        <section class="admin-card">
+          <p class="admin-card-title">Embudo: visita → lead</p>
+          <section class="admin-stats-grid admin-stats-grid-compact">
+            ${statCard("Visitas", String(funnelOverview.total_visits))}
+            ${statCard("Completan el quiz", `${funnelOverview.visit_to_quiz_rate}%`)}
+            ${statCard("Dejan sus datos (lead)", `${funnelOverview.visit_to_lead_rate}%`)}
+            ${statCard("Quiz → lead", `${funnelOverview.quiz_to_lead_rate}%`)}
+          </section>
+        </section>
+
+        <section class="admin-card">
+          <p class="admin-card-title">Dónde se cae la gente en el quiz</p>
+          <p class="admin-card-sub">
+            % de visitas que llegan a cada pregunta. Las preguntas condicionales no
+            muestran caída propia (no todo el mundo las ve); el siguiente paso obligatorio
+            calcula su caída respecto al último paso que ven todos.
+          </p>
+          ${funnelStepsHtml(funnelOverview, funnelSteps)}
         </section>
 
         <section class="admin-card">

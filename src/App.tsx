@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Answers } from "./data/questions";
+import { trackFunnelEvent } from "./lib/funnel";
 import { getClickId } from "./lib/postback";
 import { supabase } from "./lib/supabase";
 import type { BreakdownItem, ScoreResult, Stage } from "./lib/types";
@@ -12,6 +13,10 @@ export default function App() {
   const [result, setResult] = useState<ScoreResult | null>(null);
   const [quizAnswers, setQuizAnswers] = useState<Answers | null>(null);
   const [clickId] = useState<string | null>(() => getClickId());
+
+  useEffect(() => {
+    trackFunnelEvent("page_view");
+  }, []);
 
   const handleQuizComplete = async (answers: Answers) => {
     setStage("loading");
