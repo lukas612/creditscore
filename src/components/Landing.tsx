@@ -60,6 +60,11 @@ const BENEFITS = [
     title: "Asesoramiento personalizado",
     desc: "Un equipo humano revisa tu perfil y te contacta con opciones reales.",
   },
+  {
+    icon: IconGauge,
+    title: "Plan para mejorarlo",
+    desc: "No solo tu puntuación: qué factores la están frenando y cómo trabajarlos, ordenados por impacto.",
+  },
 ];
 
 export function Landing({ widget }: Props) {

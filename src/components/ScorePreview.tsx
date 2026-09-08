@@ -1,4 +1,5 @@
 import type { BreakdownItem } from "../lib/types";
+import { CreditBuilder } from "./CreditBuilder";
 import { ScoreBreakdownChart } from "./ScoreBreakdownChart";
 
 const EXAMPLE_SCORE = 710;
@@ -29,8 +30,8 @@ export function ScorePreview() {
         <div className="preview-text">
           <p>
             No te quedas solo con un número. Tu resultado incluye cuánta financiación
-            podrías asumir y un desglose por factores, para que sepas exactamente qué
-            está pesando en tu puntuación y qué podrías mejorar.
+            podrías asumir, un desglose por factores y un plan personalizado ordenado
+            por impacto para saber exactamente qué trabajar primero.
           </p>
         </div>
         <div className="result-card preview-card">
@@ -63,6 +64,8 @@ export function ScorePreview() {
             <p className="breakdown-title">Desglose de tu puntuación</p>
             <ScoreBreakdownChart breakdown={EXAMPLE_BREAKDOWN} />
           </div>
+
+          <CreditBuilder breakdown={EXAMPLE_BREAKDOWN} />
         </div>
       </div>
     </section>
