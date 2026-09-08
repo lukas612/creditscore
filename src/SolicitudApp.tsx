@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
 import type { Answers } from "./data/witmeQuestions";
 import { trackFunnelEvent } from "./lib/funnel";
-import { fireServyPostback, getClickId } from "./lib/postback";
+import { getClickId } from "./lib/postback";
 import { supabase } from "./lib/supabase";
 import type { BreakdownItem } from "./lib/types";
 import { collectWitmeLenderOffers, type LenderOffer } from "./lib/witme";
 import { Header } from "./components/Header";
 import { Landing } from "./components/Landing";
 import { SolicitudWidget } from "./components/SolicitudWidget";
+import type { GateContact } from "./components/WitmeGate";
 
-type Stage = "form" | "loading" | "result" | "error";
+type Stage = "quiz" | "loading" | "gate" | "extra" | "submitting" | "result" | "error";
 
 interface ScoreData {
+  quizSessionId: string;
   score: number;
   scoreBand: string;
   breakdown: BreakdownItem[];
@@ -20,24 +22,26 @@ interface ScoreData {
 }
 
 export default function SolicitudApp() {
-  const [stage, setStage] = useState<Stage>("form");
+  const [stage, setStage] = useState<Stage>("quiz");
+  const [answers, setAnswers] = useState<Answers>({});
   const [scoreData, setScoreData] = useState<ScoreData | null>(null);
   const [offers, setOffers] = useState<LenderOffer[]>([]);
   const [applicationSubmitted, setApplicationSubmitted] = useState(false);
   const [clickId] = useState<string | null>(() => getClickId());
 
+  const params = new URLSearchParams(window.location.search);
+  const utmSource = params.get("utm_source");
+
   useEffect(() => {
     trackFunnelEvent("page_view", undefined, "solicitud");
   }, []);
 
-  const handleFormComplete = async (answers: Answers) => {
+  const handleQuizComplete = async (quizAnswers: Answers) => {
     setStage("loading");
-
-    const params = new URLSearchParams(window.location.search);
-    const utmSource = params.get("utm_source");
+    setAnswers(quizAnswers);
 
     const { data: quizSessionId, error: sessionError } = await supabase.rpc("create_quiz_session", {
-      p_answers: answers,
+      p_answers: quizAnswers,
       p_utm_source: utmSource,
       p_click_id: clickId,
       p_source: "solicitud",
@@ -49,7 +53,7 @@ export default function SolicitudApp() {
     }
 
     const { data: scored, error: scoreError } = await supabase
-      .rpc("calculate_score_solicitud", { p_answers: answers })
+      .rpc("calculate_score_solicitud", { p_answers: quizAnswers })
       .single<{
         score: number;
         score_band: string;
@@ -64,39 +68,38 @@ export default function SolicitudApp() {
     }
 
     setScoreData({
+      quizSessionId,
       score: scored.score,
       scoreBand: scored.score_band,
       breakdown: scored.breakdown,
       capacidadMensual: scored.capacidad_mensual,
       capacidadMaxima: scored.capacidad_maxima,
     });
+    setStage("gate");
+  };
 
-    const { error: leadError } = await supabase.from("leads").insert({
-      quiz_session_id: quizSessionId,
-      first_name: String(answers.name ?? ""),
-      last_name: String(answers.lastName ?? ""),
-      email: String(answers.email ?? ""),
-      phone: String(answers.phoneNumber ?? ""),
-      zip_code: String(answers.zipCode ?? ""),
-      consent_privacy: true,
-      score: scored.score,
-      score_band: scored.score_band,
-      source: "solicitud",
-    });
+  const handleGateUnlock = (contact: GateContact) => {
+    setAnswers((prev) => ({ ...prev, ...contact }));
+    setStage("extra");
+  };
 
-    if (!leadError && clickId) {
-      fireServyPostback(clickId);
+  const handleExtraComplete = async (fullAnswers: Answers) => {
+    setAnswers(fullAnswers);
+
+    if (!scoreData) {
+      setStage("error");
+      return;
     }
+    setStage("submitting");
 
     const { offers: lenderOffers, anySucceeded } = await collectWitmeLenderOffers(
-      answers,
+      fullAnswers,
       clickId,
       utmSource,
-      quizSessionId,
+      scoreData.quizSessionId,
     );
     setOffers(lenderOffers);
     setApplicationSubmitted(anySucceeded);
-
     setStage("result");
   };
 
@@ -107,11 +110,14 @@ export default function SolicitudApp() {
         widget={
           <SolicitudWidget
             stage={stage}
+            answers={answers}
             scoreData={scoreData}
             offers={offers}
             clickId={clickId}
             applicationSubmitted={applicationSubmitted}
-            onComplete={handleFormComplete}
+            onQuizComplete={handleQuizComplete}
+            onGateUnlock={handleGateUnlock}
+            onExtraComplete={handleExtraComplete}
           />
         }
       />

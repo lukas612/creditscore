@@ -40,7 +40,6 @@ export function WitmeQuestionStep({ question, value, onAnswer }: Props) {
   const [year, setYear] = useState(initialYear);
   const [month, setMonth] = useState(initialMonth);
   const [day, setDay] = useState(initialDay);
-  const [consentChecked, setConsentChecked] = useState(false);
 
   const submitDraft = () => {
     if (question.type === "date") {
@@ -64,27 +63,6 @@ export function WitmeQuestionStep({ question, value, onAnswer }: Props) {
             {opt.label}
           </button>
         ))}
-      </div>
-    );
-  }
-
-  if (question.type === "consent") {
-    return (
-      <div className="question-input-row">
-        <label className="consent-row">
-          <input
-            type="checkbox"
-            checked={consentChecked}
-            onChange={(e) => setConsentChecked(e.target.checked)}
-          />
-          <span>
-            Acepto la política de privacidad y autorizo a Creditio a compartir mis datos con
-            la entidad financiera para tramitar mi solicitud de crédito.
-          </span>
-        </label>
-        <button className="btn-primary btn-large" disabled={!consentChecked} onClick={() => onAnswer(true)}>
-          Enviar mi solicitud
-        </button>
       </div>
     );
   }

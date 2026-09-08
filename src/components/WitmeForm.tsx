@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { visibleWitmeQuestions, type Answers } from "../data/witmeQuestions";
+import type { Answers, WitmePhase, WitmeQuestionDef } from "../data/witmeQuestions";
 import { trackFunnelEvent } from "../lib/funnel";
 import { ProgressBar } from "./ProgressBar";
 import { ProgressRing } from "./ProgressRing";
@@ -8,16 +8,20 @@ import { WitmePhaseStepper } from "./WitmePhaseStepper";
 import { WitmeQuestionStep } from "./WitmeQuestionStep";
 
 interface Props {
+  initialAnswers?: Answers;
+  visibleQuestions: (answers: Answers) => WitmeQuestionDef[];
+  phases: { key: WitmePhase; label: string }[];
+  intro?: string;
   onComplete: (answers: Answers) => void;
 }
 
 const GENERIC_REASSURANCE = "🔒 Tus respuestas están cifradas y protegidas.";
 
-export function WitmeForm({ onComplete }: Props) {
-  const [answers, setAnswers] = useState<Answers>({});
+export function WitmeForm({ initialAnswers, visibleQuestions, phases, intro, onComplete }: Props) {
+  const [answers, setAnswers] = useState<Answers>(initialAnswers ?? {});
   const [stepIndex, setStepIndex] = useState(0);
 
-  const steps = visibleWitmeQuestions(answers);
+  const steps = visibleQuestions(answers);
   const question = steps[stepIndex];
   const progress = (stepIndex + 1) / steps.length;
   const isLast = stepIndex === steps.length - 1;
@@ -30,7 +34,7 @@ export function WitmeForm({ onComplete }: Props) {
     const next: Answers = { ...answers, [question.key]: value };
     setAnswers(next);
 
-    const nextSteps = visibleWitmeQuestions(next);
+    const nextSteps = visibleQuestions(next);
     if (stepIndex + 1 >= nextSteps.length) {
       onComplete(next);
     } else {
@@ -44,7 +48,8 @@ export function WitmeForm({ onComplete }: Props) {
 
   return (
     <div className="quiz-card">
-      <WitmePhaseStepper current={question.phase} />
+      {intro && <p className="offers-eyebrow">{intro}</p>}
+      <WitmePhaseStepper current={question.phase} phases={phases} />
       <div className="quiz-progress-row">
         <ProgressBar current={stepIndex + 1} total={steps.length} />
         <ProgressRing percent={progress * 100} />

@@ -2,14 +2,15 @@ import { WITME_PHASES, type WitmePhase } from "../data/witmeQuestions";
 
 interface Props {
   current: WitmePhase;
+  phases?: { key: WitmePhase; label: string }[];
 }
 
-export function WitmePhaseStepper({ current }: Props) {
-  const currentIndex = WITME_PHASES.findIndex((p) => p.key === current);
+export function WitmePhaseStepper({ current, phases = WITME_PHASES }: Props) {
+  const currentIndex = phases.findIndex((p) => p.key === current);
 
   return (
     <ol className="phase-stepper">
-      {WITME_PHASES.map((phase, i) => {
+      {phases.map((phase, i) => {
         const state = i < currentIndex ? "done" : i === currentIndex ? "active" : "todo";
         return (
           <li key={phase.key} className={`phase-step phase-step-${state}`}>
