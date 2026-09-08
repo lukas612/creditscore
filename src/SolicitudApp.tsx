@@ -109,6 +109,7 @@ export default function SolicitudApp() {
             stage={stage}
             scoreData={scoreData}
             offers={offers}
+            clickId={clickId}
             applicationSubmitted={applicationSubmitted}
             onComplete={handleFormComplete}
           />

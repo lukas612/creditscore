@@ -18,11 +18,12 @@ interface Props {
   stage: Stage;
   scoreData: ScoreData | null;
   offers: LenderOffer[];
+  clickId: string | null;
   applicationSubmitted: boolean;
   onComplete: (answers: Answers) => void;
 }
 
-export function SolicitudWidget({ stage, scoreData, offers, applicationSubmitted, onComplete }: Props) {
+export function SolicitudWidget({ stage, scoreData, offers, clickId, applicationSubmitted, onComplete }: Props) {
   return (
     <div className="widget" id="widget">
       {stage === "form" && <WitmeForm onComplete={onComplete} />}
@@ -41,6 +42,7 @@ export function SolicitudWidget({ stage, scoreData, offers, applicationSubmitted
           capacidadMensual={scoreData.capacidadMensual}
           capacidadMaxima={scoreData.capacidadMaxima}
           offers={offers}
+          clickId={clickId}
           applicationSubmitted={applicationSubmitted}
         />
       )}
