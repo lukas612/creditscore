@@ -6,9 +6,11 @@ const BANDS = [
 ];
 
 const FACTORS = [
+  { factor: "Historial en Asnef u otros registros de morosos", peso: "Alto" },
   { factor: "Ingresos mensuales", peso: "Alto" },
   { factor: "Deudas actuales frente a tus ingresos", peso: "Alto" },
   { factor: "Situación laboral (empleado, autónomo, pensionista…)", peso: "Medio" },
+  { factor: "Antigüedad en tu empleo o actividad", peso: "Medio" },
   { factor: "Vivienda en propiedad", peso: "Medio" },
   { factor: "Edad", peso: "Bajo" },
 ];

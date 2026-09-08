@@ -1,7 +1,11 @@
 const TIPS = [
   {
+    title: "Sal de Asnef si estás en él",
+    desc: "Estar en Asnef u otro registro de morosos es el factor que más pesa en tu puntuación. Saldar la deuda pendiente es el primer paso para salir.",
+  },
+  {
     title: "Reduce tu deuda respecto a tus ingresos",
-    desc: "Mantener tus deudas por debajo de un tercio de tus ingresos anuales es el factor que más pesa en tu puntuación.",
+    desc: "Mantener tus deudas por debajo de un tercio de tus ingresos anuales mejora mucho tu puntuación.",
   },
   {
     title: "Declara todos tus ingresos",
@@ -9,7 +13,7 @@ const TIPS = [
   },
   {
     title: "Prioriza la estabilidad laboral",
-    desc: "Un contrato indefinido o ser funcionario pesa más que ingresos muy variables o esporádicos.",
+    desc: "Un contrato indefinido o ser funcionario, y llevar tiempo en tu empleo o actividad actual, pesan más que ingresos muy variables o esporádicos.",
   },
   {
     title: "Ten en cuenta tu vivienda",

@@ -9,6 +9,10 @@ export const NEGATIVE_TIPS: Record<string, string> = {
   vivienda: "Tener una vivienda en propiedad suma puntos extra a este factor.",
   deudas:
     "Reducir tu deuda actual, o mantenerla por debajo de un tercio de tus ingresos anuales, mejoraría mucho este factor.",
+  asnef:
+    "Estar en Asnef u otro registro de morosos es el factor que más resta. Saldar la deuda que originó la inclusión es el único camino para revertirlo.",
+  antiguedad:
+    "Más tiempo en tu empleo o actividad actual mejora este factor de forma automática con el paso del tiempo.",
   edad: "Este factor mejora con el tiempo de forma automática; no depende de ninguna acción inmediata.",
 };
 

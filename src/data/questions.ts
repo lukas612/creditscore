@@ -65,6 +65,22 @@ export const questions: QuestionDef[] = [
     ],
   },
   {
+    key: "antiguedad_laboral",
+    label: "¿Cuánto tiempo llevas en tu empleo o actividad actual?",
+    type: "select",
+    phase: "perfil",
+    options: [
+      { value: "menos_6_meses", label: "Menos de 6 meses" },
+      { value: "6_meses_1_ano", label: "Entre 6 meses y 1 año" },
+      { value: "1_3_anos", label: "Entre 1 y 3 años" },
+      { value: "3_5_anos", label: "Entre 3 y 5 años" },
+      { value: "mas_5_anos", label: "Más de 5 años" },
+    ],
+    helpText: "Cuanto más tiempo llevas en tu empleo o actividad, más estable se considera tu perfil.",
+    condition: (a) =>
+      ["empleado", "funcionario", "autonomo"].includes(String(a.fuente_principal_de_ingreso ?? "")),
+  },
+  {
     key: "tienes_vivienda_en_propiedad",
     label: "¿Tienes una vivienda en propiedad?",
     type: "yesno",
@@ -82,6 +98,15 @@ export const questions: QuestionDef[] = [
     helpText:
       "Es el dato con más peso en tu puntuación. No hace falta que sea exacto, una estimación es suficiente.",
     reassurance: "Nunca compartimos esta cifra con terceros.",
+  },
+  {
+    key: "esta_en_asnef",
+    label: "¿Estás actualmente en Asnef o algún otro registro de morosos?",
+    type: "yesno",
+    phase: "finanzas",
+    helpText:
+      "Asnef es el principal fichero de morosidad en España. Es el dato con más peso en tu puntuación, pero no lo compartimos con nadie salvo para calcular tu resultado.",
+    reassurance: "Esta respuesta nunca se comparte con terceros.",
   },
   {
     key: "tienes_otros_creditos",
