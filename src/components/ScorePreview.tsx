@@ -34,7 +34,7 @@ export function ScorePreview() {
           </p>
         </div>
         <div className="result-card preview-card">
-          <span className="testimonial-example-badge">Ejemplo ilustrativo</span>
+          <span className="example-badge">Ejemplo ilustrativo</span>
           <div className="score-gauge">
             <div className="score-gauge-fill" style={{ width: `${pct}%` }} />
           </div>

@@ -4,10 +4,10 @@ import { Footer } from "./Footer";
 import { Glossary } from "./Glossary";
 import { IconBolt, IconCheckCircle, IconDocCheck, IconGauge, IconHeadset, IconShieldCheck } from "./Icons";
 import { ImproveScoreTips } from "./ImproveScoreTips";
+import { ProductHighlights } from "./ProductHighlights";
 import { ScoreExplainer } from "./ScoreExplainer";
 import { ScorePreview } from "./ScorePreview";
 import { StickyMobileCta } from "./StickyMobileCta";
-import { Testimonials } from "./Testimonials";
 import { TrustSection } from "./TrustSection";
 
 interface Props {
@@ -134,7 +134,7 @@ export function Landing({ widget }: Props) {
         </div>
       </section>
 
-      <Testimonials />
+      <ProductHighlights />
 
       <TrustSection />
 

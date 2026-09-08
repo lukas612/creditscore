@@ -1377,25 +1377,43 @@ body {
   }
 }
 
-/* Testimonials */
+/* Product highlights */
 
-.testimonials-grid {
+.highlights-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 20px;
-  max-width: 1080px;
-  margin: 0 auto;
 }
 
-.testimonial-card {
-  position: relative;
+.highlight-card {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 24px;
 }
 
-.testimonial-example-badge {
+.highlight-icon {
+  width: 26px;
+  height: 26px;
+  color: var(--primary);
+  margin-bottom: 14px;
+}
+
+.highlight-card h3 {
+  font-size: 17px;
+  margin: 0 0 8px;
+}
+
+.highlight-card p {
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Reusable "example" badge (e.g. the score preview on the home page) */
+
+.example-badge {
   display: inline-block;
   font-size: 10.5px;
   font-weight: 700;
@@ -1407,54 +1425,6 @@ body {
   padding: 3px 9px;
   border-radius: 999px;
   margin-bottom: 14px;
-}
-
-.testimonial-quote {
-  font-size: 14.5px;
-  line-height: 1.6;
-  color: var(--text);
-  margin: 0 0 18px;
-}
-
-.testimonial-author {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.testimonial-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--primary);
-  color: #fff;
-  font-weight: 700;
-  font-size: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.testimonial-name {
-  font-size: 13.5px;
-  font-weight: 700;
-  margin: 0;
-}
-
-.testimonial-tag {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin: 0;
-}
-
-.testimonials-note {
-  max-width: 640px;
-  margin: 24px auto 0;
-  text-align: center;
-  font-size: 12.5px;
-  color: var(--text-muted);
-  line-height: 1.6;
 }
 
 /* Trust / security section */
