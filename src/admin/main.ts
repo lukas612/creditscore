@@ -11,15 +11,58 @@ const root = document.getElementById("admin-root")!;
 
 interface Stats {
   total_leads: number;
-  leads_today: number;
-  leads_7d: number;
-  total_sessions: number;
-  conversion_rate: number;
+  period_leads: number;
+  period_sessions: number;
+  period_conversion_rate: number;
   avg_score: number | null;
   band_excelente: number;
   band_bueno: number;
   band_regular: number;
   band_bajo: number;
+}
+
+type PresetKey = "today" | "7d" | "all" | "custom";
+
+interface Period {
+  since: string;
+  until: string;
+}
+
+function toDateInputValue(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+
+const today = new Date();
+let currentPreset: PresetKey = "all";
+let customFrom = toDateInputValue(today);
+let customTo = toDateInputValue(today);
+
+function periodFor(preset: PresetKey): Period {
+  const now = new Date();
+  if (preset === "today") {
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    return { since: start.toISOString(), until: now.toISOString() };
+  }
+  if (preset === "7d") {
+    const start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    return { since: start.toISOString(), until: now.toISOString() };
+  }
+  if (preset === "custom") {
+    const from = new Date(`${customFrom}T00:00:00`);
+    const to = new Date(`${customTo}T23:59:59.999`);
+    if (from.getTime() > to.getTime()) {
+      return { since: to.toISOString(), until: from.toISOString() };
+    }
+    return { since: from.toISOString(), until: to.toISOString() };
+  }
+  return { since: "2000-01-01T00:00:00.000Z", until: now.toISOString() };
+}
+
+const periodDateFmt = new Intl.DateTimeFormat("es-ES", { day: "2-digit", month: "short", year: "numeric" });
+
+function periodLabel(preset: PresetKey, period: Period): string {
+  if (preset === "all") return "Todo el histórico";
+  return `${periodDateFmt.format(new Date(period.since))} – ${periodDateFmt.format(new Date(period.until))}`;
 }
 
 interface FunnelOverview {
@@ -90,33 +133,39 @@ function escapeHtml(value: string): string {
   return div.innerHTML;
 }
 
-async function fetchStats(password: string): Promise<Stats> {
+async function fetchStats(password: string, period: Period): Promise<Stats> {
   const { data, error } = await supabase
-    .rpc("admin_get_stats", { p_password: password })
+    .rpc("admin_get_stats", { p_password: password, p_since: period.since, p_until: period.until })
     .single<Stats>();
   if (error || !data) throw error ?? new Error("No data");
   return data;
 }
 
-async function fetchFunnelOverview(password: string): Promise<FunnelOverview> {
+async function fetchFunnelOverview(password: string, period: Period): Promise<FunnelOverview> {
   const { data, error } = await supabase
-    .rpc("admin_get_funnel_overview", { p_password: password })
+    .rpc("admin_get_funnel_overview", { p_password: password, p_since: period.since, p_until: period.until })
     .single<FunnelOverview>();
   if (error || !data) throw error ?? new Error("No data");
   return data;
 }
 
-async function fetchFunnelSteps(password: string): Promise<FunnelStepRow[]> {
-  const { data, error } = await supabase.rpc("admin_get_funnel_steps", { p_password: password });
+async function fetchFunnelSteps(password: string, period: Period): Promise<FunnelStepRow[]> {
+  const { data, error } = await supabase.rpc("admin_get_funnel_steps", {
+    p_password: password,
+    p_since: period.since,
+    p_until: period.until,
+  });
   if (error) throw error;
   return (data ?? []) as FunnelStepRow[];
 }
 
-async function fetchLeads(password: string): Promise<Lead[]> {
+async function fetchLeads(password: string, period: Period): Promise<Lead[]> {
   const { data, error } = await supabase.rpc("admin_list_leads", {
     p_password: password,
     p_limit: 200,
     p_offset: 0,
+    p_since: period.since,
+    p_until: period.until,
   });
   if (error) throw error;
   return (data ?? []) as Lead[];
@@ -139,7 +188,7 @@ function renderLogin(errorMsg?: string) {
     e.preventDefault();
     const password = (document.getElementById("pw-input") as HTMLInputElement).value;
     try {
-      await fetchStats(password);
+      await fetchStats(password, periodFor("all"));
       sessionStorage.setItem(SESSION_KEY, password);
       renderDashboard(password);
     } catch {
@@ -211,12 +260,14 @@ function funnelStepsHtml(overview: FunnelOverview, steps: FunnelStepRow[]): stri
 async function renderDashboard(password: string) {
   root.innerHTML = `<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>`;
 
+  const period = periodFor(currentPreset);
+
   try {
     const [stats, leads, funnelOverview, funnelSteps] = await Promise.all([
-      fetchStats(password),
-      fetchLeads(password),
-      fetchFunnelOverview(password),
-      fetchFunnelSteps(password),
+      fetchStats(password, period),
+      fetchLeads(password, period),
+      fetchFunnelOverview(password, period),
+      fetchFunnelSteps(password, period),
     ]);
     const totalBands = stats.band_excelente + stats.band_bueno + stats.band_regular + stats.band_bajo;
 
@@ -230,13 +281,27 @@ async function renderDashboard(password: string) {
           </div>
         </header>
 
+        <section class="admin-card admin-period-bar">
+          <div class="admin-period-presets">
+            <button class="admin-period-btn ${currentPreset === "today" ? "active" : ""}" data-preset="today">Hoy</button>
+            <button class="admin-period-btn ${currentPreset === "7d" ? "active" : ""}" data-preset="7d">7 días</button>
+            <button class="admin-period-btn ${currentPreset === "all" ? "active" : ""}" data-preset="all">Todo</button>
+          </div>
+          <div class="admin-period-custom ${currentPreset === "custom" ? "active" : ""}">
+            <input type="date" id="period-from" value="${customFrom}" />
+            <span>–</span>
+            <input type="date" id="period-to" value="${customTo}" />
+            <button class="admin-btn-ghost" id="period-apply-btn">Aplicar</button>
+          </div>
+          <p class="admin-period-label">${escapeHtml(periodLabel(currentPreset, period))}</p>
+        </section>
+
         <section class="admin-stats-grid">
-          ${statCard("Leads totales", String(stats.total_leads))}
-          ${statCard("Leads hoy", String(stats.leads_today))}
-          ${statCard("Leads (7 días)", String(stats.leads_7d))}
-          ${statCard("Sesiones de quiz", String(stats.total_sessions))}
-          ${statCard("Tasa de conversión", `${stats.conversion_rate}%`)}
-          ${statCard("Score medio", stats.avg_score != null ? String(stats.avg_score) : "—")}
+          ${statCard("Leads totales (histórico)", String(stats.total_leads))}
+          ${statCard("Leads en el periodo", String(stats.period_leads))}
+          ${statCard("Sesiones en el periodo", String(stats.period_sessions))}
+          ${statCard("Tasa de conversión", `${stats.period_conversion_rate}%`)}
+          ${statCard("Score medio (periodo)", stats.avg_score != null ? String(stats.avg_score) : "—")}
         </section>
 
         <section class="admin-card">
@@ -323,6 +388,19 @@ async function renderDashboard(password: string) {
     document.getElementById("logout-btn")!.addEventListener("click", () => {
       sessionStorage.removeItem(SESSION_KEY);
       renderLogin();
+    });
+
+    document.querySelectorAll<HTMLButtonElement>(".admin-period-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        currentPreset = btn.dataset.preset as PresetKey;
+        renderDashboard(password);
+      });
+    });
+    document.getElementById("period-apply-btn")!.addEventListener("click", () => {
+      customFrom = (document.getElementById("period-from") as HTMLInputElement).value || customFrom;
+      customTo = (document.getElementById("period-to") as HTMLInputElement).value || customTo;
+      currentPreset = "custom";
+      renderDashboard(password);
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

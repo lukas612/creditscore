@@ -66,6 +66,13 @@ GoTrue lo rechazó ("Database error querying schema") — sin acceso a la Admin 
 usuario desde el dashboard de Supabase (Authentication → Users → Add user) y
 adaptar `src/admin/main.ts` para usar `supabase.auth.signInWithPassword`.
 
+Todo el panel (stats, embudo, distribución por banda y la lista de leads) se
+puede filtrar por periodo: Hoy, 7 días, Todo, o un rango de fechas propio. Las
+funciones `admin_get_stats`, `admin_list_leads`, `admin_get_funnel_overview` y
+`admin_get_funnel_steps` aceptan `p_since`/`p_until`; "Leads totales" en la
+primera tarjeta es la única cifra que no cambia con el periodo (histórico
+completo, para tener siempre una referencia).
+
 El panel incluye un embudo de conversión (visita → completa el quiz → deja sus
 datos) y, por debajo, cuántas visitas llegan a cada pregunta del quiz, para ver
 en qué paso se cae más gente. Se alimenta de una tabla nueva, `funnel_events`,
