@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Answers } from "./data/questions";
+import { getClickId } from "./lib/postback";
 import { supabase } from "./lib/supabase";
 import type { BreakdownItem, ScoreResult, Stage } from "./lib/types";
 import { Header } from "./components/Header";
@@ -10,6 +11,7 @@ export default function App() {
   const [stage, setStage] = useState<Stage>("quiz");
   const [result, setResult] = useState<ScoreResult | null>(null);
   const [quizAnswers, setQuizAnswers] = useState<Answers | null>(null);
+  const [clickId] = useState<string | null>(() => getClickId());
 
   const handleQuizComplete = async (answers: Answers) => {
     setStage("loading");
@@ -22,7 +24,7 @@ export default function App() {
       {
         p_answers: answers,
         p_utm_source: params.get("utm_source"),
-        p_click_id: params.get("click_id") ?? params.get("clickid"),
+        p_click_id: clickId,
       },
     );
 
@@ -67,6 +69,7 @@ export default function App() {
             stage={stage}
             result={result}
             quizAnswers={quizAnswers}
+            clickId={clickId}
             onComplete={handleQuizComplete}
             onUnlock={() => setStage("unlocked")}
           />

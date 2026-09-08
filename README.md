@@ -66,6 +66,26 @@ Para cambiar la contraseña, desde la consola SQL de Supabase o vía RPC:
 select admin_set_password('contraseña_actual', 'contraseña_nueva');
 ```
 
+## Tracking de campaña (servy_click)
+
+Los enlaces de campaña llevan el click id del proveedor de tráfico:
+
+```
+https://lukas612.github.io/creditscore/?servy_click={clickid}
+```
+
+`getClickId()` (`src/lib/postback.ts`) lo captura al cargar la página (también acepta
+`click_id`/`clickid` como alternativas) y se guarda en `quiz_sessions.click_id`. Cuando
+el usuario deja sus datos de contacto (lead real, no solo terminar el quiz) se dispara
+un pixel de postback a:
+
+```
+https://go.servy.es/postback?cid={clickId}&payout=0&currency=EUR&param1=Creditio_score
+```
+
+Se dispara solo si hay `clickId` y solo tras guardar el lead con éxito (`ResultGate`).
+Es un pixel (`new Image().src = ...`), no una llamada `fetch`, para no depender de CORS.
+
 ## Pendiente / siguientes pasos
 
 - Conectar el lead capturado en `leads` con el CRM/pingtree interno.

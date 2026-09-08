@@ -8,11 +8,19 @@ interface Props {
   stage: Stage;
   result: ScoreResult | null;
   quizAnswers: Answers | null;
+  clickId: string | null;
   onComplete: (answers: Answers) => void;
   onUnlock: () => void;
 }
 
-export function ScoreWidget({ stage, result, quizAnswers, onComplete, onUnlock }: Props) {
+export function ScoreWidget({
+  stage,
+  result,
+  quizAnswers,
+  clickId,
+  onComplete,
+  onUnlock,
+}: Props) {
   return (
     <div className="widget" id="widget">
       {stage === "quiz" && <Quiz onComplete={onComplete} />}
@@ -29,6 +37,7 @@ export function ScoreWidget({ stage, result, quizAnswers, onComplete, onUnlock }
           score={result.score}
           scoreBand={result.scoreBand}
           zipCode={result.zipCode}
+          clickId={clickId}
           onUnlock={onUnlock}
         />
       )}

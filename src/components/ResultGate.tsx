@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { fireServyPostback } from "../lib/postback";
 import { supabase } from "../lib/supabase";
 
 interface Props {
@@ -6,10 +7,18 @@ interface Props {
   score: number;
   scoreBand: string;
   zipCode: string;
+  clickId: string | null;
   onUnlock: () => void;
 }
 
-export function ResultGate({ quizSessionId, score, scoreBand, zipCode, onUnlock }: Props) {
+export function ResultGate({
+  quizSessionId,
+  score,
+  scoreBand,
+  zipCode,
+  clickId,
+  onUnlock,
+}: Props) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -44,6 +53,10 @@ export function ResultGate({ quizSessionId, score, scoreBand, zipCode, onUnlock 
     if (insertError) {
       setError("No hemos podido guardar tus datos. Inténtalo de nuevo.");
       return;
+    }
+
+    if (clickId) {
+      fireServyPostback(clickId);
     }
 
     onUnlock();
