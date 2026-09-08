@@ -72,7 +72,7 @@ export function Landing({ widget }: Props) {
               <IconGauge className="hero-gauge-icon" />
               <span>300 – 850</span>
             </div>
-            <span className="eyebrow">🇪🇸 El primer CreditScore gratuito de España</span>
+            <span className="eyebrow">🇪🇸 El primer Credit Score gratuito de Creditio</span>
             <h1>Descubre tu puntuación crediticia antes de pedir un préstamo</h1>
             <p className="landing-sub">
               Responde unas preguntas rápidas y descubre, al instante, tu puntuación y qué
@@ -122,7 +122,7 @@ export function Landing({ widget }: Props) {
       <Glossary />
 
       <section className="section">
-        <p className="section-label">Por qué CreditScore</p>
+        <p className="section-label">Por qué Creditio Credit Score</p>
         <div className="benefits-grid">
           {BENEFITS.map((b) => (
             <div className="benefit-card" key={b.title}>

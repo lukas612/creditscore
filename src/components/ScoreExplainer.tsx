@@ -25,7 +25,8 @@ export function ScoreExplainer() {
             financiación y en mejores condiciones.
           </p>
           <p>
-            La que calcula CreditScore es una <strong>estimación propia y orientativa</strong>,
+            La que calcula Creditio Credit Score es una{" "}
+            <strong>estimación propia y orientativa</strong>,
             pensada para que sepas dónde estás antes de solicitar un crédito. No es el
             informe oficial de ningún buró de crédito (Asnef, Experian, Equifax…) ni lo
             sustituye.

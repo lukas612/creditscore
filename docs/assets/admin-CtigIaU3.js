@@ -2,7 +2,7 @@ import{c as h}from"./index-DBuN83Yj.js";const g="https://pgyaigdsedkdqvhtexrz.su
     <div class="admin-login-shell">
       <form class="admin-login-card" id="login-form">
         <h1>Panel interno</h1>
-        <p class="admin-sub">CreditScore &middot; acceso restringido</p>
+        <p class="admin-sub">Creditio Credit Score &middot; acceso restringido</p>
         <input type="password" id="pw-input" placeholder="Contraseña" autocomplete="current-password" required />
         ${a?`<p class="admin-error">${s(a)}</p>`:""}
         <button type="submit">Entrar</button>
@@ -17,7 +17,7 @@ import{c as h}from"./index-DBuN83Yj.js";const g="https://pgyaigdsedkdqvhtexrz.su
   `}async function m(a){l.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';try{const[t,e]=await Promise.all([p(a),$(a)]),d=t.band_excelente+t.band_bueno+t.band_regular+t.band_bajo;l.innerHTML=`
       <div class="admin-shell">
         <header class="admin-header">
-          <span class="admin-logo">Credit<b>Score</b> · Panel interno</span>
+          <span class="admin-logo">Creditio <b>Credit Score</b> · Panel interno</span>
           <div>
             <button class="admin-btn-ghost" id="refresh-btn">Actualizar</button>
             <button class="admin-btn-ghost" id="logout-btn">Cerrar sesión</button>

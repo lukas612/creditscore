@@ -19,7 +19,7 @@ export function ShareResult({ score, scoreBand }: Props) {
   const [copied, setCopied] = useState(false);
 
   const shareUrl = `${SITE_URL}?utm_source=share&utm_campaign=resultado`;
-  const shareText = `Mi puntuación en CreditScore es ${score}/850 (${
+  const shareText = `Mi puntuación en Creditio Credit Score es ${score}/850 (${
     BAND_LABEL[scoreBand] ?? scoreBand
   }). Descubre la tuya gratis en 2 minutos:`;
 
@@ -27,7 +27,11 @@ export function ShareResult({ score, scoreBand }: Props) {
 
   const handleNativeShare = async () => {
     try {
-      await navigator.share({ title: "Mi CreditScore", text: shareText, url: shareUrl });
+      await navigator.share({
+        title: "Mi Creditio Credit Score",
+        text: shareText,
+        url: shareUrl,
+      });
     } catch {
       // el usuario cerró el selector de compartir, no hacemos nada
     }

@@ -72,7 +72,7 @@ function renderLogin(errorMsg?: string) {
     <div class="admin-login-shell">
       <form class="admin-login-card" id="login-form">
         <h1>Panel interno</h1>
-        <p class="admin-sub">CreditScore &middot; acceso restringido</p>
+        <p class="admin-sub">Creditio Credit Score &middot; acceso restringido</p>
         <input type="password" id="pw-input" placeholder="Contraseña" autocomplete="current-password" required />
         ${errorMsg ? `<p class="admin-error">${escapeHtml(errorMsg)}</p>` : ""}
         <button type="submit">Entrar</button>
@@ -118,7 +118,7 @@ async function renderDashboard(password: string) {
     root.innerHTML = `
       <div class="admin-shell">
         <header class="admin-header">
-          <span class="admin-logo">Credit<b>Score</b> · Panel interno</span>
+          <span class="admin-logo">Creditio <b>Credit Score</b> · Panel interno</span>
           <div>
             <button class="admin-btn-ghost" id="refresh-btn">Actualizar</button>
             <button class="admin-btn-ghost" id="logout-btn">Cerrar sesión</button>

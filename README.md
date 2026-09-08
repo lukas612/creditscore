@@ -1,4 +1,4 @@
-# CreditScore
+# Creditio Credit Score
 
 Landing + quiz de "puntuación crediticia" pensado como canal de captación alternativo
 al de las landings de pago: en vez de pedir directamente una solicitud de préstamo, se

@@ -14,8 +14,8 @@ const FAQ_ITEMS = [
     a: "Solo se usan para contactarte con las opciones de financiación que mejor encajan con tu perfil. Puedes pedir que los eliminemos cuando quieras.",
   },
   {
-    q: "¿Quién hay detrás de CreditScore?",
-    a: "Un equipo especializado en asesoramiento de crédito que compara distintas opciones de financiación para ayudarte a encontrar la que mejor se adapta a tu situación.",
+    q: "¿Quién hay detrás de Creditio Credit Score?",
+    a: "Creditio, una plataforma de comparación y asesoramiento de crédito que compara distintas opciones de financiación para ayudarte a encontrar la que mejor se adapta a tu situación.",
   },
   {
     q: "¿Qué diferencia hay con la puntuación de un buró de crédito real?",

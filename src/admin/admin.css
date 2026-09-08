@@ -1,9 +1,9 @@
 :root {
   --bg: #f6f7fb;
   --card: #ffffff;
-  --text: #1a1d29;
+  --text: #1e2a4a;
   --text-muted: #5b616e;
-  --primary: #2e5cff;
+  --primary: #a31c82;
   --border: #e3e5ec;
   --success: #1fa96b;
   --danger: #e5484d;
@@ -63,7 +63,7 @@ body {
 .admin-login-card input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(46, 92, 255, 0.12);
+  box-shadow: 0 0 0 3px rgba(163, 28, 130, 0.12);
 }
 
 .admin-login-card button {

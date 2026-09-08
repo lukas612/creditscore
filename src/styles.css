@@ -1,10 +1,11 @@
 :root {
   --bg: #f6f7fb;
   --card: #ffffff;
-  --text: #1a1d29;
+  --text: #1e2a4a;
   --text-muted: #5b616e;
-  --primary: #2e5cff;
-  --primary-dark: #1e3fcc;
+  --primary: #a31c82;
+  --primary-dark: #7a1463;
+  --brand-navy: #1e2a4a;
   --border: #e3e5ec;
   --success: #1fa96b;
   --danger: #e5484d;
@@ -23,6 +24,14 @@ body {
     sans-serif;
 }
 
+h1,
+h2,
+h3,
+.section-label,
+.creditio-logo {
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
 .site-header {
   border-bottom: 1px solid var(--border);
   background: var(--card);
@@ -34,14 +43,23 @@ body {
   padding: 18px 24px;
 }
 
-.logo {
-  font-size: 19px;
+.creditio-logo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
   font-weight: 800;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--brand-navy);
   letter-spacing: -0.01em;
 }
 
-.logo-accent {
-  color: var(--primary);
+.creditio-logo-arc {
+  position: absolute;
+  top: -10px;
+  right: -3px;
+  width: 20px;
+  height: 11px;
 }
 
 .page {
@@ -78,7 +96,7 @@ body {
 }
 
 .widget-intro {
-  background: rgba(46, 92, 255, 0.06);
+  background: rgba(163, 28, 130, 0.06);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 14px 16px;
@@ -125,7 +143,7 @@ body {
   font-size: 13px;
   font-weight: 700;
   color: var(--primary);
-  background: rgba(46, 92, 255, 0.08);
+  background: rgba(163, 28, 130, 0.08);
   border-radius: 999px;
   padding: 6px 14px;
   letter-spacing: 0.01em;
@@ -359,7 +377,7 @@ body {
 
 .option-btn.selected {
   border-color: var(--primary);
-  background: rgba(46, 92, 255, 0.08);
+  background: rgba(163, 28, 130, 0.08);
   font-weight: 600;
 }
 
@@ -387,7 +405,7 @@ body {
 .lead-form input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(46, 92, 255, 0.12);
+  box-shadow: 0 0 0 3px rgba(163, 28, 130, 0.12);
 }
 
 .question-suffix {
@@ -545,7 +563,7 @@ body {
 
 .whatif-toggle button.active {
   border-color: var(--primary);
-  background: rgba(46, 92, 255, 0.08);
+  background: rgba(163, 28, 130, 0.08);
   color: var(--primary);
 }
 
@@ -621,7 +639,7 @@ body {
   font-weight: 700;
   font-size: 15px;
   text-decoration: none;
-  box-shadow: 0 10px 24px rgba(46, 92, 255, 0.35);
+  box-shadow: 0 10px 24px rgba(163, 28, 130, 0.35);
   transform: translateY(140%);
   transition: transform 0.25s ease;
   z-index: 40;
@@ -1058,7 +1076,7 @@ body {
   font-size: 12.5px;
   font-weight: 600;
   color: var(--primary);
-  background: rgba(46, 92, 255, 0.08);
+  background: rgba(163, 28, 130, 0.08);
   padding: 3px 10px;
   border-radius: 999px;
   white-space: nowrap;
