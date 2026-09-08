@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { WITME_QUESTIONS } from "../data/witmeQuestions";
 import "./admin.css";
 
 const url = import.meta.env.VITE_SUPABASE_URL;
@@ -36,6 +37,15 @@ const today = new Date();
 let currentPreset: PresetKey = "all";
 let customFrom = toDateInputValue(today);
 let customTo = toDateInputValue(today);
+
+type SourceKey = "all" | "quiz" | "solicitud";
+let currentSource: SourceKey = "all";
+
+const SOURCE_LABELS: Record<SourceKey, string> = {
+  all: "Todos",
+  quiz: "Quiz corto",
+  solicitud: "Solicitud completa",
+};
 
 function periodFor(preset: PresetKey): Period {
   const now = new Date();
@@ -106,6 +116,15 @@ const STEP_DEFS: StepDef[] = [
   { key: "en_cuantos_meses_deseas_devolverlo", label: "Plazo de devolución" },
 ];
 
+// Deriva las preguntas de la solicitud larga directamente de
+// src/data/witmeQuestions.ts (misma fuente que usa el formulario), en vez de
+// mantener otra lista a mano.
+const STEP_DEFS_SOLICITUD: StepDef[] = WITME_QUESTIONS.map((q) => ({
+  key: q.key,
+  label: q.label,
+  conditional: !!q.condition,
+}));
+
 interface Lead {
   id: string;
   created_at: string;
@@ -117,6 +136,7 @@ interface Lead {
   score: number | null;
   score_band: string | null;
   status: string;
+  source: string;
 }
 
 const dateFmt = new Intl.DateTimeFormat("es-ES", {
@@ -133,42 +153,82 @@ function escapeHtml(value: string): string {
   return div.innerHTML;
 }
 
-async function fetchStats(password: string, period: Period): Promise<Stats> {
+function sourceParam(source: SourceKey): string | null {
+  return source === "all" ? null : source;
+}
+
+async function fetchStats(password: string, period: Period, source: SourceKey): Promise<Stats> {
   const { data, error } = await supabase
-    .rpc("admin_get_stats", { p_password: password, p_since: period.since, p_until: period.until })
+    .rpc("admin_get_stats", {
+      p_password: password,
+      p_since: period.since,
+      p_until: period.until,
+      p_source: sourceParam(source),
+    })
     .single<Stats>();
   if (error || !data) throw error ?? new Error("No data");
   return data;
 }
 
-async function fetchFunnelOverview(password: string, period: Period): Promise<FunnelOverview> {
+async function fetchFunnelOverview(password: string, period: Period, source: SourceKey): Promise<FunnelOverview> {
   const { data, error } = await supabase
-    .rpc("admin_get_funnel_overview", { p_password: password, p_since: period.since, p_until: period.until })
+    .rpc("admin_get_funnel_overview", {
+      p_password: password,
+      p_since: period.since,
+      p_until: period.until,
+      p_source: sourceParam(source),
+    })
     .single<FunnelOverview>();
   if (error || !data) throw error ?? new Error("No data");
   return data;
 }
 
-async function fetchFunnelSteps(password: string, period: Period): Promise<FunnelStepRow[]> {
+async function fetchFunnelSteps(password: string, period: Period, source: SourceKey): Promise<FunnelStepRow[]> {
   const { data, error } = await supabase.rpc("admin_get_funnel_steps", {
     p_password: password,
     p_since: period.since,
     p_until: period.until,
+    p_source: sourceParam(source),
   });
   if (error) throw error;
   return (data ?? []) as FunnelStepRow[];
 }
 
-async function fetchLeads(password: string, period: Period): Promise<Lead[]> {
+async function fetchLeads(password: string, period: Period, source: SourceKey): Promise<Lead[]> {
   const { data, error } = await supabase.rpc("admin_list_leads", {
     p_password: password,
     p_limit: 200,
     p_offset: 0,
     p_since: period.since,
     p_until: period.until,
+    p_source: sourceParam(source),
   });
   if (error) throw error;
   return (data ?? []) as Lead[];
+}
+
+interface WitmeApplication {
+  id: string;
+  created_at: string;
+  click_id: string | null;
+  utm_source: string | null;
+  witme_id: number | null;
+  witme_status: string | null;
+  witme_message: unknown;
+  name: string | null;
+  last_name: string | null;
+  email: string | null;
+  requested_amount: number | null;
+}
+
+async function fetchWitmeApplications(password: string): Promise<WitmeApplication[]> {
+  const { data, error } = await supabase.rpc("admin_get_witme_applications", {
+    p_password: password,
+    p_limit: 100,
+    p_offset: 0,
+  });
+  if (error) throw error;
+  return (data ?? []) as WitmeApplication[];
 }
 
 function renderLogin(errorMsg?: string) {
@@ -188,7 +248,7 @@ function renderLogin(errorMsg?: string) {
     e.preventDefault();
     const password = (document.getElementById("pw-input") as HTMLInputElement).value;
     try {
-      await fetchStats(password, periodFor("all"));
+      await fetchStats(password, periodFor("all"), "all");
       sessionStorage.setItem(SESSION_KEY, password);
       renderDashboard(password);
     } catch {
@@ -212,14 +272,14 @@ function bandRow(label: string, count: number, total: number, cls: string) {
   `;
 }
 
-function funnelStepsHtml(overview: FunnelOverview, steps: FunnelStepRow[]): string {
+function funnelStepsHtml(overview: FunnelOverview, steps: FunnelStepRow[], stepDefs: StepDef[]): string {
   const reachedByKey = new Map(steps.map((s) => [s.question_key, Number(s.reached)]));
   const base = overview.engaged_visits;
 
   let rows = "";
-  let baselineKey = STEP_DEFS[0]?.key;
+  let baselineKey = stepDefs[0]?.key;
 
-  STEP_DEFS.forEach((def, i) => {
+  stepDefs.forEach((def, i) => {
     const reached = reachedByKey.get(def.key) ?? 0;
     const pctOfVisits = base > 0 ? Math.round((reached / base) * 100) : 0;
 
@@ -263,13 +323,15 @@ async function renderDashboard(password: string) {
   const period = periodFor(currentPreset);
 
   try {
-    const [stats, leads, funnelOverview, funnelSteps] = await Promise.all([
-      fetchStats(password, period),
-      fetchLeads(password, period),
-      fetchFunnelOverview(password, period),
-      fetchFunnelSteps(password, period),
+    const [stats, leads, funnelOverview, funnelSteps, witmeApps] = await Promise.all([
+      fetchStats(password, period, currentSource),
+      fetchLeads(password, period, currentSource),
+      fetchFunnelOverview(password, period, currentSource),
+      fetchFunnelSteps(password, period, currentSource),
+      fetchWitmeApplications(password),
     ]);
     const totalBands = stats.band_excelente + stats.band_bueno + stats.band_regular + stats.band_bajo;
+    const stepDefs = currentSource === "solicitud" ? STEP_DEFS_SOLICITUD : STEP_DEFS;
 
     root.innerHTML = `
       <div class="admin-shell">
@@ -280,6 +342,18 @@ async function renderDashboard(password: string) {
             <button class="admin-btn-ghost" id="logout-btn">Cerrar sesión</button>
           </div>
         </header>
+
+        <section class="admin-card admin-source-bar">
+          <span class="admin-source-label">Embudo:</span>
+          <div class="admin-period-presets">
+            ${(Object.keys(SOURCE_LABELS) as SourceKey[])
+              .map(
+                (key) =>
+                  `<button class="admin-period-btn ${currentSource === key ? "active" : ""}" data-source="${key}">${SOURCE_LABELS[key]}</button>`,
+              )
+              .join("")}
+          </div>
+        </section>
 
         <section class="admin-card admin-period-bar">
           <div class="admin-period-presets">
@@ -330,15 +404,19 @@ async function renderDashboard(password: string) {
         </section>
 
         <section class="admin-card">
-          <p class="admin-card-title">Dónde se cae la gente en el quiz</p>
-          <p class="admin-card-sub">
-            Ya excluye el rebote instantáneo: es la caída real entre quienes empiezan
-            a interactuar de verdad (${funnelOverview.engaged_visits} sesiones). Las
-            preguntas condicionales no muestran caída propia (no todo el mundo las ve);
-            el siguiente paso obligatorio calcula su caída respecto al último paso que
-            ven todos.
-          </p>
-          ${funnelStepsHtml(funnelOverview, funnelSteps)}
+          <p class="admin-card-title">Dónde se cae la gente</p>
+          ${
+            currentSource === "all"
+              ? `<p class="admin-card-sub">Selecciona un embudo concreto arriba (Quiz corto o Solicitud completa) para ver la caída pregunta a pregunta — mezclar los dos no tiene sentido, son formularios distintos.</p>`
+              : `<p class="admin-card-sub">
+                  Ya excluye el rebote instantáneo: es la caída real entre quienes empiezan
+                  a interactuar de verdad (${funnelOverview.engaged_visits} sesiones). Las
+                  preguntas condicionales no muestran caída propia (no todo el mundo las ve);
+                  el siguiente paso obligatorio calcula su caída respecto al último paso que
+                  ven todos.
+                </p>
+                ${funnelStepsHtml(funnelOverview, funnelSteps, stepDefs)}`
+          }
         </section>
 
         <section class="admin-card">
@@ -356,7 +434,7 @@ async function renderDashboard(password: string) {
               <thead>
                 <tr>
                   <th>Fecha</th><th>Nombre</th><th>Email</th><th>Teléfono</th>
-                  <th>CP</th><th>Score</th><th>Banda</th><th>Estado</th>
+                  <th>CP</th><th>Score</th><th>Banda</th><th>Estado</th><th>Fuente</th>
                 </tr>
               </thead>
               <tbody>
@@ -372,11 +450,49 @@ async function renderDashboard(password: string) {
                     <td>${l.score ?? "—"}</td>
                     <td><span class="admin-badge band-${l.score_band ?? ""}">${l.score_band ?? "—"}</span></td>
                     <td>${escapeHtml(l.status)}</td>
+                    <td>${escapeHtml(SOURCE_LABELS[l.source as SourceKey] ?? l.source)}</td>
                   </tr>
                 `,
                   )
                   .join("")}
-                ${leads.length === 0 ? `<tr><td colspan="8" class="admin-empty">Todavía no hay leads.</td></tr>` : ""}
+                ${leads.length === 0 ? `<tr><td colspan="9" class="admin-empty">Todavía no hay leads.</td></tr>` : ""}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="admin-card">
+          <p class="admin-card-title">Solicitudes enviadas a Witme (${witmeApps.length})</p>
+          <p class="admin-card-sub">
+            Copia propia de cada envío a la API de Witme, con su respuesta. Mientras esté en
+            modo sandbox, "failed" no significa que el usuario hiciera algo mal — es el modo
+            de pruebas antes de confirmar producción con su equipo.
+          </p>
+          <div class="admin-table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th><th>Nombre</th><th>Email</th><th>Importe</th>
+                  <th>Witme ID</th><th>Estado</th><th>Mensaje</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${witmeApps
+                  .map(
+                    (w) => `
+                  <tr>
+                    <td>${dateFmt.format(new Date(w.created_at))}</td>
+                    <td>${escapeHtml(w.name ?? "")} ${escapeHtml(w.last_name ?? "")}</td>
+                    <td>${escapeHtml(w.email ?? "")}</td>
+                    <td>${w.requested_amount != null ? `${w.requested_amount} €` : "—"}</td>
+                    <td>${w.witme_id ?? "—"}</td>
+                    <td><span class="admin-badge ${w.witme_status === "processed" ? "band-excelente" : "band-bajo"}">${escapeHtml(w.witme_status ?? "—")}</span></td>
+                    <td>${escapeHtml(JSON.stringify(w.witme_message ?? ""))}</td>
+                  </tr>
+                `,
+                  )
+                  .join("")}
+                ${witmeApps.length === 0 ? `<tr><td colspan="7" class="admin-empty">Todavía no hay solicitudes enviadas a Witme.</td></tr>` : ""}
               </tbody>
             </table>
           </div>
@@ -390,7 +506,14 @@ async function renderDashboard(password: string) {
       renderLogin();
     });
 
-    document.querySelectorAll<HTMLButtonElement>(".admin-period-btn").forEach((btn) => {
+    document.querySelectorAll<HTMLButtonElement>(".admin-period-btn[data-source]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        currentSource = btn.dataset.source as SourceKey;
+        renderDashboard(password);
+      });
+    });
+
+    document.querySelectorAll<HTMLButtonElement>(".admin-period-btn[data-preset]").forEach((btn) => {
       btn.addEventListener("click", () => {
         currentPreset = btn.dataset.preset as PresetKey;
         renderDashboard(password);

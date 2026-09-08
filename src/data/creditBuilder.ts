@@ -52,6 +52,12 @@ export const CREDIT_BUILDER_TIPS: Record<string, BuilderTip> = {
     tip: "Este factor evoluciona de forma automática y no depende de ninguna acción inmediata.",
     effort: "automatico",
   },
+  dependientes: {
+    title: "Personas a tu cargo",
+    tip: "Cuantas más personas dependen económicamente de ti, menos margen se asume en tus ingresos. No es algo que "
+      + "\"debas\" cambiar, pero si tu número de dependientes se reduce (p. ej. se independizan), tu puntuación lo reflejará.",
+    effort: "automatico",
+  },
 };
 
 export const GENERIC_BUILDER_TIP: BuilderTip = {

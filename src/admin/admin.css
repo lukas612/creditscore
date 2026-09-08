@@ -121,11 +121,18 @@ body {
   margin-left: 8px;
 }
 
-.admin-period-bar {
+.admin-period-bar,
+.admin-source-bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 16px;
+}
+
+.admin-source-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
 }
 
 .admin-period-presets {

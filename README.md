@@ -36,11 +36,16 @@ Cambiarlas ahí no requiere desplegar código nuevo.
 
 ## Publicado en GitHub Pages
 
-**https://lukas612.github.io/creditscore/**
+**https://creditscore.creditio.es/** (dominio propio; `https://lukas612.github.io/creditscore/`
+redirige automáticamente ahí en cuanto detecta el `CNAME`).
 
 Se sirve como página estática desde la carpeta `/docs` de `main` (Source: rama `main`,
-carpeta `/docs`, en Settings → Pages del repo). No hay build automático: tras cualquier
-cambio hay que regenerar `docs/` a mano y commitear:
+carpeta `/docs`, en Settings → Pages del repo). El build usa rutas relativas
+(`base: "./"` en `vite.config.ts`) para que el mismo `dist/` funcione tanto en la
+raíz del dominio propio como en la subcarpeta de `github.io`. `public/CNAME` se
+copia automáticamente a `dist/` (y de ahí a `docs/`) en cada build, así que no hay
+que recrearlo a mano. No hay build automático: tras cualquier cambio hay que
+regenerar `docs/` a mano y commitear:
 
 ```bash
 npm run build
@@ -73,18 +78,29 @@ funciones `admin_get_stats`, `admin_list_leads`, `admin_get_funnel_overview` y
 primera tarjeta es la única cifra que no cambia con el periodo (histórico
 completo, para tener siempre una referencia).
 
+Además del periodo, hay un selector de **embudo** (Todos / Quiz corto /
+Solicitud completa) que filtra las mismas funciones vía `p_source` (columna
+`source` en `quiz_sessions`, `leads` y `funnel_events`, valores `'quiz'` o
+`'solicitud'`). Con "Todos" seleccionado no se muestra el desglose pregunta a
+pregunta (mezclar dos formularios distintos no tiene sentido); hay que elegir
+un embudo concreto para verlo.
+
 El panel incluye un embudo de conversión (visita → completa el quiz → deja sus
-datos) y, por debajo, cuántas visitas llegan a cada pregunta del quiz, para ver
-en qué paso se cae más gente. Se alimenta de una tabla nueva, `funnel_events`,
-que registra `page_view` (al cargar la página) y `question_reached` (al llegar
-a cada pregunta) con un id de sesión de navegador (`sessionStorage`, no
+datos) y, por debajo, cuántas visitas llegan a cada pregunta, para ver en qué
+paso se cae más gente. Se alimenta de una tabla nueva, `funnel_events`, que
+registra `page_view` (al cargar la página) y `question_reached` (al llegar a
+cada pregunta) con un id de sesión de navegador (`sessionStorage`, no
 identifica a la persona). El envío es "best effort": si falla, nunca bloquea ni
-rompe el quiz. Las preguntas condicionales (`antiguedad_laboral`,
-`importe_total_de_la_deuda`) no muestran una caída propia, porque no todo el
-mundo las ve; el siguiente paso obligatorio calcula su caída respecto al último
-paso que sí ven todos. El orden/etiquetas de las preguntas está hardcodeado en
-`src/admin/main.ts` (`STEP_DEFS`) — si cambia el quiz en `src/data/questions.ts`,
-hay que actualizar esa lista a mano.
+rompe el quiz/formulario. Las preguntas condicionales no muestran una caída
+propia, porque no todo el mundo las ve; el siguiente paso obligatorio calcula
+su caída respecto al último paso que sí ven todos. El orden/etiquetas del quiz
+corto está hardcodeado en `src/admin/main.ts` (`STEP_DEFS`) — si cambia el quiz
+en `src/data/questions.ts`, hay que actualizar esa lista a mano; el de la
+solicitud completa (`STEP_DEFS_SOLICITUD`) se deriva automáticamente de
+`src/data/witmeQuestions.ts`, así que ese no hace falta mantenerlo a mano.
+
+También muestra una tabla con cada solicitud enviada a la API de Witme
+(`admin_get_witme_applications`, ver más abajo).
 
 Para cambiar la contraseña, desde la consola SQL de Supabase o vía RPC:
 
@@ -137,6 +153,66 @@ añade o cambia un factor de scoring, hay que añadir su entrada en
 `CREDIT_BUILDER_TIPS`. Si el usuario no tiene ningún factor en negativo, se
 muestra un mensaje de "todo en orden" en vez de una lista vacía.
 
+## Solicitud completa (formulario largo conectado a Witme)
+
+**https://creditscore.creditio.es/solicitud.html**
+
+Página totalmente independiente del quiz corto (`solicitud.html` +
+`src/SolicitudApp.tsx`), pensada para enviar tráfico aparte y hacer A/B entre
+ambos formularios. No comparte componentes de pregunta con el quiz original
+(`src/components/WitmeQuestionStep.tsx`, `WitmeForm.tsx`, `WitmePhaseStepper.tsx`
+son propios) para no arriesgar el funnel que ya convierte.
+
+- **Preguntas**: `src/data/witmeQuestions.ts`, con las claves y catálogos
+  (género, estado civil, provincias, fuente de ingresos, etc.) exactamente
+  como los espera la API de Witme — ~28 campos, bastantes más que el quiz
+  corto, porque la API los exige para dar de alta un lead real.
+- **Score propio**: `calculate_score_solicitud` (función nueva, no reutiliza
+  `calculate_score`) — mismo rango 300-850 y misma lógica base, pero lee el
+  vocabulario de Witme (`incomeSource`, `hasOwnedHouse`, `dateOfBirth`...) y
+  añade dos factores nuevos posibles gracias a los campos extra: personas a
+  cargo y una vivienda con más matices (propietario con/sin hipoteca vs.
+  alquiler). Deliberadamente **no** se usa género, estado civil, nivel de
+  estudios ni país de nacimiento como factor de score — esos campos se piden
+  solo porque la API de Witme los exige, nunca influyen en la puntuación que
+  ve el usuario.
+- **Envío a Witme**: al completar el formulario se guarda en `quiz_sessions`/
+  `leads` (con `source = 'solicitud'`, igual que el resto del panel) y se llama
+  a la Edge Function `witme-proxy`, que reenvía la solicitud a la API real de
+  Witme (`https://gestion.servy.es/api/partners/leads/new`, documentación en
+  `https://witme.docs.apiary.io/`).
+
+### Edge Function `witme-proxy` y el token
+
+El token de partner (`WITME_API_TOKEN`) **no está en el código ni en git**:
+vive como secreto de la Edge Function en Supabase (Edge Functions → Secrets).
+Si hay que rotarlo, se cambia solo ahí, sin tocar ni desplegar código.
+
+La función soporta dos acciones (`action` en el body):
+- `"catalog"`: proxy de solo lectura a `GET /catalog` (o `/catalog/{campo}`),
+  útil para consultar los valores válidos de cada campo.
+- `"submit"`: arma el payload completo (`partnerId: 94`, `country: "ES"`,
+  `meta` con IP/user-agent leídos de la propia request, `data`, `tracking`) y
+  llama a `POST /leads/new`. **Fuerza `sandbox: true` siempre**, sin que el
+  cliente pueda cambiarlo — hasta que se confirme con el equipo de Witme que
+  se puede pasar a producción (ellos tienen además su propio flag que
+  controla si los leads se crean de verdad). Cada intento, con la respuesta
+  completa de Witme, se guarda en `witme_applications` (usando el service role
+  que Supabase inyecta automáticamente en toda Edge Function) para poder
+  revisarlo desde el panel admin.
+
+Código fuente de la función: `supabase/functions/witme-proxy/index.ts`. Se
+despliega a mano (no hay CI para Edge Functions todavía) — tras editar el
+archivo, hay que volver a desplegarlo desde el dashboard de Supabase o vía
+`supabase functions deploy witme-proxy` con la CLI.
+
+Antes de tramitar solicitudes reales hay que:
+1. Confirmar con Witme que el flag de creación de leads está activo.
+2. Quitar el `sandbox: true` fijo en `supabase/functions/witme-proxy/index.ts`
+   (buscar el comentario correspondiente) una vez confirmado el punto 1, y
+   volver a desplegar la función.
+
 ## Pendiente / siguientes pasos
 
 - Si el volumen crece, pasar a un pipeline de build automático (Action) en vez de commitear `docs/` a mano.
+- Cuando Witme confirme que se puede pasar a producción, quitar el `sandbox: true` fijo de `witme-proxy`.
