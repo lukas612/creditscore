@@ -3,7 +3,6 @@ import type { BreakdownItem } from "../lib/types";
 import { CreditOffers } from "./CreditOffers";
 import { ScoreBreakdownChart } from "./ScoreBreakdownChart";
 import { ShareResult } from "./ShareResult";
-import { WhatIfSimulator } from "./WhatIfSimulator";
 
 interface Props {
   score: number;
@@ -46,7 +45,6 @@ export function ResultFull({
   breakdown,
   capacidadMensual,
   capacidadMaxima,
-  baseAnswers,
   clickId,
 }: Props) {
   const copy = BAND_COPY[scoreBand] ?? BAND_COPY.regular;
@@ -60,6 +58,8 @@ export function ResultFull({
       <span className="score-value">{score}</span>
       <span className="score-band">{copy.title}</span>
       <p className="result-sub">{copy.tip}</p>
+
+      <CreditOffers clickId={clickId} />
 
       <ShareResult score={score} scoreBand={scoreBand} />
 
@@ -85,10 +85,6 @@ export function ResultFull({
         <p className="breakdown-title">Desglose de tu puntuación</p>
         <ScoreBreakdownChart breakdown={breakdown} />
       </div>
-
-      <WhatIfSimulator baseAnswers={baseAnswers} baseScore={score} />
-
-      <CreditOffers clickId={clickId} />
 
       <a className="btn-link" href="https://creditio.es" target="_blank" rel="noreferrer">
         Prefiero hablar con un asesor
