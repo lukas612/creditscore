@@ -6,8 +6,8 @@ import { supabase } from "./lib/supabase";
 import type { BreakdownItem } from "./lib/types";
 import { submitWitmeApplication } from "./lib/witme";
 import { Header } from "./components/Header";
-import { SolicitudResult } from "./components/SolicitudResult";
-import { WitmeForm } from "./components/WitmeForm";
+import { Landing } from "./components/Landing";
+import { SolicitudWidget } from "./components/SolicitudWidget";
 
 type Stage = "form" | "loading" | "result" | "error";
 
@@ -100,46 +100,17 @@ export default function SolicitudApp() {
   return (
     <>
       <Header />
-      <main className="solicitud-page">
-        <div className="solicitud-intro">
-          <span className="eyebrow">Solicitud completa · Creditio</span>
-          <h1>Tu puntuación con todos los detalles</h1>
-          <p className="landing-sub">
-            Un formulario más completo para tramitar tu solicitud directamente con
-            Creditio, además de calcular tu puntuación al instante.
-          </p>
-        </div>
-        <div className="widget" id="widget">
-          {stage === "form" && <WitmeForm onComplete={handleFormComplete} />}
-
-          {stage === "loading" && (
-            <div className="quiz-card">
-              <p className="loading-text">Calculando tu puntuación y enviando tu solicitud…</p>
-            </div>
-          )}
-
-          {stage === "result" && scoreData && (
-            <SolicitudResult
-              score={scoreData.score}
-              scoreBand={scoreData.scoreBand}
-              breakdown={scoreData.breakdown}
-              capacidadMensual={scoreData.capacidadMensual}
-              capacidadMaxima={scoreData.capacidadMaxima}
-              clickId={clickId}
-              applicationSubmitted={applicationSubmitted}
-            />
-          )}
-
-          {stage === "error" && (
-            <div className="quiz-card">
-              <p className="loading-text">
-                Ha ocurrido un error al procesar tu solicitud. Recarga la página e inténtalo
-                de nuevo.
-              </p>
-            </div>
-          )}
-        </div>
-      </main>
+      <Landing
+        widget={
+          <SolicitudWidget
+            stage={stage}
+            scoreData={scoreData}
+            clickId={clickId}
+            applicationSubmitted={applicationSubmitted}
+            onComplete={handleFormComplete}
+          />
+        }
+      />
     </>
   );
 }
