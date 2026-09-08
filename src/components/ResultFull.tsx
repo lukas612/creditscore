@@ -1,6 +1,7 @@
 import type { Answers } from "../data/questions";
 import { buildAdvisorUrl } from "../data/offers";
 import type { BreakdownItem } from "../lib/types";
+import { CreditBuilder } from "./CreditBuilder";
 import { CreditOffers } from "./CreditOffers";
 import { ScoreBreakdownChart } from "./ScoreBreakdownChart";
 import { ShareResult } from "./ShareResult";
@@ -86,6 +87,8 @@ export function ResultFull({
         <p className="breakdown-title">Desglose de tu puntuación</p>
         <ScoreBreakdownChart breakdown={breakdown} />
       </div>
+
+      <CreditBuilder breakdown={breakdown} />
 
       <a className="btn-link" href={buildAdvisorUrl(clickId)} target="_blank" rel="noreferrer">
         Prefiero hablar con un asesor

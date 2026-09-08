@@ -117,6 +117,19 @@ disponible (el mismo `servy_click` capturado al entrar), lo añade con el
 nombre de parámetro que cada uno espera (`servy_click`, `aff_click_id` o
 `clickid`). Si no hay `clickId` el parámetro simplemente se omite.
 
+## Plan de mejora personalizado ("credit builder")
+
+`ResultFull` incluye, tras el desglose, un plan ordenado por impacto
+(`src/components/CreditBuilder.tsx` + `src/data/creditBuilder.ts`): solo los
+factores con puntos negativos del propio usuario, ordenados de mayor a menor
+impacto, cada uno con una explicación de por qué resta y qué hacer al respecto,
+más una etiqueta de esfuerzo (Rápido / En tus manos / Requiere tiempo /
+Automático). El contenido está alineado a mano con lo que `calculate_score`
+realmente pondera, para no prometer mejoras que el modelo no contempla — si se
+añade o cambia un factor de scoring, hay que añadir su entrada en
+`CREDIT_BUILDER_TIPS`. Si el usuario no tiene ningún factor en negativo, se
+muestra un mensaje de "todo en orden" en vez de una lista vacía.
+
 ## Pendiente / siguientes pasos
 
 - Si el volumen crece, pasar a un pipeline de build automático (Action) en vez de commitear `docs/` a mano.
