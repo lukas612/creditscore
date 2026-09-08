@@ -4,7 +4,7 @@ import { trackFunnelEvent } from "./lib/funnel";
 import { fireServyPostback, getClickId } from "./lib/postback";
 import { supabase } from "./lib/supabase";
 import type { BreakdownItem } from "./lib/types";
-import { submitWitmeApplication } from "./lib/witme";
+import { collectWitmeLenderOffers, type LenderOffer } from "./lib/witme";
 import { Header } from "./components/Header";
 import { Landing } from "./components/Landing";
 import { SolicitudWidget } from "./components/SolicitudWidget";
@@ -22,6 +22,7 @@ interface ScoreData {
 export default function SolicitudApp() {
   const [stage, setStage] = useState<Stage>("form");
   const [scoreData, setScoreData] = useState<ScoreData | null>(null);
+  const [offers, setOffers] = useState<LenderOffer[]>([]);
   const [applicationSubmitted, setApplicationSubmitted] = useState(false);
   const [clickId] = useState<string | null>(() => getClickId());
 
@@ -87,12 +88,14 @@ export default function SolicitudApp() {
       fireServyPostback(clickId);
     }
 
-    try {
-      await submitWitmeApplication(answers, clickId, utmSource);
-      setApplicationSubmitted(true);
-    } catch {
-      setApplicationSubmitted(false);
-    }
+    const { offers: lenderOffers, anySucceeded } = await collectWitmeLenderOffers(
+      answers,
+      clickId,
+      utmSource,
+      quizSessionId,
+    );
+    setOffers(lenderOffers);
+    setApplicationSubmitted(anySucceeded);
 
     setStage("result");
   };
@@ -105,7 +108,7 @@ export default function SolicitudApp() {
           <SolicitudWidget
             stage={stage}
             scoreData={scoreData}
-            clickId={clickId}
+            offers={offers}
             applicationSubmitted={applicationSubmitted}
             onComplete={handleFormComplete}
           />

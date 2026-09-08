@@ -1,8 +1,9 @@
 import type { BreakdownItem } from "../lib/types";
+import type { LenderOffer } from "../lib/witme";
 import { CreditBuilder } from "./CreditBuilder";
-import { CreditOffers } from "./CreditOffers";
 import { ScoreBreakdownChart } from "./ScoreBreakdownChart";
 import { ShareResult } from "./ShareResult";
+import { WitmeLenderOffers } from "./WitmeLenderOffers";
 
 interface Props {
   score: number;
@@ -10,7 +11,7 @@ interface Props {
   breakdown: BreakdownItem[];
   capacidadMensual: number;
   capacidadMaxima: number;
-  clickId: string | null;
+  offers: LenderOffer[];
   applicationSubmitted: boolean;
 }
 
@@ -45,7 +46,7 @@ export function SolicitudResult({
   breakdown,
   capacidadMensual,
   capacidadMaxima,
-  clickId,
+  offers,
   applicationSubmitted,
 }: Props) {
   const copy = BAND_COPY[scoreBand] ?? BAND_COPY.regular;
@@ -66,7 +67,7 @@ export function SolicitudResult({
       <span className="score-band">{copy.title}</span>
       <p className="result-sub">{copy.tip}</p>
 
-      <CreditOffers clickId={clickId} />
+      <WitmeLenderOffers offers={offers} />
 
       <ShareResult score={score} scoreBand={scoreBand} />
 
