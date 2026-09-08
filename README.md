@@ -86,8 +86,16 @@ https://go.servy.es/postback?cid={clickId}&payout=0&currency=EUR&param1=Creditio
 Se dispara solo si hay `clickId` y solo tras guardar el lead con éxito (`ResultGate`).
 Es un pixel (`new Image().src = ...`), no una llamada `fetch`, para no depender de CORS.
 
+## Opciones de crédito (pingtree) tras el resultado
+
+Además del score, `ResultFull` muestra un bloque "Opciones de crédito para ti"
+(`src/components/CreditOffers.tsx` + `src/data/offers.ts`) con enlaces a partners
+de captación (Moneya, InstaDinero Card, Financiar24, Prestalight). Cada
+`buildUrl(clickId)` arma la URL propia de cada partner y, cuando hay `clickId`
+disponible (el mismo `servy_click` capturado al entrar), lo añade con el
+nombre de parámetro que cada uno espera (`servy_click`, `aff_click_id` o
+`clickid`). Si no hay `clickId` el parámetro simplemente se omite.
+
 ## Pendiente / siguientes pasos
 
-- Conectar el lead capturado en `leads` con el CRM/pingtree interno.
-- Sustituir el enlace de "Hablar con un asesor" en `ResultFull` por el destino real.
 - Si el volumen crece, pasar a un pipeline de build automático (Action) en vez de commitear `docs/` a mano.

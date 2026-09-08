@@ -1,5 +1,6 @@
 import type { Answers } from "../data/questions";
 import type { BreakdownItem } from "../lib/types";
+import { CreditOffers } from "./CreditOffers";
 import { ScoreBreakdownChart } from "./ScoreBreakdownChart";
 import { ShareResult } from "./ShareResult";
 import { WhatIfSimulator } from "./WhatIfSimulator";
@@ -11,6 +12,7 @@ interface Props {
   capacidadMensual: number;
   capacidadMaxima: number;
   baseAnswers: Answers;
+  clickId: string | null;
 }
 
 const BAND_COPY: Record<string, { title: string; tip: string }> = {
@@ -45,6 +47,7 @@ export function ResultFull({
   capacidadMensual,
   capacidadMaxima,
   baseAnswers,
+  clickId,
 }: Props) {
   const copy = BAND_COPY[scoreBand] ?? BAND_COPY.regular;
   const pct = Math.round(((score - 300) / (850 - 300)) * 100);
@@ -85,8 +88,10 @@ export function ResultFull({
 
       <WhatIfSimulator baseAnswers={baseAnswers} baseScore={score} />
 
-      <a className="btn-primary btn-large" href="https://creditio.es" target="_blank" rel="noreferrer">
-        Hablar con un asesor
+      <CreditOffers clickId={clickId} />
+
+      <a className="btn-link" href="https://creditio.es" target="_blank" rel="noreferrer">
+        Prefiero hablar con un asesor
       </a>
     </div>
   );
