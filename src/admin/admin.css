@@ -171,6 +171,14 @@ body {
   margin: -8px 0 16px;
 }
 
+.admin-card-sub-tight {
+  margin: 16px 0 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 11px;
+}
+
 .admin-stats-grid-compact {
   margin-bottom: 0;
 }

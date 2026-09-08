@@ -24,10 +24,14 @@ interface Stats {
 
 interface FunnelOverview {
   total_visits: number;
+  engaged_visits: number;
+  bounce_rate: number;
   total_quiz_completed: number;
   total_leads: number;
   visit_to_quiz_rate: number;
   visit_to_lead_rate: number;
+  engaged_to_quiz_rate: number;
+  engaged_to_lead_rate: number;
   quiz_to_lead_rate: number;
 }
 
@@ -161,7 +165,7 @@ function bandRow(label: string, count: number, total: number, cls: string) {
 
 function funnelStepsHtml(overview: FunnelOverview, steps: FunnelStepRow[]): string {
   const reachedByKey = new Map(steps.map((s) => [s.question_key, Number(s.reached)]));
-  const base = overview.total_visits;
+  const base = overview.engaged_visits;
 
   let rows = "";
   let baselineKey = STEP_DEFS[0]?.key;
@@ -237,20 +241,37 @@ async function renderDashboard(password: string) {
 
         <section class="admin-card">
           <p class="admin-card-title">Embudo: visita → lead</p>
+          <p class="admin-card-sub">
+            "Visitas" incluye todo el tráfico, real o no (bots, clics accidentales,
+            tráfico de baja calidad). "Sobre interesados reales" descuenta el rebote
+            instantáneo (sesiones que nunca pasan de la primera pregunta) y es la
+            medida más fiable de si el test/formulario en sí convierte bien.
+          </p>
           <section class="admin-stats-grid admin-stats-grid-compact">
             ${statCard("Visitas", String(funnelOverview.total_visits))}
+            ${statCard("Rebote instantáneo", `${funnelOverview.bounce_rate}%`)}
+            ${statCard("Quiz → lead", `${funnelOverview.quiz_to_lead_rate}%`)}
+          </section>
+          <p class="admin-card-sub admin-card-sub-tight">Sobre el total de visitas (incluye rebote)</p>
+          <section class="admin-stats-grid admin-stats-grid-compact">
             ${statCard("Completan el quiz", `${funnelOverview.visit_to_quiz_rate}%`)}
             ${statCard("Dejan sus datos (lead)", `${funnelOverview.visit_to_lead_rate}%`)}
-            ${statCard("Quiz → lead", `${funnelOverview.quiz_to_lead_rate}%`)}
+          </section>
+          <p class="admin-card-sub admin-card-sub-tight">Sobre interesados reales (descuenta el rebote)</p>
+          <section class="admin-stats-grid admin-stats-grid-compact">
+            ${statCard("Completan el quiz", `${funnelOverview.engaged_to_quiz_rate}%`)}
+            ${statCard("Dejan sus datos (lead)", `${funnelOverview.engaged_to_lead_rate}%`)}
           </section>
         </section>
 
         <section class="admin-card">
           <p class="admin-card-title">Dónde se cae la gente en el quiz</p>
           <p class="admin-card-sub">
-            % de visitas que llegan a cada pregunta. Las preguntas condicionales no
-            muestran caída propia (no todo el mundo las ve); el siguiente paso obligatorio
-            calcula su caída respecto al último paso que ven todos.
+            Ya excluye el rebote instantáneo: es la caída real entre quienes empiezan
+            a interactuar de verdad (${funnelOverview.engaged_visits} sesiones). Las
+            preguntas condicionales no muestran caída propia (no todo el mundo las ve);
+            el siguiente paso obligatorio calcula su caída respecto al último paso que
+            ven todos.
           </p>
           ${funnelStepsHtml(funnelOverview, funnelSteps)}
         </section>
