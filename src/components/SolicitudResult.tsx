@@ -1,10 +1,9 @@
 import type { BreakdownItem } from "../lib/types";
 import type { LenderOffer } from "../lib/witme";
 import { CreditBuilder } from "./CreditBuilder";
-import { CreditOffers } from "./CreditOffers";
 import { ScoreBreakdownChart } from "./ScoreBreakdownChart";
 import { ShareResult } from "./ShareResult";
-import { WitmeLenderOffers } from "./WitmeLenderOffers";
+import { SolicitudOffers } from "./SolicitudOffers";
 
 interface Props {
   score: number;
@@ -12,7 +11,7 @@ interface Props {
   breakdown: BreakdownItem[];
   capacidadMensual: number;
   capacidadMaxima: number;
-  offers: LenderOffer[];
+  witmeOffer: LenderOffer | null;
   clickId: string | null;
   applicationSubmitted: boolean;
 }
@@ -48,7 +47,7 @@ export function SolicitudResult({
   breakdown,
   capacidadMensual,
   capacidadMaxima,
-  offers,
+  witmeOffer,
   clickId,
   applicationSubmitted,
 }: Props) {
@@ -70,7 +69,7 @@ export function SolicitudResult({
       <span className="score-band">{copy.title}</span>
       <p className="result-sub">{copy.tip}</p>
 
-      {offers.length > 0 ? <WitmeLenderOffers offers={offers} /> : <CreditOffers clickId={clickId} />}
+      <SolicitudOffers witmeOffer={witmeOffer} clickId={clickId} />
 
       <ShareResult score={score} scoreBand={scoreBand} />
 

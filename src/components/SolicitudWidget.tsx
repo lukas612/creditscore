@@ -20,7 +20,7 @@ interface Props {
   stage: Stage;
   answers: Answers;
   scoreData: ScoreData | null;
-  offers: LenderOffer[];
+  witmeOffer: LenderOffer | null;
   clickId: string | null;
   applicationSubmitted: boolean;
   onQuizComplete: (answers: Answers) => void;
@@ -32,7 +32,7 @@ export function SolicitudWidget({
   stage,
   answers,
   scoreData,
-  offers,
+  witmeOffer,
   clickId,
   applicationSubmitted,
   onQuizComplete,
@@ -85,7 +85,7 @@ export function SolicitudWidget({
           breakdown={scoreData.breakdown}
           capacidadMensual={scoreData.capacidadMensual}
           capacidadMaxima={scoreData.capacidadMaxima}
-          offers={offers}
+          witmeOffer={witmeOffer}
           clickId={clickId}
           applicationSubmitted={applicationSubmitted}
         />
