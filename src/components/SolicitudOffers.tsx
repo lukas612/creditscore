@@ -1,4 +1,5 @@
 import { CREDIT_OFFERS } from "../data/offers";
+import { trackFunnelEvent } from "../lib/funnel";
 import type { LenderOffer } from "../lib/witme";
 
 interface Props {
@@ -23,7 +24,13 @@ export function SolicitudOffers({ witmeOffer, clickId }: Props) {
               <span className="offer-name">Tu préstamo preaprobado</span>
               <span className="offer-desc">Haz click para recibir tu dinero.</span>
             </div>
-            <a className="offer-cta" href={witmeOffer.url} target="_blank" rel="noreferrer sponsored">
+            <a
+              className="offer-cta"
+              href={witmeOffer.url}
+              target="_blank"
+              rel="noreferrer sponsored"
+              onClick={() => trackFunnelEvent("offer_click", "witme_featured", "solicitud")}
+            >
               Ver oferta →
             </a>
           </div>
@@ -39,6 +46,7 @@ export function SolicitudOffers({ witmeOffer, clickId }: Props) {
               href={offer.buildUrl(clickId)}
               target="_blank"
               rel="noreferrer sponsored"
+              onClick={() => trackFunnelEvent("offer_click", offer.id, "solicitud")}
             >
               Ver oferta →
             </a>

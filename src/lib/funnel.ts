@@ -13,7 +13,7 @@ function getFunnelSessionId(): string {
 
 // Best-effort: nunca debe romper la experiencia del quiz si falla.
 export function trackFunnelEvent(
-  event: "page_view" | "question_reached",
+  event: "page_view" | "question_reached" | "offer_click",
   questionKey?: string,
   source: "quiz" | "solicitud" = "quiz",
 ) {

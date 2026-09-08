@@ -1,6 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
+import { CREDIT_OFFERS } from "../data/offers";
 import { WITME_QUESTIONS } from "../data/witmeQuestions";
 import "./admin.css";
+
+const OFFER_LABELS: Record<string, string> = {
+  witme_featured: "Witme (oferta destacada)",
+  ...Object.fromEntries(CREDIT_OFFERS.map((o) => [o.id, o.name])),
+};
 
 const url = import.meta.env.VITE_SUPABASE_URL;
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -231,6 +237,22 @@ async function fetchWitmeApplications(password: string): Promise<WitmeApplicatio
   return (data ?? []) as WitmeApplication[];
 }
 
+interface OfferClickRow {
+  offer_id: string;
+  clicks: number;
+}
+
+async function fetchOfferClicks(password: string, period: Period, source: SourceKey): Promise<OfferClickRow[]> {
+  const { data, error } = await supabase.rpc("admin_get_offer_clicks", {
+    p_password: password,
+    p_since: period.since,
+    p_until: period.until,
+    p_source: sourceParam(source),
+  });
+  if (error) throw error;
+  return (data ?? []) as OfferClickRow[];
+}
+
 function renderLogin(errorMsg?: string) {
   root.innerHTML = `
     <div class="admin-login-shell">
@@ -323,12 +345,13 @@ async function renderDashboard(password: string) {
   const period = periodFor(currentPreset);
 
   try {
-    const [stats, leads, funnelOverview, funnelSteps, witmeApps] = await Promise.all([
+    const [stats, leads, funnelOverview, funnelSteps, witmeApps, offerClicks] = await Promise.all([
       fetchStats(password, period, currentSource),
       fetchLeads(password, period, currentSource),
       fetchFunnelOverview(password, period, currentSource),
       fetchFunnelSteps(password, period, currentSource),
       fetchWitmeApplications(password),
+      fetchOfferClicks(password, period, currentSource),
     ]);
     const totalBands = stats.band_excelente + stats.band_bueno + stats.band_regular + stats.band_bajo;
     const stepDefs = currentSource === "solicitud" ? STEP_DEFS_SOLICITUD : STEP_DEFS;
@@ -493,6 +516,34 @@ async function renderDashboard(password: string) {
                   )
                   .join("")}
                 ${witmeApps.length === 0 ? `<tr><td colspan="7" class="admin-empty">Todavía no hay solicitudes enviadas a Witme.</td></tr>` : ""}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="admin-card">
+          <p class="admin-card-title">Clics en ofertas</p>
+          <p class="admin-card-sub">
+            Cuántas veces se ha hecho click en "Ver oferta" y en cuál, en el periodo y
+            embudo seleccionados. No mide si el usuario llegó a contratar, solo el click.
+          </p>
+          <div class="admin-table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Oferta</th><th>Clics</th></tr>
+              </thead>
+              <tbody>
+                ${offerClicks
+                  .map(
+                    (o) => `
+                  <tr>
+                    <td>${escapeHtml(OFFER_LABELS[o.offer_id] ?? o.offer_id)}</td>
+                    <td>${o.clicks}</td>
+                  </tr>
+                `,
+                  )
+                  .join("")}
+                ${offerClicks.length === 0 ? `<tr><td colspan="2" class="admin-empty">Todavía no hay clics registrados.</td></tr>` : ""}
               </tbody>
             </table>
           </div>

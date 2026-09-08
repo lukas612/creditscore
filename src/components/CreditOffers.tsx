@@ -1,4 +1,5 @@
 import { CREDIT_OFFERS } from "../data/offers";
+import { trackFunnelEvent } from "../lib/funnel";
 
 interface Props {
   clickId: string | null;
@@ -25,6 +26,7 @@ export function CreditOffers({ clickId }: Props) {
               href={offer.buildUrl(clickId)}
               target="_blank"
               rel="noreferrer sponsored"
+              onClick={() => trackFunnelEvent("offer_click", offer.id)}
             >
               Ver oferta →
             </a>
