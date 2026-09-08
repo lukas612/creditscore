@@ -193,26 +193,17 @@ La función soporta dos acciones (`action` en el body):
   útil para consultar los valores válidos de cada campo.
 - `"submit"`: arma el payload completo (`partnerId: 94`, `country: "ES"`,
   `meta` con IP/user-agent leídos de la propia request, `data`, `tracking`) y
-  llama a `POST /leads/new`. **Fuerza `sandbox: true` siempre**, sin que el
-  cliente pueda cambiarlo — hasta que se confirme con el equipo de Witme que
-  se puede pasar a producción (ellos tienen además su propio flag que
-  controla si los leads se crean de verdad). Cada intento, con la respuesta
-  completa de Witme, se guarda en `witme_applications` (usando el service role
-  que Supabase inyecta automáticamente en toda Edge Function) para poder
-  revisarlo desde el panel admin.
+  llama a `POST /leads/new`. **Fuerza `sandbox: false` siempre** (producción
+  confirmada), sin que el cliente pueda cambiarlo. Cada intento, con la
+  respuesta completa de Witme, se guarda en `witme_applications` (usando el
+  service role que Supabase inyecta automáticamente en toda Edge Function)
+  para poder revisarlo desde el panel admin.
 
 Código fuente de la función: `supabase/functions/witme-proxy/index.ts`. Se
 despliega a mano (no hay CI para Edge Functions todavía) — tras editar el
 archivo, hay que volver a desplegarlo desde el dashboard de Supabase o vía
 `supabase functions deploy witme-proxy` con la CLI.
 
-Antes de tramitar solicitudes reales hay que:
-1. Confirmar con Witme que el flag de creación de leads está activo.
-2. Quitar el `sandbox: true` fijo en `supabase/functions/witme-proxy/index.ts`
-   (buscar el comentario correspondiente) una vez confirmado el punto 1, y
-   volver a desplegar la función.
-
 ## Pendiente / siguientes pasos
 
 - Si el volumen crece, pasar a un pipeline de build automático (Action) en vez de commitear `docs/` a mano.
-- Cuando Witme confirme que se puede pasar a producción, quitar el `sandbox: true` fijo de `witme-proxy`.

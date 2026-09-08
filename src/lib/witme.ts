@@ -59,13 +59,11 @@ function delay(ms: number): Promise<void> {
 }
 
 // Llama repetidamente a submitWitmeApplication (con 1s entre intentos) hasta
-// reunir hasta 3 redirectUrl reales, o agotar los intentos. IMPORTANTE:
-// redirectUrl solo llega con sandbox:false en producción (así lo documenta
-// Witme) — mientras la Edge Function fuerce sandbox:true, esto nunca
-// devolverá ofertas. No confirmado con Witme si repetir la misma solicitud
-// hace que su pingtree la enrute a prestamistas distintos cada vez; se usa
-// un externalId distinto por intento para que, como mínimo, cada llamada se
-// identifique como un intento separado en su sistema.
+// reunir hasta 3 redirectUrl reales, o agotar los intentos. No confirmado
+// con Witme si repetir la misma solicitud hace que su pingtree la enrute a
+// prestamistas distintos cada vez; se usa un externalId distinto por
+// intento para que, como mínimo, cada llamada se identifique como un
+// intento separado en su sistema.
 export interface LenderOffersResult {
   offers: LenderOffer[];
   anySucceeded: boolean;

@@ -76,10 +76,9 @@ Deno.serve(async (req: Request) => {
       partnerId: PARTNER_ID,
       externalId: typeof body.externalId === "string" || typeof body.externalId === "number" ? body.externalId : null,
       country: "ES",
-      // Forzado a sandbox hasta confirmar con el equipo de Witme que se puede
-      // pasar a producción (ver docs: "confirm with us before going into
-      // production"). Nunca controlable por el cliente que llama a esta función.
-      sandbox: true,
+      // Producción confirmada. Nunca controlable por el cliente que llama a
+      // esta función.
+      sandbox: false,
       meta: {
         landedAt: typeof body.landedAt === "string" ? body.landedAt : sqlDatetime(now),
         sentAt: sqlDatetime(now),
