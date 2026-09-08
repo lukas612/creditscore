@@ -55,10 +55,16 @@ git add docs && git commit -m "chore: rebuild docs for GitHub Pages" && git push
 Protegido con una contraseña compartida (no es una cuenta de usuario real): se
 comprueba en el servidor vía funciones `admin_*` (SECURITY DEFINER), así que
 `leads`/`quiz_sessions` nunca son legibles directamente por el cliente, con o sin
-contraseña. Sin límite de intentos ni expiración de sesión más allá de
-`sessionStorage` — suficiente para un panel interno de un solo administrador, pero
-si esto crece conviene pasar a Supabase Auth real (como en el cuadro de mando de
-finanzas).
+contraseña. La contraseña se guarda en texto plano en `admin_config.password_plain`
+(antes iba cifrada con pgcrypto; se simplificó tras un bug que rompía el login).
+Sin límite de intentos ni expiración de sesión más allá de `sessionStorage` —
+suficiente para un panel interno de un solo administrador, pero si esto crece
+conviene pasar a Supabase Auth real (email/contraseña de verdad). Se intentó
+crear un usuario de Supabase Auth insertándolo directamente en `auth.users`, pero
+GoTrue lo rechazó ("Database error querying schema") — sin acceso a la Admin API
+(service role) no es un camino fiable; para un login real habría que crear el
+usuario desde el dashboard de Supabase (Authentication → Users → Add user) y
+adaptar `src/admin/main.ts` para usar `supabase.auth.signInWithPassword`.
 
 El panel incluye un embudo de conversión (visita → completa el quiz → deja sus
 datos) y, por debajo, cuántas visitas llegan a cada pregunta del quiz, para ver
@@ -77,6 +83,8 @@ Para cambiar la contraseña, desde la consola SQL de Supabase o vía RPC:
 
 ```sql
 select admin_set_password('contraseña_actual', 'contraseña_nueva');
+-- o directamente, si no se conoce la actual:
+update admin_config set password_plain = 'contraseña_nueva' where id = 1;
 ```
 
 ## Tracking de campaña (servy_click)

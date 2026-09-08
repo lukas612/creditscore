@@ -1,4 +1,4 @@
-import{c as C}from"./index-DBuN83Yj.js";const L="https://pgyaigdsedkdqvhtexrz.supabase.co",I="sb_publishable_yL99vHU_H5kGZ3SMuPS0hA_GJ_TWTMr",b=C(L,I),p="cs_admin_pw",g=document.getElementById("admin-root"),w=[{key:"fecha_de_nacimiento",label:"Fecha de nacimiento"},{key:"codigo_postal",label:"Código postal"},{key:"fuente_principal_de_ingreso",label:"Fuente de ingresos"},{key:"antiguedad_laboral",label:"Antigüedad laboral",conditional:!0},{key:"tienes_vivienda_en_propiedad",label:"Vivienda en propiedad"},{key:"ingreso_mensual",label:"Ingreso mensual"},{key:"esta_en_asnef",label:"Asnef"},{key:"tienes_otros_creditos",label:"Otros créditos"},{key:"importe_total_de_la_deuda",label:"Importe de la deuda",conditional:!0},{key:"proposito_del_prestamo",label:"Propósito del préstamo"},{key:"creditos_cantidad_a_solicitar",label:"Importe a solicitar"},{key:"en_cuantos_meses_deseas_devolverlo",label:"Plazo de devolución"}],q=new Intl.DateTimeFormat("es-ES",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});function o(t){const e=document.createElement("div");return e.textContent=t,e.innerHTML}async function k(t){const{data:e,error:a}=await b.rpc("admin_get_stats",{p_password:t}).single();if(a||!e)throw a??new Error("No data");return e}async function z(t){const{data:e,error:a}=await b.rpc("admin_get_funnel_overview",{p_password:t}).single();if(a||!e)throw a??new Error("No data");return e}async function T(t){const{data:e,error:a}=await b.rpc("admin_get_funnel_steps",{p_password:t});if(a)throw a;return e??[]}async function B(t){const{data:e,error:a}=await b.rpc("admin_list_leads",{p_password:t,p_limit:200,p_offset:0});if(a)throw a;return e??[]}function m(t){g.innerHTML=`
+import{c as L}from"./index-DBuN83Yj.js";const C="https://pgyaigdsedkdqvhtexrz.supabase.co",I="sb_publishable_yL99vHU_H5kGZ3SMuPS0hA_GJ_TWTMr",g=L(C,I),m="cs_admin_pw",p=document.getElementById("admin-root"),w=[{key:"fecha_de_nacimiento",label:"Fecha de nacimiento"},{key:"codigo_postal",label:"Código postal"},{key:"fuente_principal_de_ingreso",label:"Fuente de ingresos"},{key:"antiguedad_laboral",label:"Antigüedad laboral",conditional:!0},{key:"tienes_vivienda_en_propiedad",label:"Vivienda en propiedad"},{key:"ingreso_mensual",label:"Ingreso mensual"},{key:"esta_en_asnef",label:"Asnef"},{key:"tienes_otros_creditos",label:"Otros créditos"},{key:"importe_total_de_la_deuda",label:"Importe de la deuda",conditional:!0},{key:"proposito_del_prestamo",label:"Propósito del préstamo"},{key:"creditos_cantidad_a_solicitar",label:"Importe a solicitar"},{key:"en_cuantos_meses_deseas_devolverlo",label:"Plazo de devolución"}],z=new Intl.DateTimeFormat("es-ES",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});function o(t){const e=document.createElement("div");return e.textContent=t,e.innerHTML}async function E(t){const{data:e,error:a}=await g.rpc("admin_get_stats",{p_password:t}).single();if(a||!e)throw a??new Error("No data");return e}async function q(t){const{data:e,error:a}=await g.rpc("admin_get_funnel_overview",{p_password:t}).single();if(a||!e)throw a??new Error("No data");return e}async function T(t){const{data:e,error:a}=await g.rpc("admin_get_funnel_steps",{p_password:t});if(a)throw a;return e??[]}async function B(t){const{data:e,error:a}=await g.rpc("admin_list_leads",{p_password:t,p_limit:200,p_offset:0});if(a)throw a;return e??[]}function b(t){p.innerHTML=`
     <div class="admin-login-shell">
       <form class="admin-login-card" id="login-form">
         <h1>Panel interno</h1>
@@ -8,22 +8,22 @@ import{c as C}from"./index-DBuN83Yj.js";const L="https://pgyaigdsedkdqvhtexrz.su
         <button type="submit">Entrar</button>
       </form>
     </div>
-  `,document.getElementById("login-form").addEventListener("submit",async e=>{e.preventDefault();const a=document.getElementById("pw-input").value;try{await k(a),sessionStorage.setItem(p,a),h(a)}catch{m("Contraseña incorrecta.")}})}function i(t,e){return`<div class="admin-stat"><span class="admin-stat-value">${e}</span><span class="admin-stat-label">${t}</span></div>`}function u(t,e,a,n){const l=a>0?Math.round(e/a*100):0;return`
+  `,document.getElementById("login-form").addEventListener("submit",async e=>{e.preventDefault();const a=document.getElementById("pw-input").value;try{await E(a),sessionStorage.setItem(m,a),_(a)}catch{b("Contraseña incorrecta.")}})}function i(t,e){return`<div class="admin-stat"><span class="admin-stat-value">${e}</span><span class="admin-stat-label">${t}</span></div>`}function u(t,e,a,n){const l=a>0?Math.round(e/a*100):0;return`
     <div class="admin-band-row">
       <span class="admin-band-label">${t}</span>
       <div class="admin-band-track"><div class="admin-band-fill ${n}" style="width:${l}%"></div></div>
       <span class="admin-band-count">${e}</span>
     </div>
-  `}function P(t,e){var s;const a=new Map(e.map(d=>[d.question_key,Number(d.reached)])),n=t.engaged_visits;let l="",r=(s=w[0])==null?void 0:s.key;return w.forEach((d,v)=>{const _=a.get(d.key)??0,f=n>0?Math.round(_/n*100):0;let $="";if(v>0&&!d.conditional){const y=a.get(r)??0;if(y>0){const c=Math.round((1-_/y)*100),E=c>=25?"high":c>=10?"mid":"low";$=c>0?`<span class="funnel-drop funnel-drop-${E}">-${c}% respecto al paso anterior</span>`:'<span class="funnel-drop funnel-drop-low">sin caída</span>'}}l+=`
+  `}function H(t,e){var s;const a=new Map(e.map(d=>[d.question_key,Number(d.reached)])),n=t.engaged_visits;let l="",r=(s=w[0])==null?void 0:s.key;return w.forEach((d,v)=>{const h=a.get(d.key)??0,f=n>0?Math.round(h/n*100):0;let $="";if(v>0&&!d.conditional){const y=a.get(r)??0;if(y>0){const c=Math.round((1-h/y)*100),k=c>=25?"high":c>=10?"mid":"low";$=c>0?`<span class="funnel-drop funnel-drop-${k}">-${c}% respecto al paso anterior</span>`:'<span class="funnel-drop funnel-drop-low">sin caída</span>'}}l+=`
       <div class="funnel-step">
         <div class="funnel-step-top">
           <span class="funnel-step-label">${v+1}. ${o(d.label)}${d.conditional?' <span class="funnel-conditional">(condicional, no todos la ven)</span>':""}</span>
-          <span class="funnel-step-count">${_} · ${f}%</span>
+          <span class="funnel-step-count">${h} · ${f}%</span>
         </div>
         <div class="admin-band-track"><div class="admin-band-fill funnel-fill" style="width:${f}%"></div></div>
         ${$}
       </div>
-    `,d.conditional||(r=d.key)}),l}async function h(t){g.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';try{const[e,a,n,l]=await Promise.all([k(t),B(t),z(t),T(t)]),r=e.band_excelente+e.band_bueno+e.band_regular+e.band_bajo;g.innerHTML=`
+    `,d.conditional||(r=d.key)}),l}async function _(t){p.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';try{const[e,a,n,l]=await Promise.all([E(t),B(t),q(t),T(t)]),r=e.band_excelente+e.band_bueno+e.band_regular+e.band_bajo;p.innerHTML=`
       <div class="admin-shell">
         <header class="admin-header">
           <span class="admin-logo">Creditio <b>Credit Score</b> · Panel interno</span>
@@ -76,7 +76,7 @@ import{c as C}from"./index-DBuN83Yj.js";const L="https://pgyaigdsedkdqvhtexrz.su
             el siguiente paso obligatorio calcula su caída respecto al último paso que
             ven todos.
           </p>
-          ${P(n,l)}
+          ${H(n,l)}
         </section>
 
         <section class="admin-card">
@@ -100,7 +100,7 @@ import{c as C}from"./index-DBuN83Yj.js";const L="https://pgyaigdsedkdqvhtexrz.su
               <tbody>
                 ${a.map(s=>`
                   <tr>
-                    <td>${q.format(new Date(s.created_at))}</td>
+                    <td>${z.format(new Date(s.created_at))}</td>
                     <td>${o(s.first_name)} ${o(s.last_name??"")}</td>
                     <td>${o(s.email)}</td>
                     <td>${o(s.phone??"")}</td>
@@ -116,4 +116,9 @@ import{c as C}from"./index-DBuN83Yj.js";const L="https://pgyaigdsedkdqvhtexrz.su
           </div>
         </section>
       </div>
-    `,document.getElementById("refresh-btn").addEventListener("click",()=>h(t)),document.getElementById("logout-btn").addEventListener("click",()=>{sessionStorage.removeItem(p),m()})}catch{sessionStorage.removeItem(p),m("Tu sesión ha caducado o la contraseña ya no es válida.")}}const S=sessionStorage.getItem(p);S?h(S):m();
+    `,document.getElementById("refresh-btn").addEventListener("click",()=>_(t)),document.getElementById("logout-btn").addEventListener("click",()=>{sessionStorage.removeItem(m),b()})}catch(e){const a=e instanceof Error?e.message:String(e);a.toLowerCase().includes("unauthorized")?(sessionStorage.removeItem(m),b("Tu sesión ha caducado o la contraseña ya no es válida.")):(p.innerHTML=`
+        <div class="admin-shell">
+          <p class="admin-error">Ha ocurrido un error inesperado cargando el panel: ${o(a)}</p>
+          <button class="admin-btn-ghost" id="retry-btn">Reintentar</button>
+        </div>
+      `,document.getElementById("retry-btn").addEventListener("click",()=>_(t)))}}const S=sessionStorage.getItem(m);S?_(S):b();

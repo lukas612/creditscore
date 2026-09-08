@@ -324,9 +324,23 @@ async function renderDashboard(password: string) {
       sessionStorage.removeItem(SESSION_KEY);
       renderLogin();
     });
-  } catch {
-    sessionStorage.removeItem(SESSION_KEY);
-    renderLogin("Tu sesión ha caducado o la contraseña ya no es válida.");
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (message.toLowerCase().includes("unauthorized")) {
+      sessionStorage.removeItem(SESSION_KEY);
+      renderLogin("Tu sesión ha caducado o la contraseña ya no es válida.");
+    } else {
+      // Un error que no es de autenticación (p.ej. un bug en una consulta) no
+      // debe borrar la sesión ni decir "contraseña incorrecta" - eso confunde
+      // un fallo del servidor con un problema de acceso.
+      root.innerHTML = `
+        <div class="admin-shell">
+          <p class="admin-error">Ha ocurrido un error inesperado cargando el panel: ${escapeHtml(message)}</p>
+          <button class="admin-btn-ghost" id="retry-btn">Reintentar</button>
+        </div>
+      `;
+      document.getElementById("retry-btn")!.addEventListener("click", () => renderDashboard(password));
+    }
   }
 }
 
