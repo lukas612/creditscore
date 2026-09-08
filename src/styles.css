@@ -408,6 +408,28 @@ h3,
   box-shadow: 0 0 0 3px rgba(163, 28, 130, 0.12);
 }
 
+.question-date-row {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1fr;
+  gap: 8px;
+}
+
+.question-date-row select {
+  width: 100%;
+  padding: 14px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  font-size: 15px;
+  background: #fff;
+  color: var(--text);
+}
+
+.question-date-row select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(163, 28, 130, 0.12);
+}
+
 .question-suffix {
   position: absolute;
   right: 16px;
