@@ -121,6 +121,24 @@ body {
   margin-left: 8px;
 }
 
+.admin-btn-ghost:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.admin-pagination-label {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
 .admin-period-bar,
 .admin-source-bar {
   display: flex;

@@ -47,6 +47,9 @@ let customTo = toDateInputValue(today);
 type SourceKey = "all" | "quiz" | "solicitud";
 let currentSource: SourceKey = "all";
 
+const LEADS_PAGE_SIZE = 25;
+let currentLeadsPage = 0;
+
 const SOURCE_LABELS: Record<SourceKey, string> = {
   all: "Todos",
   quiz: "Quiz corto",
@@ -145,6 +148,7 @@ interface Lead {
   source: string;
   quiz_session_id: string;
   offer_clicks: string[] | null;
+  total_count: number;
 }
 
 const dateFmt = new Intl.DateTimeFormat("es-ES", {
@@ -202,11 +206,11 @@ async function fetchFunnelSteps(password: string, period: Period, source: Source
   return (data ?? []) as FunnelStepRow[];
 }
 
-async function fetchLeads(password: string, period: Period, source: SourceKey): Promise<Lead[]> {
+async function fetchLeads(password: string, period: Period, source: SourceKey, page: number): Promise<Lead[]> {
   const { data, error } = await supabase.rpc("admin_list_leads", {
     p_password: password,
-    p_limit: 200,
-    p_offset: 0,
+    p_limit: LEADS_PAGE_SIZE,
+    p_offset: page * LEADS_PAGE_SIZE,
     p_since: period.since,
     p_until: period.until,
     p_source: sourceParam(source),
@@ -349,7 +353,7 @@ async function renderDashboard(password: string) {
   try {
     const [stats, leads, funnelOverview, funnelSteps, witmeApps, offerClicks] = await Promise.all([
       fetchStats(password, period, currentSource),
-      fetchLeads(password, period, currentSource),
+      fetchLeads(password, period, currentSource, currentLeadsPage),
       fetchFunnelOverview(password, period, currentSource),
       fetchFunnelSteps(password, period, currentSource),
       fetchWitmeApplications(password),
@@ -357,6 +361,8 @@ async function renderDashboard(password: string) {
     ]);
     const totalBands = stats.band_excelente + stats.band_bueno + stats.band_regular + stats.band_bajo;
     const stepDefs = currentSource === "solicitud" ? STEP_DEFS_SOLICITUD : STEP_DEFS;
+    const totalLeadsCount = leads[0]?.total_count ?? 0;
+    const totalLeadsPages = Math.max(1, Math.ceil(totalLeadsCount / LEADS_PAGE_SIZE));
 
     root.innerHTML = `
       <div class="admin-shell">
@@ -453,7 +459,7 @@ async function renderDashboard(password: string) {
         </section>
 
         <section class="admin-card">
-          <p class="admin-card-title">Leads (${leads.length})</p>
+          <p class="admin-card-title">Leads (${totalLeadsCount})</p>
           <div class="admin-table-scroll">
             <table class="admin-table">
               <thead>
@@ -488,6 +494,11 @@ async function renderDashboard(password: string) {
                 ${leads.length === 0 ? `<tr><td colspan="10" class="admin-empty">Todavía no hay leads.</td></tr>` : ""}
               </tbody>
             </table>
+          </div>
+          <div class="admin-pagination">
+            <button class="admin-btn-ghost" id="leads-prev-btn" ${currentLeadsPage === 0 ? "disabled" : ""}>← Anterior</button>
+            <span class="admin-pagination-label">Página ${currentLeadsPage + 1} de ${totalLeadsPages}</span>
+            <button class="admin-btn-ghost" id="leads-next-btn" ${currentLeadsPage + 1 >= totalLeadsPages ? "disabled" : ""}>Siguiente →</button>
           </div>
         </section>
 
@@ -567,6 +578,7 @@ async function renderDashboard(password: string) {
     document.querySelectorAll<HTMLButtonElement>(".admin-period-btn[data-source]").forEach((btn) => {
       btn.addEventListener("click", () => {
         currentSource = btn.dataset.source as SourceKey;
+        currentLeadsPage = 0;
         renderDashboard(password);
       });
     });
@@ -574,6 +586,7 @@ async function renderDashboard(password: string) {
     document.querySelectorAll<HTMLButtonElement>(".admin-period-btn[data-preset]").forEach((btn) => {
       btn.addEventListener("click", () => {
         currentPreset = btn.dataset.preset as PresetKey;
+        currentLeadsPage = 0;
         renderDashboard(password);
       });
     });
@@ -581,6 +594,18 @@ async function renderDashboard(password: string) {
       customFrom = (document.getElementById("period-from") as HTMLInputElement).value || customFrom;
       customTo = (document.getElementById("period-to") as HTMLInputElement).value || customTo;
       currentPreset = "custom";
+      currentLeadsPage = 0;
+      renderDashboard(password);
+    });
+
+    document.getElementById("leads-prev-btn")!.addEventListener("click", () => {
+      if (currentLeadsPage > 0) {
+        currentLeadsPage--;
+        renderDashboard(password);
+      }
+    });
+    document.getElementById("leads-next-btn")!.addEventListener("click", () => {
+      currentLeadsPage++;
       renderDashboard(password);
     });
   } catch (err) {
