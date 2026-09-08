@@ -3,9 +3,10 @@ import { trackFunnelEvent } from "../lib/funnel";
 
 interface Props {
   clickId: string | null;
+  quizSessionId: string;
 }
 
-export function CreditOffers({ clickId }: Props) {
+export function CreditOffers({ clickId, quizSessionId }: Props) {
   return (
     <div className="offers-section">
       <p className="offers-eyebrow">Tu siguiente paso</p>
@@ -26,7 +27,7 @@ export function CreditOffers({ clickId }: Props) {
               href={offer.buildUrl(clickId)}
               target="_blank"
               rel="noreferrer sponsored"
-              onClick={() => trackFunnelEvent("offer_click", offer.id)}
+              onClick={() => trackFunnelEvent("offer_click", offer.id, "quiz", quizSessionId)}
             >
               Ver oferta →
             </a>

@@ -51,6 +51,7 @@ export function ScoreWidget({
           capacidadMaxima={result.capacidadMaxima}
           baseAnswers={quizAnswers}
           clickId={clickId}
+          quizSessionId={result.quizSessionId}
         />
       )}
 

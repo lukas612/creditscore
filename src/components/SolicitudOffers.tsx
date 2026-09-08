@@ -5,9 +5,10 @@ import type { LenderOffer } from "../lib/witme";
 interface Props {
   witmeOffer: LenderOffer | null;
   clickId: string | null;
+  quizSessionId: string;
 }
 
-export function SolicitudOffers({ witmeOffer, clickId }: Props) {
+export function SolicitudOffers({ witmeOffer, clickId, quizSessionId }: Props) {
   return (
     <div className="offers-section">
       <p className="offers-eyebrow">Tu siguiente paso</p>
@@ -29,7 +30,7 @@ export function SolicitudOffers({ witmeOffer, clickId }: Props) {
               href={witmeOffer.url}
               target="_blank"
               rel="noreferrer sponsored"
-              onClick={() => trackFunnelEvent("offer_click", "witme_featured", "solicitud")}
+              onClick={() => trackFunnelEvent("offer_click", "witme_featured", "solicitud", quizSessionId)}
             >
               Ver oferta →
             </a>
@@ -46,7 +47,7 @@ export function SolicitudOffers({ witmeOffer, clickId }: Props) {
               href={offer.buildUrl(clickId)}
               target="_blank"
               rel="noreferrer sponsored"
-              onClick={() => trackFunnelEvent("offer_click", offer.id, "solicitud")}
+              onClick={() => trackFunnelEvent("offer_click", offer.id, "solicitud", quizSessionId)}
             >
               Ver oferta →
             </a>

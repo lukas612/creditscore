@@ -87,6 +87,7 @@ export function SolicitudWidget({
           capacidadMaxima={scoreData.capacidadMaxima}
           witmeOffer={witmeOffer}
           clickId={clickId}
+          quizSessionId={scoreData.quizSessionId}
           applicationSubmitted={applicationSubmitted}
         />
       )}

@@ -143,6 +143,8 @@ interface Lead {
   score_band: string | null;
   status: string;
   source: string;
+  quiz_session_id: string;
+  offer_clicks: string[] | null;
 }
 
 const dateFmt = new Intl.DateTimeFormat("es-ES", {
@@ -457,7 +459,7 @@ async function renderDashboard(password: string) {
               <thead>
                 <tr>
                   <th>Fecha</th><th>Nombre</th><th>Email</th><th>Teléfono</th>
-                  <th>CP</th><th>Score</th><th>Banda</th><th>Estado</th><th>Fuente</th>
+                  <th>CP</th><th>Score</th><th>Banda</th><th>Estado</th><th>Fuente</th><th>Ofertas clicadas</th>
                 </tr>
               </thead>
               <tbody>
@@ -474,11 +476,16 @@ async function renderDashboard(password: string) {
                     <td><span class="admin-badge band-${l.score_band ?? ""}">${l.score_band ?? "—"}</span></td>
                     <td>${escapeHtml(l.status)}</td>
                     <td>${escapeHtml(SOURCE_LABELS[l.source as SourceKey] ?? l.source)}</td>
+                    <td>${
+                      l.offer_clicks && l.offer_clicks.length > 0
+                        ? l.offer_clicks.map((id) => escapeHtml(OFFER_LABELS[id] ?? id)).join(", ")
+                        : "—"
+                    }</td>
                   </tr>
                 `,
                   )
                   .join("")}
-                ${leads.length === 0 ? `<tr><td colspan="9" class="admin-empty">Todavía no hay leads.</td></tr>` : ""}
+                ${leads.length === 0 ? `<tr><td colspan="10" class="admin-empty">Todavía no hay leads.</td></tr>` : ""}
               </tbody>
             </table>
           </div>

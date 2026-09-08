@@ -14,6 +14,7 @@ interface Props {
   capacidadMaxima: number;
   baseAnswers: Answers;
   clickId: string | null;
+  quizSessionId: string;
 }
 
 const BAND_COPY: Record<string, { title: string; tip: string }> = {
@@ -48,6 +49,7 @@ export function ResultFull({
   capacidadMensual,
   capacidadMaxima,
   clickId,
+  quizSessionId,
 }: Props) {
   const copy = BAND_COPY[scoreBand] ?? BAND_COPY.regular;
   const pct = Math.round(((score - 300) / (850 - 300)) * 100);
@@ -61,7 +63,7 @@ export function ResultFull({
       <span className="score-band">{copy.title}</span>
       <p className="result-sub">{copy.tip}</p>
 
-      <CreditOffers clickId={clickId} />
+      <CreditOffers clickId={clickId} quizSessionId={quizSessionId} />
 
       <ShareResult score={score} scoreBand={scoreBand} />
 

@@ -13,6 +13,7 @@ interface Props {
   capacidadMaxima: number;
   witmeOffer: LenderOffer | null;
   clickId: string | null;
+  quizSessionId: string;
   applicationSubmitted: boolean;
 }
 
@@ -49,6 +50,7 @@ export function SolicitudResult({
   capacidadMaxima,
   witmeOffer,
   clickId,
+  quizSessionId,
   applicationSubmitted,
 }: Props) {
   const copy = BAND_COPY[scoreBand] ?? BAND_COPY.regular;
@@ -69,7 +71,7 @@ export function SolicitudResult({
       <span className="score-band">{copy.title}</span>
       <p className="result-sub">{copy.tip}</p>
 
-      <SolicitudOffers witmeOffer={witmeOffer} clickId={clickId} />
+      <SolicitudOffers witmeOffer={witmeOffer} clickId={clickId} quizSessionId={quizSessionId} />
 
       <ShareResult score={score} scoreBand={scoreBand} />
 
