@@ -75,3 +75,18 @@ export const CREDIT_OFFERS: CreditOffer[] = [
     },
   },
 ];
+
+// Enlace de "Hablar con un asesor": lleva a la landing real de solicitud de
+// préstamo de Creditio, no a un partner externo.
+export function buildAdvisorUrl(clickId: string | null): string {
+  const params = new URLSearchParams({
+    h_title: "Tu Préstamo Personal Online: Flexible, Rápido y Seguro",
+    h_subtitle:
+      "Solicita desde 1.000€ hasta 75.000€ para lo que necesites . Sin cambiar de banco y con respuesta inmediata.",
+    f_claim:
+      "Solicita desde 1.000€ hasta 75.000€ para lo que necesites (Coche, Reforma, Viajes...). Sin cambiar de banco y con respuesta inmediata.",
+    utm_source: UTM_SOURCE,
+  });
+  if (clickId) params.set("servy_click", clickId);
+  return `https://creditio.es/home-v3?${params.toString()}`;
+}

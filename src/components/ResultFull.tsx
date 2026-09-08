@@ -1,4 +1,5 @@
 import type { Answers } from "../data/questions";
+import { buildAdvisorUrl } from "../data/offers";
 import type { BreakdownItem } from "../lib/types";
 import { CreditOffers } from "./CreditOffers";
 import { ScoreBreakdownChart } from "./ScoreBreakdownChart";
@@ -86,7 +87,7 @@ export function ResultFull({
         <ScoreBreakdownChart breakdown={breakdown} />
       </div>
 
-      <a className="btn-link" href="https://creditio.es" target="_blank" rel="noreferrer">
+      <a className="btn-link" href={buildAdvisorUrl(clickId)} target="_blank" rel="noreferrer">
         Prefiero hablar con un asesor
       </a>
     </div>
