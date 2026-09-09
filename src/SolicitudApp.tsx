@@ -102,6 +102,18 @@ export default function SolicitudApp() {
       setStage("error");
       return;
     }
+
+    // Witme exige el número de cuenta bancaria como campo obligatorio y lo
+    // rechaza aunque lo mandemos vacío (ver "The data.bank account number
+    // field is required." incluso con hasBankAccount=false) - sin cuenta
+    // bancaria el envío siempre falla, así que ni lo intentamos.
+    if (fullAnswers.hasBankAccount === "no") {
+      setApplicationSubmitted(true);
+      setWitmeOffers([]);
+      setStage("result");
+      return;
+    }
+
     setStage("submitting");
 
     const sessionId = scoreData.quizSessionId;
