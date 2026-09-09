@@ -252,10 +252,14 @@ interface WitmeApplication {
   witme_id: number | null;
   witme_status: string | null;
   witme_message: unknown;
+  witme_redirect_url: string | null;
   name: string | null;
   last_name: string | null;
   email: string | null;
   requested_amount: number | null;
+  score: number | null;
+  approval_probability: number | null;
+  offer_clicks: string[] | null;
 }
 
 async function fetchWitmeApplications(password: string): Promise<WitmeApplication[]> {
@@ -618,9 +622,10 @@ async function renderDashboard(password: string) {
         <section class="admin-card">
           <p class="admin-card-title">Solicitudes enviadas a Witme (${witmeApps.length})</p>
           <p class="admin-card-sub">
-            Copia propia de cada envío a la API de Witme, con su respuesta. Mientras esté en
-            modo sandbox, "failed" no significa que el usuario hiciera algo mal — es el modo
-            de pruebas antes de confirmar producción con su equipo.
+            Copia propia de cada envío a la API de Witme, con su respuesta, el score y la
+            probabilidad de aprobación de ese lead, y si hizo click en la oferta que se le
+            presentó (la destacada de Witme si hubo <code>redirectUrl</code>, o alguna de
+            las estáticas si no).
           </p>
           <div class="admin-table-scroll">
             <table class="admin-table">
@@ -628,6 +633,7 @@ async function renderDashboard(password: string) {
                 <tr>
                   <th>Fecha</th><th>Nombre</th><th>Email</th><th>Importe</th>
                   <th>Witme ID</th><th>Estado</th><th>Mensaje</th>
+                  <th>Score</th><th>Aprobación</th><th>Click oferta</th>
                 </tr>
               </thead>
               <tbody>
@@ -642,11 +648,22 @@ async function renderDashboard(password: string) {
                     <td>${w.witme_id ?? "—"}</td>
                     <td><span class="admin-badge ${w.witme_status === "processed" ? "band-excelente" : "band-bajo"}">${escapeHtml(w.witme_status ?? "—")}</span></td>
                     <td>${escapeHtml(JSON.stringify(w.witme_message ?? ""))}</td>
+                    <td>${w.score ?? "—"}</td>
+                    <td>${
+                      w.approval_probability != null
+                        ? `<span class="admin-badge ${approvalBadgeClass(w.approval_probability)}">${w.approval_probability}%</span>`
+                        : "—"
+                    }</td>
+                    <td>${
+                      w.offer_clicks && w.offer_clicks.length > 0
+                        ? `✅ ${w.offer_clicks.map((id) => escapeHtml(OFFER_LABELS[id] ?? id)).join(", ")}`
+                        : "—"
+                    }</td>
                   </tr>
                 `,
                   )
                   .join("")}
-                ${witmeApps.length === 0 ? `<tr><td colspan="7" class="admin-empty">Todavía no hay solicitudes enviadas a Witme.</td></tr>` : ""}
+                ${witmeApps.length === 0 ? `<tr><td colspan="10" class="admin-empty">Todavía no hay solicitudes enviadas a Witme.</td></tr>` : ""}
               </tbody>
             </table>
           </div>
