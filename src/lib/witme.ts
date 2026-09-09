@@ -3,6 +3,11 @@ import { supabase } from "./supabase";
 
 const BOOLEAN_FIELDS = ["hasOwnVehicle", "hasBankAccount", "hasOtherLoans", "badCreditHistory"];
 
+// Si Witme no responde en este tiempo, cortamos en vez de dejar al usuario
+// esperando indefinidamente (relevante ahora que encadenamos hasta 5
+// llamadas seguidas, ver MAX_WITME_ATTEMPTS más abajo).
+const WITME_TIMEOUT_MS = 20_000;
+
 // Campos que solo se preguntan bajo una condición (p.ej. bankAccountNumber
 // solo si hasBankAccount==="si"): cuando no aplican, nunca llegan a
 // `answers`. Witme los exige presentes igualmente (hemos visto fallar un
@@ -58,6 +63,7 @@ export async function submitWitmeApplication(
         content: "",
       },
     },
+    timeout: WITME_TIMEOUT_MS,
   });
   if (error) throw error;
   return data as WitmeSubmitResult;

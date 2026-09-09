@@ -3,6 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 const WITME_BASE_URL = "https://gestion.servy.es/api/partners";
 const PARTNER_ID = 94;
+const WITME_TIMEOUT_MS = 20_000;
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -51,6 +52,7 @@ Deno.serve(async (req: Request) => {
       : `${WITME_BASE_URL}/catalog`;
     const upstream = await fetch(url, {
       headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+      signal: AbortSignal.timeout(WITME_TIMEOUT_MS),
     });
     const text = await upstream.text();
     return new Response(text, {
@@ -90,15 +92,39 @@ Deno.serve(async (req: Request) => {
       tracking: typeof body.tracking === "object" && body.tracking !== null ? body.tracking : {},
     };
 
-    const upstream = await fetch(`${WITME_BASE_URL}/leads/new`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    let upstream: Response;
+    try {
+      upstream = await fetch(`${WITME_BASE_URL}/leads/new`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(WITME_TIMEOUT_MS),
+      });
+    } catch (err) {
+      const timedOut = err instanceof DOMException && err.name === "TimeoutError";
+      const message = timedOut
+        ? `Witme no respondió en ${WITME_TIMEOUT_MS / 1000}s`
+        : `Error contactando con Witme: ${err instanceof Error ? err.message : String(err)}`;
+
+      const { error: logError } = await supabaseAdmin.from("witme_applications").insert({
+        click_id: typeof body.clickId === "string" ? body.clickId : null,
+        utm_source: typeof body.utmSource === "string" ? body.utmSource : null,
+        request_payload: payload,
+        witme_id: null,
+        witme_status: timedOut ? "timeout" : "error",
+        witme_message: message,
+        witme_redirect_url: null,
+      });
+      if (logError) {
+        console.error("Error logging witme_applications:", logError.message);
+      }
+
+      return jsonResponse({ error: message }, 504);
+    }
     const text = await upstream.text();
 
     let parsed: Record<string, unknown> = {};
