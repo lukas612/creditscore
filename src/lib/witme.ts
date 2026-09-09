@@ -3,11 +3,28 @@ import { supabase } from "./supabase";
 
 const BOOLEAN_FIELDS = ["hasOwnVehicle", "hasBankAccount", "hasOtherLoans", "badCreditHistory"];
 
+// Campos que solo se preguntan bajo una condición (p.ej. bankAccountNumber
+// solo si hasBankAccount==="si"): cuando no aplican, nunca llegan a
+// `answers`. Witme los exige presentes igualmente (hemos visto fallar un
+// envío real con "The data.bank account number field is required." pese a
+// que el usuario respondió que no tenía cuenta), así que se rellenan con un
+// valor vacío en vez de omitirlos.
+const CONDITIONAL_FIELD_DEFAULTS: Record<string, string | number> = {
+  totalDebtAmount: 0,
+  vehicleType: "",
+  hasFinancedVehicle: "",
+  vehiclePlate: "",
+  bankAccountNumber: "",
+};
+
 export function buildWitmeDataPayload(answers: Answers): Record<string, unknown> {
   const data: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(answers)) {
     if (key === "consentPrivacy") continue;
     data[key] = BOOLEAN_FIELDS.includes(key) ? value === "si" : value;
+  }
+  for (const [key, defaultValue] of Object.entries(CONDITIONAL_FIELD_DEFAULTS)) {
+    if (!(key in data)) data[key] = defaultValue;
   }
   return data;
 }
