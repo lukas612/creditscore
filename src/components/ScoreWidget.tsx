@@ -1,5 +1,6 @@
 import type { Answers } from "../data/questions";
 import type { ScoreResult, Stage } from "../lib/types";
+import { LoadingSpinner } from "./LoadingSpinner";
 import { Quiz } from "./Quiz";
 import { ResultGate } from "./ResultGate";
 import { ResultFull } from "./ResultFull";
@@ -27,7 +28,7 @@ export function ScoreWidget({
 
       {stage === "loading" && (
         <div className="quiz-card">
-          <p className="loading-text">Calculando tu puntuación…</p>
+          <LoadingSpinner text="Estamos calculando tu score, danos unos segundos…" />
         </div>
       )}
 

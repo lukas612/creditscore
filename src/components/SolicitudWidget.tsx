@@ -1,6 +1,7 @@
 import { SCORE_PHASES, EXTRA_PHASES, visibleScoreQuestions, visibleExtraQuestions, type Answers } from "../data/witmeQuestions";
 import type { BreakdownItem } from "../lib/types";
 import type { LenderOffer } from "../lib/witme";
+import { LoadingSpinner } from "./LoadingSpinner";
 import { SolicitudResult } from "./SolicitudResult";
 import { WitmeForm } from "./WitmeForm";
 import { WitmeGate, type GateContact } from "./WitmeGate";
@@ -48,7 +49,7 @@ export function SolicitudWidget({
 
       {stage === "loading" && (
         <div className="quiz-card">
-          <p className="loading-text">Calculando tu puntuación…</p>
+          <LoadingSpinner text="Estamos calculando tu score, danos unos segundos…" />
         </div>
       )}
 
@@ -76,7 +77,7 @@ export function SolicitudWidget({
 
       {stage === "submitting" && (
         <div className="quiz-card">
-          <p className="loading-text">Buscando tus mejores ofertas…</p>
+          <LoadingSpinner text="Estamos tramitando tu solicitud, danos unos segundos…" />
         </div>
       )}
 
