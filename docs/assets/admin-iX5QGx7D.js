@@ -1,4 +1,4 @@
-import{C as V,c as G}from"./offers-B_t2kAWT.js";import{W as Y}from"./witmeQuestions-DlX0lagW.js";const z={witme_featured:"Witme (oferta destacada)",...Object.fromEntries(V.map(e=>[e.id,e.name]))},Z="https://pgyaigdsedkdqvhtexrz.supabase.co",J="sb_publishable_yL99vHU_H5kGZ3SMuPS0hA_GJ_TWTMr",_=G(Z,J),E="cs_admin_pw",S=document.getElementById("admin-root");function B(e){return e.toISOString().slice(0,10)}const F=new Date;let h="all",L=B(F),C=B(F),v="all";const A=25;let f=0,H="dashboard";const K={base:"Quiz corto + Solicitud",ingreso_mensual:"Quiz corto + Solicitud",otros_creditos:"Quiz corto + Solicitud",asnef:"Quiz corto + Solicitud",ratio_deuda_ingreso:"Quiz corto + Solicitud",edad:"Quiz corto + Solicitud",fuente_ingreso:"Quiz corto",antiguedad_laboral:"Quiz corto",vivienda_propiedad:"Quiz corto",solicitud_fuente_ingreso:"Solicitud",solicitud_antiguedad:"Solicitud",solicitud_vivienda:"Solicitud",solicitud_dependientes:"Solicitud"},D={all:"Todos",quiz:"Quiz corto",solicitud:"Solicitud completa"};function N(e){const t=new Date;if(e==="today")return{since:new Date(t.getFullYear(),t.getMonth(),t.getDate(),0,0,0,0).toISOString(),until:t.toISOString()};if(e==="7d")return{since:new Date(t.getTime()-6048e5).toISOString(),until:t.toISOString()};if(e==="custom"){const a=new Date(`${L}T00:00:00`),n=new Date(`${C}T23:59:59.999`);return a.getTime()>n.getTime()?{since:n.toISOString(),until:a.toISOString()}:{since:a.toISOString(),until:n.toISOString()}}return{since:"2000-01-01T00:00:00.000Z",until:t.toISOString()}}const R=new Intl.DateTimeFormat("es-ES",{day:"2-digit",month:"short",year:"numeric"});function X(e,t){return e==="all"?"Todo el histórico":`${R.format(new Date(t.since))} – ${R.format(new Date(t.until))}`}const ee=[{key:"fecha_de_nacimiento",label:"Fecha de nacimiento"},{key:"codigo_postal",label:"Código postal"},{key:"fuente_principal_de_ingreso",label:"Fuente de ingresos"},{key:"antiguedad_laboral",label:"Antigüedad laboral",conditional:!0},{key:"tienes_vivienda_en_propiedad",label:"Vivienda en propiedad"},{key:"ingreso_mensual",label:"Ingreso mensual"},{key:"esta_en_asnef",label:"Asnef"},{key:"tienes_otros_creditos",label:"Otros créditos"},{key:"importe_total_de_la_deuda",label:"Importe de la deuda",conditional:!0},{key:"proposito_del_prestamo",label:"Propósito del préstamo"},{key:"creditos_cantidad_a_solicitar",label:"Importe a solicitar"},{key:"en_cuantos_meses_deseas_devolverlo",label:"Plazo de devolución"}],te=Y.map(e=>({key:e.key,label:e.label,conditional:!!e.condition})),j=new Intl.DateTimeFormat("es-ES",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});function r(e){const t=document.createElement("div");return t.textContent=e,t.innerHTML}function k(e){return e==="all"?null:e}async function M(e,t,a){const{data:n,error:i}=await _.rpc("admin_get_stats",{p_password:e,p_since:t.since,p_until:t.until,p_source:k(a)}).single();if(i||!n)throw i??new Error("No data");return n}async function ae(e,t,a){const{data:n,error:i}=await _.rpc("admin_get_funnel_overview",{p_password:e,p_since:t.since,p_until:t.until,p_source:k(a)}).single();if(i||!n)throw i??new Error("No data");return n}async function ne(e,t,a){const{data:n,error:i}=await _.rpc("admin_get_funnel_steps",{p_password:e,p_since:t.since,p_until:t.until,p_source:k(a)});if(i)throw i;return n??[]}async function se(e,t,a,n){const{data:i,error:o}=await _.rpc("admin_list_leads",{p_password:e,p_limit:A,p_offset:n*A,p_since:t.since,p_until:t.until,p_source:k(a)});if(o)throw o;return i??[]}async function ie(e){const{data:t,error:a}=await _.rpc("admin_get_witme_applications",{p_password:e,p_limit:100,p_offset:0});if(a)throw a;return t??[]}async function oe(e,t,a){const{data:n,error:i}=await _.rpc("admin_get_offer_clicks",{p_password:e,p_since:t.since,p_until:t.until,p_source:k(a)});if(i)throw i;return n??[]}let P=[];async function re(e){const{data:t,error:a}=await _.rpc("admin_get_scoring_rules",{p_password:e});if(a)throw a;return t??[]}async function de(e,t,a,n,i){const{error:o}=await _.rpc("admin_update_scoring_rule",{p_password:e,p_key:t,p_config:a,p_weight:n,p_active:i});if(o)throw o}async function ce(e,t){const{error:a}=await _.rpc("admin_reset_scoring_rule",{p_password:e,p_key:t});if(a)throw a}async function le(e){const{error:t}=await _.rpc("admin_reset_all_scoring_rules",{p_password:e});if(t)throw t}function w(e){S.innerHTML=`
+import{C as V,c as G}from"./offers-B_t2kAWT.js";import{W as Y}from"./witmeQuestions-DlX0lagW.js";const z={witme_featured:"Witme (oferta destacada)",...Object.fromEntries(V.map(e=>[e.id,e.name]))},Z="https://pgyaigdsedkdqvhtexrz.supabase.co",J="sb_publishable_yL99vHU_H5kGZ3SMuPS0hA_GJ_TWTMr",_=G(Z,J),E="cs_admin_pw",S=document.getElementById("admin-root");function B(e){return e.toISOString().slice(0,10)}const F=new Date;let h="all",L=B(F),C=B(F),v="all";const D=25;let f=0,P="dashboard";const K={base:"Quiz corto + Solicitud",ingreso_mensual:"Quiz corto + Solicitud",otros_creditos:"Quiz corto + Solicitud",asnef:"Quiz corto + Solicitud",ratio_deuda_ingreso:"Quiz corto + Solicitud",edad:"Quiz corto + Solicitud",fuente_ingreso:"Quiz corto",antiguedad_laboral:"Quiz corto",vivienda_propiedad:"Quiz corto",solicitud_fuente_ingreso:"Solicitud",solicitud_antiguedad:"Solicitud",solicitud_vivienda:"Solicitud",solicitud_dependientes:"Solicitud",aprobacion_base:"Probabilidad de aprobación (quiz + solicitud)",aprobacion_ratio_importe:"Probabilidad de aprobación (quiz + solicitud)"},A={all:"Todos",quiz:"Quiz corto",solicitud:"Solicitud completa"};function H(e){const t=new Date;if(e==="today")return{since:new Date(t.getFullYear(),t.getMonth(),t.getDate(),0,0,0,0).toISOString(),until:t.toISOString()};if(e==="7d")return{since:new Date(t.getTime()-6048e5).toISOString(),until:t.toISOString()};if(e==="custom"){const a=new Date(`${L}T00:00:00`),n=new Date(`${C}T23:59:59.999`);return a.getTime()>n.getTime()?{since:n.toISOString(),until:a.toISOString()}:{since:a.toISOString(),until:n.toISOString()}}return{since:"2000-01-01T00:00:00.000Z",until:t.toISOString()}}const R=new Intl.DateTimeFormat("es-ES",{day:"2-digit",month:"short",year:"numeric"});function X(e,t){return e==="all"?"Todo el histórico":`${R.format(new Date(t.since))} – ${R.format(new Date(t.until))}`}const ee=[{key:"fecha_de_nacimiento",label:"Fecha de nacimiento"},{key:"codigo_postal",label:"Código postal"},{key:"fuente_principal_de_ingreso",label:"Fuente de ingresos"},{key:"antiguedad_laboral",label:"Antigüedad laboral",conditional:!0},{key:"tienes_vivienda_en_propiedad",label:"Vivienda en propiedad"},{key:"ingreso_mensual",label:"Ingreso mensual"},{key:"esta_en_asnef",label:"Asnef"},{key:"tienes_otros_creditos",label:"Otros créditos"},{key:"importe_total_de_la_deuda",label:"Importe de la deuda",conditional:!0},{key:"proposito_del_prestamo",label:"Propósito del préstamo"},{key:"creditos_cantidad_a_solicitar",label:"Importe a solicitar"},{key:"en_cuantos_meses_deseas_devolverlo",label:"Plazo de devolución"}],te=Y.map(e=>({key:e.key,label:e.label,conditional:!!e.condition})),j=new Intl.DateTimeFormat("es-ES",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});function r(e){const t=document.createElement("div");return t.textContent=e,t.innerHTML}function k(e){return e==="all"?null:e}async function N(e,t,a){const{data:n,error:i}=await _.rpc("admin_get_stats",{p_password:e,p_since:t.since,p_until:t.until,p_source:k(a)}).single();if(i||!n)throw i??new Error("No data");return n}async function ae(e,t,a){const{data:n,error:i}=await _.rpc("admin_get_funnel_overview",{p_password:e,p_since:t.since,p_until:t.until,p_source:k(a)}).single();if(i||!n)throw i??new Error("No data");return n}async function ne(e,t,a){const{data:n,error:i}=await _.rpc("admin_get_funnel_steps",{p_password:e,p_since:t.since,p_until:t.until,p_source:k(a)});if(i)throw i;return n??[]}async function se(e,t,a,n){const{data:i,error:o}=await _.rpc("admin_list_leads",{p_password:e,p_limit:D,p_offset:n*D,p_since:t.since,p_until:t.until,p_source:k(a)});if(o)throw o;return i??[]}async function ie(e){const{data:t,error:a}=await _.rpc("admin_get_witme_applications",{p_password:e,p_limit:100,p_offset:0});if(a)throw a;return t??[]}async function oe(e,t,a){const{data:n,error:i}=await _.rpc("admin_get_offer_clicks",{p_password:e,p_since:t.since,p_until:t.until,p_source:k(a)});if(i)throw i;return n??[]}let M=[];async function re(e){const{data:t,error:a}=await _.rpc("admin_get_scoring_rules",{p_password:e});if(a)throw a;return t??[]}async function de(e,t,a,n,i){const{error:o}=await _.rpc("admin_update_scoring_rule",{p_password:e,p_key:t,p_config:a,p_weight:n,p_active:i});if(o)throw o}async function ce(e,t){const{error:a}=await _.rpc("admin_reset_scoring_rule",{p_password:e,p_key:t});if(a)throw a}async function le(e){const{error:t}=await _.rpc("admin_reset_all_scoring_rules",{p_password:e});if(t)throw t}function w(e){S.innerHTML=`
     <div class="admin-login-shell">
       <form class="admin-login-card" id="login-form">
         <h1>Panel interno</h1>
@@ -8,13 +8,13 @@ import{C as V,c as G}from"./offers-B_t2kAWT.js";import{W as Y}from"./witmeQuesti
         <button type="submit">Entrar</button>
       </form>
     </div>
-  `,document.getElementById("login-form").addEventListener("submit",async t=>{t.preventDefault();const a=document.getElementById("pw-input").value;try{await M(a,N("all"),"all"),sessionStorage.setItem(E,a),O(a)}catch{w("Contraseña incorrecta.")}})}function p(e,t){return`<div class="admin-stat"><span class="admin-stat-value">${t}</span><span class="admin-stat-label">${e}</span></div>`}function I(e,t,a,n){const i=a>0?Math.round(t/a*100):0;return`
+  `,document.getElementById("login-form").addEventListener("submit",async t=>{t.preventDefault();const a=document.getElementById("pw-input").value;try{await N(a,H("all"),"all"),sessionStorage.setItem(E,a),q(a)}catch{w("Contraseña incorrecta.")}})}function p(e,t){return`<div class="admin-stat"><span class="admin-stat-value">${t}</span><span class="admin-stat-label">${e}</span></div>`}function I(e,t,a,n){const i=a>0?Math.round(t/a*100):0;return`
     <div class="admin-band-row">
       <span class="admin-band-label">${e}</span>
       <div class="admin-band-track"><div class="admin-band-fill ${n}" style="width:${i}%"></div></div>
       <span class="admin-band-count">${t}</span>
     </div>
-  `}function ue(e,t,a){var u;const n=new Map(t.map(c=>[c.question_key,Number(c.reached)])),i=e.engaged_visits;let o="",l=(u=a[0])==null?void 0:u.key;return a.forEach((c,g)=>{const b=n.get(c.key)??0,m=i>0?Math.round(b/i*100):0;let d="";if(g>0&&!c.conditional){const s=n.get(l)??0;if(s>0){const y=Math.round((1-b/s)*100),U=y>=25?"high":y>=10?"mid":"low";d=y>0?`<span class="funnel-drop funnel-drop-${U}">-${y}% respecto al paso anterior</span>`:'<span class="funnel-drop funnel-drop-low">sin caída</span>'}}o+=`
+  `}function ue(e){return e>=60?"band-excelente":e>=35?"band-bueno":e>=15?"band-regular":"band-bajo"}function me(e,t,a){var u;const n=new Map(t.map(c=>[c.question_key,Number(c.reached)])),i=e.engaged_visits;let o="",l=(u=a[0])==null?void 0:u.key;return a.forEach((c,g)=>{const b=n.get(c.key)??0,m=i>0?Math.round(b/i*100):0;let d="";if(g>0&&!c.conditional){const s=n.get(l)??0;if(s>0){const y=Math.round((1-b/s)*100),U=y>=25?"high":y>=10?"mid":"low";d=y>0?`<span class="funnel-drop funnel-drop-${U}">-${y}% respecto al paso anterior</span>`:'<span class="funnel-drop funnel-drop-low">sin caída</span>'}}o+=`
       <div class="funnel-step">
         <div class="funnel-step-top">
           <span class="funnel-step-label">${g+1}. ${r(c.label)}${c.conditional?' <span class="funnel-conditional">(condicional, no todos la ven)</span>':""}</span>
@@ -23,7 +23,7 @@ import{C as V,c as G}from"./offers-B_t2kAWT.js";import{W as Y}from"./witmeQuesti
         <div class="admin-band-track"><div class="admin-band-fill funnel-fill" style="width:${m}%"></div></div>
         ${d}
       </div>
-    `,c.conditional||(l=c.key)}),o}function O(e){H==="scoring"?q(e):$(e)}function Q(e){return`
+    `,c.conditional||(l=c.key)}),o}function q(e){P==="scoring"?O(e):$(e)}function Q(e){return`
     <header class="admin-header">
       <span class="admin-logo">Creditio <b>Credit Score</b> · Panel interno</span>
       <div class="admin-header-actions">
@@ -35,14 +35,14 @@ import{C as V,c as G}from"./offers-B_t2kAWT.js";import{W as Y}from"./witmeQuesti
         <button class="admin-btn-ghost" id="logout-btn">Cerrar sesión</button>
       </div>
     </header>
-  `}function W(e){document.querySelectorAll(".admin-tab-btn").forEach(t=>{t.addEventListener("click",()=>{H=t.dataset.tab,O(e)})}),document.getElementById("refresh-btn").addEventListener("click",()=>O(e)),document.getElementById("logout-btn").addEventListener("click",()=>{sessionStorage.removeItem(E),w()})}async function $(e){var a;S.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';const t=N(h);try{const[n,i,o,l,u,c]=await Promise.all([M(e,t,v),se(e,t,v,f),ae(e,t,v),ne(e,t,v),ie(e),oe(e,t,v)]),g=n.band_excelente+n.band_bueno+n.band_regular+n.band_bajo,b=v==="solicitud"?te:ee,m=((a=i[0])==null?void 0:a.total_count)??0,d=Math.max(1,Math.ceil(m/A));S.innerHTML=`
+  `}function W(e){document.querySelectorAll(".admin-tab-btn").forEach(t=>{t.addEventListener("click",()=>{P=t.dataset.tab,q(e)})}),document.getElementById("refresh-btn").addEventListener("click",()=>q(e)),document.getElementById("logout-btn").addEventListener("click",()=>{sessionStorage.removeItem(E),w()})}async function $(e){var a;S.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';const t=H(h);try{const[n,i,o,l,u,c]=await Promise.all([N(e,t,v),se(e,t,v,f),ae(e,t,v),ne(e,t,v),ie(e),oe(e,t,v)]),g=n.band_excelente+n.band_bueno+n.band_regular+n.band_bajo,b=v==="solicitud"?te:ee,m=((a=i[0])==null?void 0:a.total_count)??0,d=Math.max(1,Math.ceil(m/D));S.innerHTML=`
       <div class="admin-shell">
         ${Q("dashboard")}
 
         <section class="admin-card admin-source-bar">
           <span class="admin-source-label">Embudo:</span>
           <div class="admin-period-presets">
-            ${Object.keys(D).map(s=>`<button class="admin-period-btn ${v===s?"active":""}" data-source="${s}">${D[s]}</button>`).join("")}
+            ${Object.keys(A).map(s=>`<button class="admin-period-btn ${v===s?"active":""}" data-source="${s}">${A[s]}</button>`).join("")}
           </div>
         </section>
 
@@ -103,7 +103,7 @@ import{C as V,c as G}from"./offers-B_t2kAWT.js";import{W as Y}from"./witmeQuesti
                   el siguiente paso obligatorio calcula su caída respecto al último paso que
                   ven todos.
                 </p>
-                ${ue(o,l,b)}`}
+                ${me(o,l,b)}`}
         </section>
 
         <section class="admin-card">
@@ -121,7 +121,7 @@ import{C as V,c as G}from"./offers-B_t2kAWT.js";import{W as Y}from"./witmeQuesti
               <thead>
                 <tr>
                   <th>Fecha</th><th>Nombre</th><th>Email</th><th>Teléfono</th>
-                  <th>CP</th><th>Score</th><th>Banda</th><th>Estado</th><th>Fuente</th><th>Ofertas clicadas</th>
+                  <th>CP</th><th>Score</th><th>Banda</th><th>Aprobación</th><th>Estado</th><th>Fuente</th><th>Ofertas clicadas</th>
                 </tr>
               </thead>
               <tbody>
@@ -134,12 +134,13 @@ import{C as V,c as G}from"./offers-B_t2kAWT.js";import{W as Y}from"./witmeQuesti
                     <td>${r(s.zip_code??"")}</td>
                     <td>${s.score??"—"}</td>
                     <td><span class="admin-badge band-${s.score_band??""}">${s.score_band??"—"}</span></td>
+                    <td>${s.approval_probability!=null?`<span class="admin-badge ${ue(s.approval_probability)}">${s.approval_probability}%</span>`:"—"}</td>
                     <td>${r(s.status)}</td>
-                    <td>${r(D[s.source]??s.source)}</td>
+                    <td>${r(A[s.source]??s.source)}</td>
                     <td>${s.offer_clicks&&s.offer_clicks.length>0?s.offer_clicks.map(y=>r(z[y]??y)).join(", "):"—"}</td>
                   </tr>
                 `).join("")}
-                ${i.length===0?'<tr><td colspan="10" class="admin-empty">Todavía no hay leads.</td></tr>':""}
+                ${i.length===0?'<tr><td colspan="11" class="admin-empty">Todavía no hay leads.</td></tr>':""}
               </tbody>
             </table>
           </div>
@@ -212,7 +213,7 @@ import{C as V,c as G}from"./offers-B_t2kAWT.js";import{W as Y}from"./witmeQuesti
           <p class="admin-error">Ha ocurrido un error inesperado cargando el panel: ${r(i)}</p>
           <button class="admin-btn-ghost" id="retry-btn">Reintentar</button>
         </div>
-      `,document.getElementById("retry-btn").addEventListener("click",()=>$(e)))}}function me(e,t,a){return a?`${e} +`:`${e} – ${t}`}function T(e,t,a,n,i,o,l){return`
+      `,document.getElementById("retry-btn").addEventListener("click",()=>$(e)))}}function pe(e,t,a){return a?`${e} +`:`${e} – ${t}`}function T(e,t,a,n,i,o,l){return`
     <div class="scoring-slider-row">
       <span class="scoring-slider-label">${r(a)}</span>
       <input
@@ -227,7 +228,7 @@ import{C as V,c as G}from"./offers-B_t2kAWT.js";import{W as Y}from"./witmeQuesti
       />
       <span class="scoring-slider-value">${n}</span>
     </div>
-  `}function pe(e){const t=e.config;if(typeof t.value=="number"&&Object.keys(t).length===1)return T(e.key,"value","Puntos base",t.value,300,850,5);if(Array.isArray(t.buckets)){const a=t.buckets;return a.map((n,i)=>T(e.key,`bucket:${i}`,me(n[0],n[1],i===a.length-1),n[2],-200,200,5)).join("")}return Object.entries(t).map(([a,n])=>T(e.key,`opt:${a}`,a,Number(n),-200,200,5)).join("")}function be(e){return`
+  `}function be(e){const t=e.config;if(typeof t.value=="number"&&Object.keys(t).length===1)return T(e.key,"value","Puntos base",t.value,300,850,5);if(Array.isArray(t.buckets)){const a=t.buckets;return a.map((n,i)=>T(e.key,`bucket:${i}`,pe(n[0],n[1],i===a.length-1),n[2],-200,200,5)).join("")}return Object.entries(t).map(([a,n])=>T(e.key,`opt:${a}`,a,Number(n),-200,200,5)).join("")}function ge(e){return`
     <div class="scoring-rule-card" data-rule-card="${e.key}">
       <div class="scoring-rule-header">
         <div>
@@ -241,7 +242,7 @@ import{C as V,c as G}from"./offers-B_t2kAWT.js";import{W as Y}from"./witmeQuesti
       </div>
       ${T(e.key,"weight","Peso (multiplica todos los puntos de esta regla)",Number(e.weight),0,3,.1)}
       <div class="scoring-rule-fields">
-        ${pe(e)}
+        ${be(e)}
       </div>
       <div class="scoring-rule-footer">
         <button class="admin-btn-ghost" data-save-rule="${e.key}">Guardar cambios</button>
@@ -249,7 +250,7 @@ import{C as V,c as G}from"./offers-B_t2kAWT.js";import{W as Y}from"./witmeQuesti
         <span class="scoring-rule-status"></span>
       </div>
     </div>
-  `}function ge(e){var t;document.querySelectorAll(".scoring-slider").forEach(a=>{a.addEventListener("input",()=>{var i;const n=(i=a.closest(".scoring-slider-row"))==null?void 0:i.querySelector(".scoring-slider-value");n&&(n.textContent=a.value)})}),document.querySelectorAll("[data-save-rule]").forEach(a=>{a.addEventListener("click",async()=>{const n=a.dataset.saveRule,i=P.find(d=>d.key===n),o=document.querySelector(`[data-rule-card="${n}"]`);if(!i||!o)return;const l=o.querySelector(".scoring-rule-status"),u=new Map;o.querySelectorAll("input[data-field]").forEach(d=>{u.set(d.dataset.field,d.type==="checkbox"?String(d.checked):d.value)});const c=Number(u.get("weight")),g=u.get("active")==="true",b=i.config;let m;typeof b.value=="number"&&Object.keys(b).length===1?m={value:Number(u.get("value"))}:Array.isArray(b.buckets)?m={buckets:b.buckets.map((d,s)=>[d[0],d[1],Number(u.get(`bucket:${s}`))])}:(m={},Object.keys(b).forEach(d=>{m[d]=Number(u.get(`opt:${d}`))})),a.disabled=!0,l.textContent="Guardando…",l.className="scoring-rule-status";try{await de(e,n,m,c,g),i.config=m,i.weight=c,i.active=g,l.textContent="✓ Guardado",l.className="scoring-rule-status ok",setTimeout(()=>{l.textContent=""},2500)}catch{l.textContent="Error al guardar",l.className="scoring-rule-status error"}finally{a.disabled=!1}})}),document.querySelectorAll("[data-reset-rule]").forEach(a=>{a.addEventListener("click",async()=>{const n=a.dataset.resetRule,i=document.querySelector(`[data-rule-card="${n}"]`);if(!i||!confirm("¿Restaurar esta regla a sus valores por defecto? Se aplicará de inmediato."))return;const o=i.querySelector(".scoring-rule-status");a.disabled=!0,o.textContent="Restaurando…",o.className="scoring-rule-status";try{await ce(e,n),await q(e)}catch{o.textContent="Error al restaurar",o.className="scoring-rule-status error",a.disabled=!1}})}),(t=document.getElementById("reset-all-rules-btn"))==null||t.addEventListener("click",async()=>{if(confirm("¿Restaurar TODAS las reglas de scoring a sus valores por defecto? Esto sobrescribe cualquier ajuste manual y se aplica de inmediato a las puntuaciones reales."))try{await le(e),await q(e)}catch{alert("No se ha podido restaurar. Inténtalo de nuevo.")}})}async function q(e){S.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';try{const t=await re(e);P=t,S.innerHTML=`
+  `}function fe(e){var t;document.querySelectorAll(".scoring-slider").forEach(a=>{a.addEventListener("input",()=>{var i;const n=(i=a.closest(".scoring-slider-row"))==null?void 0:i.querySelector(".scoring-slider-value");n&&(n.textContent=a.value)})}),document.querySelectorAll("[data-save-rule]").forEach(a=>{a.addEventListener("click",async()=>{const n=a.dataset.saveRule,i=M.find(d=>d.key===n),o=document.querySelector(`[data-rule-card="${n}"]`);if(!i||!o)return;const l=o.querySelector(".scoring-rule-status"),u=new Map;o.querySelectorAll("input[data-field]").forEach(d=>{u.set(d.dataset.field,d.type==="checkbox"?String(d.checked):d.value)});const c=Number(u.get("weight")),g=u.get("active")==="true",b=i.config;let m;typeof b.value=="number"&&Object.keys(b).length===1?m={value:Number(u.get("value"))}:Array.isArray(b.buckets)?m={buckets:b.buckets.map((d,s)=>[d[0],d[1],Number(u.get(`bucket:${s}`))])}:(m={},Object.keys(b).forEach(d=>{m[d]=Number(u.get(`opt:${d}`))})),a.disabled=!0,l.textContent="Guardando…",l.className="scoring-rule-status";try{await de(e,n,m,c,g),i.config=m,i.weight=c,i.active=g,l.textContent="✓ Guardado",l.className="scoring-rule-status ok",setTimeout(()=>{l.textContent=""},2500)}catch{l.textContent="Error al guardar",l.className="scoring-rule-status error"}finally{a.disabled=!1}})}),document.querySelectorAll("[data-reset-rule]").forEach(a=>{a.addEventListener("click",async()=>{const n=a.dataset.resetRule,i=document.querySelector(`[data-rule-card="${n}"]`);if(!i||!confirm("¿Restaurar esta regla a sus valores por defecto? Se aplicará de inmediato."))return;const o=i.querySelector(".scoring-rule-status");a.disabled=!0,o.textContent="Restaurando…",o.className="scoring-rule-status";try{await ce(e,n),await O(e)}catch{o.textContent="Error al restaurar",o.className="scoring-rule-status error",a.disabled=!1}})}),(t=document.getElementById("reset-all-rules-btn"))==null||t.addEventListener("click",async()=>{if(confirm("¿Restaurar TODAS las reglas de scoring a sus valores por defecto? Esto sobrescribe cualquier ajuste manual y se aplica de inmediato a las puntuaciones reales."))try{await le(e),await O(e)}catch{alert("No se ha podido restaurar. Inténtalo de nuevo.")}})}async function O(e){S.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';try{const t=await re(e);M=t,S.innerHTML=`
       <div class="admin-shell">
         ${Q("scoring")}
 
@@ -272,12 +273,12 @@ import{C as V,c as G}from"./offers-B_t2kAWT.js";import{W as Y}from"./witmeQuesti
         </section>
 
         <div class="scoring-rules-grid">
-          ${t.map(be).join("")}
+          ${t.map(ge).join("")}
         </div>
       </div>
-    `,W(e),ge(e)}catch(t){const a=t instanceof Error?t.message:String(t);a.toLowerCase().includes("unauthorized")?(sessionStorage.removeItem(E),w("Tu sesión ha caducado o la contraseña ya no es válida.")):(S.innerHTML=`
+    `,W(e),fe(e)}catch(t){const a=t instanceof Error?t.message:String(t);a.toLowerCase().includes("unauthorized")?(sessionStorage.removeItem(E),w("Tu sesión ha caducado o la contraseña ya no es válida.")):(S.innerHTML=`
         <div class="admin-shell">
           <p class="admin-error">Ha ocurrido un error inesperado cargando el algoritmo: ${r(a)}</p>
           <button class="admin-btn-ghost" id="retry-btn">Reintentar</button>
         </div>
-      `,document.getElementById("retry-btn").addEventListener("click",()=>q(e)))}}const x=sessionStorage.getItem(E);x?O(x):w();
+      `,document.getElementById("retry-btn").addEventListener("click",()=>O(e)))}}const x=sessionStorage.getItem(E);x?q(x):w();

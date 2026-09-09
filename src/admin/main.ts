@@ -70,6 +70,8 @@ const RULE_USED_BY: Record<string, string> = {
   solicitud_antiguedad: "Solicitud",
   solicitud_vivienda: "Solicitud",
   solicitud_dependientes: "Solicitud",
+  aprobacion_base: "Probabilidad de aprobación (quiz + solicitud)",
+  aprobacion_ratio_importe: "Probabilidad de aprobación (quiz + solicitud)",
 };
 
 const SOURCE_LABELS: Record<SourceKey, string> = {
@@ -171,6 +173,7 @@ interface Lead {
   quiz_session_id: string;
   offer_clicks: string[] | null;
   total_count: number;
+  approval_probability: number | null;
 }
 
 const dateFmt = new Intl.DateTimeFormat("es-ES", {
@@ -369,6 +372,13 @@ function bandRow(label: string, count: number, total: number, cls: string) {
   `;
 }
 
+function approvalBadgeClass(p: number): string {
+  if (p >= 60) return "band-excelente";
+  if (p >= 35) return "band-bueno";
+  if (p >= 15) return "band-regular";
+  return "band-bajo";
+}
+
 function funnelStepsHtml(overview: FunnelOverview, steps: FunnelStepRow[], stepDefs: StepDef[]): string {
   const reachedByKey = new Map(steps.map((s) => [s.question_key, Number(s.reached)]));
   const base = overview.engaged_visits;
@@ -563,7 +573,7 @@ async function renderDashboard(password: string) {
               <thead>
                 <tr>
                   <th>Fecha</th><th>Nombre</th><th>Email</th><th>Teléfono</th>
-                  <th>CP</th><th>Score</th><th>Banda</th><th>Estado</th><th>Fuente</th><th>Ofertas clicadas</th>
+                  <th>CP</th><th>Score</th><th>Banda</th><th>Aprobación</th><th>Estado</th><th>Fuente</th><th>Ofertas clicadas</th>
                 </tr>
               </thead>
               <tbody>
@@ -578,6 +588,11 @@ async function renderDashboard(password: string) {
                     <td>${escapeHtml(l.zip_code ?? "")}</td>
                     <td>${l.score ?? "—"}</td>
                     <td><span class="admin-badge band-${l.score_band ?? ""}">${l.score_band ?? "—"}</span></td>
+                    <td>${
+                      l.approval_probability != null
+                        ? `<span class="admin-badge ${approvalBadgeClass(l.approval_probability)}">${l.approval_probability}%</span>`
+                        : "—"
+                    }</td>
                     <td>${escapeHtml(l.status)}</td>
                     <td>${escapeHtml(SOURCE_LABELS[l.source as SourceKey] ?? l.source)}</td>
                     <td>${
@@ -589,7 +604,7 @@ async function renderDashboard(password: string) {
                 `,
                   )
                   .join("")}
-                ${leads.length === 0 ? `<tr><td colspan="10" class="admin-empty">Todavía no hay leads.</td></tr>` : ""}
+                ${leads.length === 0 ? `<tr><td colspan="11" class="admin-empty">Todavía no hay leads.</td></tr>` : ""}
               </tbody>
             </table>
           </div>

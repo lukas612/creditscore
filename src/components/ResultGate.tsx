@@ -7,6 +7,7 @@ interface Props {
   score: number;
   scoreBand: string;
   zipCode: string;
+  approvalProbability: number | null;
   clickId: string | null;
   onUnlock: () => void;
 }
@@ -16,6 +17,7 @@ export function ResultGate({
   score,
   scoreBand,
   zipCode,
+  approvalProbability,
   clickId,
   onUnlock,
 }: Props) {
@@ -46,6 +48,7 @@ export function ResultGate({
       consent_privacy: consent,
       score,
       score_band: scoreBand,
+      approval_probability: approvalProbability,
     });
 
     setSubmitting(false);

@@ -14,4 +14,5 @@ export interface ScoreResult {
   breakdown: BreakdownItem[];
   capacidadMensual: number;
   capacidadMaxima: number;
+  approvalProbability: number | null;
 }

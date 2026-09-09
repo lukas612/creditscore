@@ -14,11 +14,20 @@ interface Props {
   score: number;
   scoreBand: string;
   zipCode: string;
+  approvalProbability: number | null;
   clickId: string | null;
   onUnlock: (contact: GateContact) => void;
 }
 
-export function WitmeGate({ quizSessionId, score, scoreBand, zipCode, clickId, onUnlock }: Props) {
+export function WitmeGate({
+  quizSessionId,
+  score,
+  scoreBand,
+  zipCode,
+  approvalProbability,
+  clickId,
+  onUnlock,
+}: Props) {
   const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -46,6 +55,7 @@ export function WitmeGate({ quizSessionId, score, scoreBand, zipCode, clickId, o
       consent_privacy: consent,
       score,
       score_band: scoreBand,
+      approval_probability: approvalProbability,
       source: "solicitud",
     });
 

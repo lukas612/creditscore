@@ -53,6 +53,15 @@ export default function App() {
       return;
     }
 
+    // Métrica interna aparte del score: no es lo mismo pedir un importe
+    // acorde a tu capacidad que pedir muy por encima de ella. Best-effort:
+    // si falla, no debe bloquear el flujo del quiz.
+    const { data: approvalProbability } = await supabase.rpc("calculate_approval_probability", {
+      p_score: scored.score,
+      p_requested_amount: Number(answers.creditos_cantidad_a_solicitar ?? 0),
+      p_capacidad_maxima: scored.capacidad_maxima,
+    });
+
     setResult({
       quizSessionId,
       score: scored.score,
@@ -61,6 +70,7 @@ export default function App() {
       breakdown: scored.breakdown,
       capacidadMensual: scored.capacidad_mensual,
       capacidadMaxima: scored.capacidad_maxima,
+      approvalProbability: approvalProbability ?? null,
     });
     setStage("gate");
   };

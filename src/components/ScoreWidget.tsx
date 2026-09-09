@@ -37,6 +37,7 @@ export function ScoreWidget({
           score={result.score}
           scoreBand={result.scoreBand}
           zipCode={result.zipCode}
+          approvalProbability={result.approvalProbability}
           clickId={clickId}
           onUnlock={onUnlock}
         />

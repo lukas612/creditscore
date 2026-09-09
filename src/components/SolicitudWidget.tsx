@@ -14,6 +14,7 @@ interface ScoreData {
   breakdown: BreakdownItem[];
   capacidadMensual: number;
   capacidadMaxima: number;
+  approvalProbability: number | null;
 }
 
 interface Props {
@@ -57,6 +58,7 @@ export function SolicitudWidget({
           score={scoreData.score}
           scoreBand={scoreData.scoreBand}
           zipCode={String(answers.zipCode ?? "")}
+          approvalProbability={scoreData.approvalProbability}
           clickId={clickId}
           onUnlock={onGateUnlock}
         />
