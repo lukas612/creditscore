@@ -288,6 +288,9 @@ interface ScoringRule {
   weight: number;
   active: boolean;
   updated_at: string;
+  default_config: Record<string, unknown>;
+  default_weight: number;
+  default_active: boolean;
 }
 
 let scoringRulesCache: ScoringRule[] = [];
@@ -312,6 +315,16 @@ async function updateScoringRule(
     p_weight: weight,
     p_active: active,
   });
+  if (error) throw error;
+}
+
+async function resetScoringRule(password: string, key: string): Promise<void> {
+  const { error } = await supabase.rpc("admin_reset_scoring_rule", { p_password: password, p_key: key });
+  if (error) throw error;
+}
+
+async function resetAllScoringRules(password: string): Promise<void> {
+  const { error } = await supabase.rpc("admin_reset_all_scoring_rules", { p_password: password });
   if (error) throw error;
 }
 
@@ -781,6 +794,7 @@ function ruleCardHtml(rule: ScoringRule): string {
       </div>
       <div class="scoring-rule-footer">
         <button class="admin-btn-ghost" data-save-rule="${rule.key}">Guardar cambios</button>
+        <button class="admin-btn-ghost" data-reset-rule="${rule.key}">↺ Restaurar por defecto</button>
         <span class="scoring-rule-status"></span>
       </div>
     </div>
@@ -851,6 +865,44 @@ function wireScoringInputs(password: string) {
       }
     });
   });
+
+  document.querySelectorAll<HTMLButtonElement>("[data-reset-rule]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const key = btn.dataset.resetRule!;
+      const card = document.querySelector<HTMLElement>(`[data-rule-card="${key}"]`);
+      if (!card) return;
+      if (!confirm("¿Restaurar esta regla a sus valores por defecto? Se aplicará de inmediato.")) return;
+
+      const statusEl = card.querySelector<HTMLElement>(".scoring-rule-status")!;
+      btn.disabled = true;
+      statusEl.textContent = "Restaurando…";
+      statusEl.className = "scoring-rule-status";
+      try {
+        await resetScoringRule(password, key);
+        await renderScoringRules(password);
+      } catch {
+        statusEl.textContent = "Error al restaurar";
+        statusEl.className = "scoring-rule-status error";
+        btn.disabled = false;
+      }
+    });
+  });
+
+  document.getElementById("reset-all-rules-btn")?.addEventListener("click", async () => {
+    if (
+      !confirm(
+        "¿Restaurar TODAS las reglas de scoring a sus valores por defecto? Esto sobrescribe cualquier ajuste manual y se aplica de inmediato a las puntuaciones reales.",
+      )
+    ) {
+      return;
+    }
+    try {
+      await resetAllScoringRules(password);
+      await renderScoringRules(password);
+    } catch {
+      alert("No se ha podido restaurar. Inténtalo de nuevo.");
+    }
+  });
 }
 
 async function renderScoringRules(password: string) {
@@ -865,16 +917,21 @@ async function renderScoringRules(password: string) {
         ${headerHtml("scoring")}
 
         <section class="admin-card">
-          <p class="admin-card-title">Algoritmo de scoring</p>
-          <p class="admin-card-sub">
-            La puntuación va de 300 a 850 — el mismo rango que usan los bureaus de
-            crédito reales (FICO), no un porcentaje 0–100, para que se perciba como un
-            credit score de verdad y no como la nota de un test. Se parte de la
-            puntuación base y se suman o restan los puntos de cada regla activa,
-            multiplicados por su peso. <strong>Los cambios se aplican de inmediato a las
-            puntuaciones que verán los usuarios reales</strong> — no hay entorno de pruebas
-            separado.
-          </p>
+          <div class="scoring-intro-row">
+            <div>
+              <p class="admin-card-title">Algoritmo de scoring</p>
+              <p class="admin-card-sub">
+                La puntuación va de 300 a 850 — el mismo rango que usan los bureaus de
+                crédito reales (FICO), no un porcentaje 0–100, para que se perciba como un
+                credit score de verdad y no como la nota de un test. Se parte de la
+                puntuación base y se suman o restan los puntos de cada regla activa,
+                multiplicados por su peso. <strong>Los cambios se aplican de inmediato a las
+                puntuaciones que verán los usuarios reales</strong> — no hay entorno de pruebas
+                separado.
+              </p>
+            </div>
+            <button class="admin-btn-ghost" id="reset-all-rules-btn">Restaurar todo por defecto</button>
+          </div>
         </section>
 
         <div class="scoring-rules-grid">
