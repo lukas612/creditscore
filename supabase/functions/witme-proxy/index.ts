@@ -60,6 +60,7 @@ Deno.serve(async (req: Request) => {
     const nowMs = Date.now();
     const sentFrom = typeof body.sentFrom === "string" ? body.sentFrom : "unknown";
     const externalId = typeof body.externalId === "string" ? body.externalId : null;
+    const product = typeof body.product === "string" ? body.product : null;
 
     const payload = {
       formSchema: [],
@@ -91,6 +92,7 @@ Deno.serve(async (req: Request) => {
 
       const { error: logError } = await supabaseAdmin.from("witme_car_applications").insert({
         external_id: externalId,
+        product,
         request_payload: payload,
         response_status: null,
         response_body: message,
@@ -115,6 +117,7 @@ Deno.serve(async (req: Request) => {
 
     const { error: logError } = await supabaseAdmin.from("witme_car_applications").insert({
       external_id: externalId,
+      product,
       request_payload: payload,
       response_status: upstream.status,
       response_body: responseBody,

@@ -361,6 +361,7 @@ interface WitmeCarApplication {
   id: string;
   created_at: string;
   external_id: string | null;
+  product: string | null;
   witme_id: number | null;
   witme_status: string | null;
   witme_message: unknown;
@@ -988,19 +989,18 @@ async function renderLeadsTab(password: string) {
         </section>
 
         <section class="admin-card">
-          <p class="admin-card-title">Solicitudes enviadas a Witme · aval coche (${totalWitmeCarCount})</p>
+          <p class="admin-card-title">Solicitudes enviadas a Witme · aval coche / reunificación (${totalWitmeCarCount})</p>
           <p class="admin-card-sub">
-            Producto nuevo en pruebas (endpoint <code>servy-form-wait</code>), en paralelo
-            al de siempre, para todas las solicitudes (con o sin coche propio - probamos
-            20 leads reales a mitad y salió la misma tasa de aceptación en ambos casos).
-            De momento solo se registra aquí para comparar resultados; no se muestra
-            ninguna oferta de aquí al usuario todavía.
+            Dos productos nuevos en pruebas (endpoint <code>servy-form-wait</code>), en
+            paralelo al de siempre, para todas las solicitudes. Solo un ping en
+            background para comparar resultados; no se muestra ninguna oferta de aquí
+            al usuario todavía.
           </p>
           <div class="admin-table-scroll">
             <table class="admin-table">
               <thead>
                 <tr>
-                  <th>Fecha</th><th>Nombre</th><th>Email</th><th>Importe</th>
+                  <th>Fecha</th><th>Producto</th><th>Nombre</th><th>Email</th><th>Importe</th>
                   <th>Witme ID</th><th>Estado</th><th>Tiempo</th>
                 </tr>
               </thead>
@@ -1011,9 +1011,12 @@ async function renderLeadsTab(password: string) {
                     if (w.witme_message != null) tooltipParts.push(`Mensaje: ${JSON.stringify(w.witme_message)}`);
                     if (w.witme_redirect_url) tooltipParts.push(`Redirect URL: ${w.witme_redirect_url}`);
                     const statusTooltip = tooltipParts.join("\n");
+                    const productLabel =
+                      w.product === "car_collateral" ? "Aval coche" : w.product === "debt_consolidation" ? "Reunificación deudas" : "—";
                     return `
                   <tr>
                     <td>${dateFmt.format(new Date(w.created_at))}</td>
+                    <td>${escapeHtml(productLabel)}</td>
                     <td><div class="admin-table-name-cell" title="${escapeHtml(w.name ?? "")} ${escapeHtml(w.last_name ?? "")}">${escapeHtml(w.name ?? "")} ${escapeHtml(w.last_name ?? "")}</div></td>
                     <td><div class="admin-table-name-cell" title="${escapeHtml(w.email ?? "")}">${escapeHtml(w.email ?? "")}</div></td>
                     <td>${w.requested_amount != null ? `${w.requested_amount} €` : "—"}</td>
@@ -1024,7 +1027,7 @@ async function renderLeadsTab(password: string) {
                 `;
                   })
                   .join("")}
-                ${witmeCarApps.length === 0 ? `<tr><td colspan="7" class="admin-empty">Todavía no hay solicitudes de aval coche.</td></tr>` : ""}
+                ${witmeCarApps.length === 0 ? `<tr><td colspan="8" class="admin-empty">Todavía no hay solicitudes de estos productos.</td></tr>` : ""}
               </tbody>
             </table>
           </div>
