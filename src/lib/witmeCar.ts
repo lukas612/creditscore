@@ -139,7 +139,7 @@ export async function submitCarCollateralLead(
           only_pingtree: "0",
         },
         hidden: {
-          svyid: "w4ud70bl9k0k8haj3ip52fum",
+          svyid: clickId ?? "",
           servy_click: clickId ?? "",
           utm_source: utmSource ?? "",
         },
