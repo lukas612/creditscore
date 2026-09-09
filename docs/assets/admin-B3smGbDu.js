@@ -260,9 +260,10 @@ import{C as be,c as ge}from"./validation-DnU8phWm.js";import{q as _e}from"./ques
           <p class="admin-card-title">Solicitudes enviadas a Witme · aval coche (${E})</p>
           <p class="admin-card-sub">
             Producto nuevo en pruebas (endpoint <code>servy-form-wait</code>), en paralelo
-            al de siempre - solo para lenders con coche propio. De momento solo se registra
-            aquí para comparar resultados; no se muestra ninguna oferta de aquí al usuario
-            todavía.
+            al de siempre, para todas las solicitudes (con o sin coche propio - probamos
+            20 leads reales a mitad y salió la misma tasa de aceptación en ambos casos).
+            De momento solo se registra aquí para comparar resultados; no se muestra
+            ninguna oferta de aquí al usuario todavía.
           </p>
           <div class="admin-table-scroll">
             <table class="admin-table">

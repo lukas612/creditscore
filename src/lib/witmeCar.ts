@@ -113,12 +113,6 @@ function buildCarCollateralAnswers(answers: Answers, contact: CarCollateralConta
   return data;
 }
 
-// Solo tiene sentido este producto (préstamo con aval de coche) para quien
-// tiene coche propio.
-export function shouldOfferCarCollateral(answers: Answers): boolean {
-  return answers.hasOwnVehicle === "si";
-}
-
 // Best-effort, en paralelo al envío normal: nunca debe afectar ni bloquear
 // el flujo principal de la solicitud si falla.
 export async function submitCarCollateralLead(
