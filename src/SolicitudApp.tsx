@@ -4,7 +4,7 @@ import { trackFunnelEvent } from "./lib/funnel";
 import { getClickId } from "./lib/postback";
 import { supabase } from "./lib/supabase";
 import type { BreakdownItem } from "./lib/types";
-import { requestWitmeLenderOffer, type LenderOffer } from "./lib/witme";
+import { requestWitmeLenderOffer, witmeOfferId, MAX_WITME_ATTEMPTS, type LenderOffer } from "./lib/witme";
 import { Header } from "./components/Header";
 import { Landing } from "./components/Landing";
 import { SolicitudWidget } from "./components/SolicitudWidget";
@@ -26,7 +26,8 @@ export default function SolicitudApp() {
   const [stage, setStage] = useState<Stage>("quiz");
   const [answers, setAnswers] = useState<Answers>({});
   const [scoreData, setScoreData] = useState<ScoreData | null>(null);
-  const [witmeOffer, setWitmeOffer] = useState<LenderOffer | null>(null);
+  const [witmeOffers, setWitmeOffers] = useState<LenderOffer[]>([]);
+  const [fetchingMoreOffers, setFetchingMoreOffers] = useState(false);
   const [applicationSubmitted, setApplicationSubmitted] = useState(false);
   const [clickId] = useState<string | null>(() => getClickId());
 
@@ -103,10 +104,29 @@ export default function SolicitudApp() {
     }
     setStage("submitting");
 
-    const { offer, succeeded } = await requestWitmeLenderOffer(fullAnswers, clickId, utmSource, scoreData.quizSessionId);
-    setWitmeOffer(offer);
-    setApplicationSubmitted(succeeded);
+    const sessionId = scoreData.quizSessionId;
+    const first = await requestWitmeLenderOffer(fullAnswers, clickId, utmSource, sessionId, witmeOfferId(1));
+    setApplicationSubmitted(first.succeeded);
+    setWitmeOffers(first.offer ? [first.offer] : []);
     setStage("result");
+
+    // Cada llamada aceptada consume una posición de la cascada de
+    // prestamistas de Witme para esta misma solicitud; en cuanto una no
+    // vuelve con oferta (rechazo o fallo) asumimos que no quedan más y
+    // dejamos de insistir. No bloquea la UI: el usuario ya ve el resultado
+    // con la primera oferta (si la hay) y las ofertas estáticas de siempre,
+    // y cada oferta adicional aceptada se añade a la lista según llega.
+    let accepted = first.offer != null;
+    if (accepted) setFetchingMoreOffers(true);
+    for (let attempt = 2; accepted && attempt <= MAX_WITME_ATTEMPTS; attempt++) {
+      const next = await requestWitmeLenderOffer(fullAnswers, clickId, utmSource, sessionId, witmeOfferId(attempt));
+      accepted = next.offer != null;
+      if (next.offer) {
+        const offer = next.offer;
+        setWitmeOffers((prev) => [...prev, offer]);
+      }
+    }
+    setFetchingMoreOffers(false);
   };
 
   return (
@@ -118,7 +138,8 @@ export default function SolicitudApp() {
             stage={stage}
             answers={answers}
             scoreData={scoreData}
-            witmeOffer={witmeOffer}
+            witmeOffers={witmeOffers}
+            fetchingMoreOffers={fetchingMoreOffers}
             clickId={clickId}
             applicationSubmitted={applicationSubmitted}
             onQuizComplete={handleQuizComplete}

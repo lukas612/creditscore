@@ -64,6 +64,7 @@ export async function submitWitmeApplication(
 }
 
 export interface LenderOffer {
+  id: string;
   url: string;
 }
 
@@ -72,18 +73,29 @@ export interface WitmeOfferResult {
   succeeded: boolean;
 }
 
-// Una sola llamada a Witme (sin reintentos): si devuelve redirectUrl, esa es
-// la oferta destacada; si no, el resultado se combina con las ofertas
-// estáticas de siempre.
+// Cuántas veces, como máximo, insistimos a Witme por más ofertas para la
+// misma solicitud (ver requestWitmeLenderOffer).
+export const MAX_WITME_ATTEMPTS = 5;
+
+export function witmeOfferId(attempt: number): string {
+  return attempt === 1 ? "witme_featured" : `witme_featured_${attempt}`;
+}
+
+// Una sola llamada a Witme: si devuelve redirectUrl, esa es una oferta
+// destacada (identificada por offerId); si no, el resultado se combina con
+// las ofertas estáticas de siempre. El llamador decide cuántas veces repetir
+// esta llamada (ver MAX_WITME_ATTEMPTS) para ir completando la cascada de
+// prestamistas de Witme con la misma solicitud.
 export async function requestWitmeLenderOffer(
   answers: Answers,
   clickId: string | null,
   utmSource: string | null,
   externalId: string,
+  offerId: string,
 ): Promise<WitmeOfferResult> {
   try {
     const result = await submitWitmeApplication(answers, clickId, utmSource, externalId);
-    return { offer: result.redirectUrl ? { url: result.redirectUrl } : null, succeeded: true };
+    return { offer: result.redirectUrl ? { id: offerId, url: result.redirectUrl } : null, succeeded: true };
   } catch {
     return { offer: null, succeeded: false };
   }

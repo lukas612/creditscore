@@ -3,12 +3,13 @@ import { trackFunnelEvent } from "../lib/funnel";
 import type { LenderOffer } from "../lib/witme";
 
 interface Props {
-  witmeOffer: LenderOffer | null;
+  witmeOffers: LenderOffer[];
+  fetchingMoreOffers: boolean;
   clickId: string | null;
   quizSessionId: string;
 }
 
-export function SolicitudOffers({ witmeOffer, clickId, quizSessionId }: Props) {
+export function SolicitudOffers({ witmeOffers, fetchingMoreOffers, clickId, quizSessionId }: Props) {
   return (
     <div className="offers-section">
       <p className="offers-eyebrow">Tu siguiente paso</p>
@@ -18,11 +19,13 @@ export function SolicitudOffers({ witmeOffer, clickId, quizSessionId }: Props) {
         condiciones y proceso de solicitud independiente.
       </p>
       <div className="offers-grid">
-        {witmeOffer && (
-          <div className="offer-card offer-card-featured">
+        {witmeOffers.map((witmeOffer, index) => (
+          <div key={witmeOffer.id} className="offer-card offer-card-featured offer-card-enter">
             <div className="offer-card-body">
               <span className="offer-featured-badge">✓ Preaprobado para ti</span>
-              <span className="offer-name">Tu préstamo preaprobado</span>
+              <span className="offer-name">
+                {index === 0 ? "Tu préstamo preaprobado" : `Otra oferta preaprobada para ti`}
+              </span>
               <span className="offer-desc">Haz click para recibir tu dinero.</span>
             </div>
             <a
@@ -30,12 +33,12 @@ export function SolicitudOffers({ witmeOffer, clickId, quizSessionId }: Props) {
               href={witmeOffer.url}
               target="_blank"
               rel="noreferrer sponsored"
-              onClick={() => trackFunnelEvent("offer_click", "witme_featured", "solicitud", quizSessionId)}
+              onClick={() => trackFunnelEvent("offer_click", witmeOffer.id, "solicitud", quizSessionId)}
             >
               Ver oferta →
             </a>
           </div>
-        )}
+        ))}
         {CREDIT_OFFERS.map((offer) => (
           <div key={offer.id} className="offer-card">
             <div className="offer-card-body">
@@ -54,6 +57,11 @@ export function SolicitudOffers({ witmeOffer, clickId, quizSessionId }: Props) {
           </div>
         ))}
       </div>
+      {fetchingMoreOffers && (
+        <p className="offers-more-loading">
+          <span className="offers-more-spinner" aria-hidden="true" /> Buscando más ofertas preaprobadas para ti…
+        </p>
+      )}
     </div>
   );
 }

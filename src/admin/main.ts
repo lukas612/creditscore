@@ -9,6 +9,15 @@ const OFFER_LABELS: Record<string, string> = {
   ...Object.fromEntries(CREDIT_OFFERS.map((o) => [o.id, o.name])),
 };
 
+// witme_featured_2, _3... son ofertas adicionales de la misma cascada de
+// prestamistas de Witme para una solicitud (ver MAX_WITME_ATTEMPTS en
+// src/lib/witme.ts), no están en OFFER_LABELS por no ser un id fijo.
+function offerLabel(offerId: string): string {
+  if (offerId in OFFER_LABELS) return OFFER_LABELS[offerId];
+  const match = offerId.match(/^witme_featured_(\d+)$/);
+  return match ? `Witme (oferta destacada ${match[1]})` : offerId;
+}
+
 // Traduce los valores crudos guardados en quiz_sessions.answers (códigos como
 // "empleado" o textos ya legibles como "Cuenta ajena (Tiempo completo)") a la
 // misma etiqueta que ve el usuario en el formulario, reutilizando las mismas
@@ -727,7 +736,7 @@ async function renderDashboard(password: string) {
                     <td>${escapeHtml(SOURCE_LABELS[l.source as SourceKey] ?? l.source)}</td>
                     <td>${
                       l.offer_clicks && l.offer_clicks.length > 0
-                        ? l.offer_clicks.map((id) => escapeHtml(OFFER_LABELS[id] ?? id)).join(", ")
+                        ? l.offer_clicks.map((id) => escapeHtml(offerLabel(id))).join(", ")
                         : "—"
                     }</td>
                   </tr>
@@ -785,7 +794,7 @@ async function renderDashboard(password: string) {
                     }</td>
                     <td>${
                       w.offer_clicks && w.offer_clicks.length > 0
-                        ? `✅ ${w.offer_clicks.map((id) => escapeHtml(OFFER_LABELS[id] ?? id)).join(", ")}`
+                        ? `✅ ${w.offer_clicks.map((id) => escapeHtml(offerLabel(id))).join(", ")}`
                         : "—"
                     }</td>
                   </tr>
@@ -819,7 +828,7 @@ async function renderDashboard(password: string) {
                   .map(
                     (o) => `
                   <tr>
-                    <td>${escapeHtml(OFFER_LABELS[o.offer_id] ?? o.offer_id)}</td>
+                    <td>${escapeHtml(offerLabel(o.offer_id))}</td>
                     <td>${o.clicks}</td>
                   </tr>
                 `,

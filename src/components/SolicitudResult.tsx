@@ -11,7 +11,8 @@ interface Props {
   breakdown: BreakdownItem[];
   capacidadMensual: number;
   capacidadMaxima: number;
-  witmeOffer: LenderOffer | null;
+  witmeOffers: LenderOffer[];
+  fetchingMoreOffers: boolean;
   clickId: string | null;
   quizSessionId: string;
   applicationSubmitted: boolean;
@@ -48,7 +49,8 @@ export function SolicitudResult({
   breakdown,
   capacidadMensual,
   capacidadMaxima,
-  witmeOffer,
+  witmeOffers,
+  fetchingMoreOffers,
   clickId,
   quizSessionId,
   applicationSubmitted,
@@ -71,7 +73,12 @@ export function SolicitudResult({
       <span className="score-band">{copy.title}</span>
       <p className="result-sub">{copy.tip}</p>
 
-      <SolicitudOffers witmeOffer={witmeOffer} clickId={clickId} quizSessionId={quizSessionId} />
+      <SolicitudOffers
+        witmeOffers={witmeOffers}
+        fetchingMoreOffers={fetchingMoreOffers}
+        clickId={clickId}
+        quizSessionId={quizSessionId}
+      />
 
       <ShareResult score={score} scoreBand={scoreBand} />
 
