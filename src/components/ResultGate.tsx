@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { fireServyPostback } from "../lib/postback";
 import { supabase } from "../lib/supabase";
+import { isValidEmail, isValidSpanishPhone, normalizeSpanishPhone } from "../lib/validation";
 
 interface Props {
   quizSessionId: string;
@@ -31,6 +32,14 @@ export function ResultGate({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!isValidEmail(email)) {
+      setError("Revisa el correo electrónico, no parece válido.");
+      return;
+    }
+    if (!isValidSpanishPhone(phone)) {
+      setError("Revisa el teléfono: debe ser un número español de 9 dígitos.");
+      return;
+    }
     if (!consent) {
       setError("Debes aceptar la política de privacidad para continuar.");
       return;
@@ -43,7 +52,7 @@ export function ResultGate({
       first_name: firstName,
       last_name: lastName,
       email,
-      phone,
+      phone: normalizeSpanishPhone(phone),
       zip_code: zipCode,
       consent_privacy: consent,
       score,
@@ -108,8 +117,8 @@ export function ResultGate({
         />
         <input
           type="tel"
-          placeholder="Teléfono"
-          autoComplete="tel"
+          placeholder="Teléfono (612 345 678)"
+          autoComplete="tel-national"
           inputMode="tel"
           enterKeyHint="done"
           value={phone}

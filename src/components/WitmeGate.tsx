@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { fireServyPostback } from "../lib/postback";
 import { supabase } from "../lib/supabase";
+import { isValidEmail, isValidSpanishPhone, normalizeSpanishPhone } from "../lib/validation";
 
 export interface GateContact {
   name: string;
@@ -38,6 +39,14 @@ export function WitmeGate({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!isValidEmail(email)) {
+      setError("Revisa el correo electrónico, no parece válido.");
+      return;
+    }
+    if (!isValidSpanishPhone(phoneNumber)) {
+      setError("Revisa el teléfono: debe ser un número español de 9 dígitos.");
+      return;
+    }
     if (!consent) {
       setError("Debes aceptar la política de privacidad para continuar.");
       return;
@@ -45,12 +54,14 @@ export function WitmeGate({
     setSubmitting(true);
     setError(null);
 
+    const normalizedPhone = normalizeSpanishPhone(phoneNumber);
+
     const { error: insertError } = await supabase.from("leads").insert({
       quiz_session_id: quizSessionId,
       first_name: name,
       last_name: lastName,
       email,
-      phone: phoneNumber,
+      phone: normalizedPhone,
       zip_code: zipCode,
       consent_privacy: consent,
       score,
@@ -70,7 +81,7 @@ export function WitmeGate({
       fireServyPostback(clickId);
     }
 
-    onUnlock({ name, lastName, email, phoneNumber });
+    onUnlock({ name, lastName, email, phoneNumber: normalizedPhone });
   };
 
   return (
@@ -116,8 +127,8 @@ export function WitmeGate({
         />
         <input
           type="tel"
-          placeholder="Teléfono"
-          autoComplete="tel"
+          placeholder="Teléfono (612 345 678)"
+          autoComplete="tel-national"
           inputMode="tel"
           enterKeyHint="done"
           value={phoneNumber}

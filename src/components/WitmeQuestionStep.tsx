@@ -40,6 +40,7 @@ export function WitmeQuestionStep({ question, value, onAnswer }: Props) {
   const [year, setYear] = useState(initialYear);
   const [month, setMonth] = useState(initialMonth);
   const [day, setDay] = useState(initialDay);
+  const [error, setError] = useState<string | null>(null);
 
   const submitDraft = () => {
     if (question.type === "date") {
@@ -48,6 +49,14 @@ export function WitmeQuestionStep({ question, value, onAnswer }: Props) {
       return;
     }
     if (draft.trim() === "") return;
+    if (question.validate) {
+      const message = question.validate(draft);
+      if (message) {
+        setError(message);
+        return;
+      }
+    }
+    setError(null);
     onAnswer(question.type === "number" ? Number(draft) : draft);
   };
 
@@ -156,12 +165,16 @@ export function WitmeQuestionStep({ question, value, onAnswer }: Props) {
           placeholder={question.placeholder}
           min={question.min}
           max={question.max}
-          onChange={(e) => setDraft(e.target.value)}
+          onChange={(e) => {
+            setDraft(e.target.value);
+            if (error) setError(null);
+          }}
           onKeyDown={(e) => e.key === "Enter" && submitDraft()}
           autoFocus
         />
         {question.suffix && <span className="question-suffix">{question.suffix}</span>}
       </div>
+      {error && <p className="form-error">{error}</p>}
       <button className="btn-primary" onClick={submitDraft}>
         Continuar
       </button>

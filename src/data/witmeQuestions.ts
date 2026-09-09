@@ -1,3 +1,5 @@
+import { isValidSpanishIban } from "../lib/validation";
+
 export type Answers = Record<string, string | number | boolean>;
 
 export type WitmeQuestionType = "text" | "number" | "yesno" | "date" | "select" | "dropdown";
@@ -21,6 +23,7 @@ export interface WitmeQuestionDef {
   max?: number;
   helpText?: string;
   condition?: (answers: Answers) => boolean;
+  validate?: (value: string) => string | null;
 }
 
 // Fases antes del gate (solo lo que hace falta para calcular la puntuación),
@@ -345,6 +348,7 @@ export const WITME_QUESTIONS: WitmeQuestionDef[] = [
     phase: "patrimonio",
     placeholder: "ES00 0000 0000 0000 0000 0000",
     condition: (a) => a.hasBankAccount === "si",
+    validate: (v) => (isValidSpanishIban(v) ? null : "Revisa el IBAN: debe empezar por ES y tener 24 caracteres."),
   },
 ];
 
