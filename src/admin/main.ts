@@ -119,7 +119,7 @@ let currentLeadsPage = 0;
 const WITME_PAGE_SIZE = 25;
 let currentWitmePage = 0;
 
-type Tab = "dashboard" | "scoring" | "fieldstats";
+type Tab = "dashboard" | "leads" | "scoring" | "fieldstats";
 let currentTab: Tab = "dashboard";
 
 // A qué función de scoring alimenta cada regla (calculate_score = quiz corto,
@@ -243,6 +243,7 @@ interface Lead {
   offer_clicks: string[] | null;
   total_count: number;
   approval_probability: number | null;
+  witme_submitted: boolean;
 }
 
 const dateFmt = new Intl.DateTimeFormat("es-ES", {
@@ -564,6 +565,7 @@ function funnelStepsHtml(overview: FunnelOverview, steps: FunnelStepRow[], stepD
 function renderApp(password: string) {
   if (currentTab === "scoring") renderScoringRules(password);
   else if (currentTab === "fieldstats") renderFieldStats(password);
+  else if (currentTab === "leads") renderLeadsTab(password);
   else renderDashboard(password);
 }
 
@@ -574,6 +576,7 @@ function headerHtml(activeTab: Tab): string {
       <div class="admin-header-actions">
         <div class="admin-tabs">
           <button class="admin-tab-btn ${activeTab === "dashboard" ? "active" : ""}" data-tab="dashboard">Dashboard</button>
+          <button class="admin-tab-btn ${activeTab === "leads" ? "active" : ""}" data-tab="leads">Leads</button>
           <button class="admin-tab-btn ${activeTab === "scoring" ? "active" : ""}" data-tab="scoring">Algoritmo de scoring</button>
           <button class="admin-tab-btn ${activeTab === "fieldstats" ? "active" : ""}" data-tab="fieldstats">Estadísticas</button>
         </div>
@@ -660,21 +663,14 @@ async function renderDashboard(password: string) {
   const period = periodFor(currentPreset);
 
   try {
-    const [stats, leads, funnelOverview, funnelSteps, witmeApps, offerClicks, witmeResponseStats] = await Promise.all([
+    const [stats, funnelOverview, funnelSteps, offerClicks] = await Promise.all([
       fetchStats(password, period, currentSource),
-      fetchLeads(password, period, currentSource, currentLeadsPage),
       fetchFunnelOverview(password, period, currentSource),
       fetchFunnelSteps(password, period, currentSource),
-      fetchWitmeApplications(password, currentWitmePage),
       fetchOfferClicks(password, period, currentSource),
-      fetchWitmeResponseStats(password),
     ]);
     const totalBands = stats.band_excelente + stats.band_bueno + stats.band_regular + stats.band_bajo;
     const stepDefs = currentSource === "solicitud" ? STEP_DEFS_SOLICITUD : STEP_DEFS;
-    const totalLeadsCount = leads[0]?.total_count ?? 0;
-    const totalLeadsPages = Math.max(1, Math.ceil(totalLeadsCount / LEADS_PAGE_SIZE));
-    const totalWitmeCount = witmeApps[0]?.total_count ?? 0;
-    const totalWitmePages = Math.max(1, Math.ceil(totalWitmeCount / WITME_PAGE_SIZE));
 
     root.innerHTML = `
       <div class="admin-shell">
@@ -740,13 +736,88 @@ async function renderDashboard(password: string) {
         </section>
 
         <section class="admin-card">
+          <p class="admin-card-title">Clics en ofertas</p>
+          <p class="admin-card-sub">
+            Cuántas veces se ha hecho click en "Ver oferta" y en cuál, en el periodo y
+            embudo seleccionados. No mide si el usuario llegó a contratar, solo el click.
+          </p>
+          <div class="admin-table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Oferta</th><th>Clics</th></tr>
+              </thead>
+              <tbody>
+                ${offerClicks
+                  .map(
+                    (o) => `
+                  <tr>
+                    <td>${escapeHtml(offerLabel(o.offer_id))}</td>
+                    <td>${o.clicks}</td>
+                  </tr>
+                `,
+                  )
+                  .join("")}
+                ${offerClicks.length === 0 ? `<tr><td colspan="2" class="admin-empty">Todavía no hay clics registrados.</td></tr>` : ""}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    `;
+
+    wireHeader(password);
+    wireFilterBars(password);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (message.toLowerCase().includes("unauthorized")) {
+      sessionStorage.removeItem(SESSION_KEY);
+      renderLogin("Tu sesión ha caducado o la contraseña ya no es válida.");
+    } else {
+      // Un error que no es de autenticación (p.ej. un bug en una consulta) no
+      // debe borrar la sesión ni decir "contraseña incorrecta" - eso confunde
+      // un fallo del servidor con un problema de acceso.
+      root.innerHTML = `
+        <div class="admin-shell">
+          <p class="admin-error">Ha ocurrido un error inesperado cargando el panel: ${escapeHtml(message)}</p>
+          <button class="admin-btn-ghost" id="retry-btn">Reintentar</button>
+        </div>
+      `;
+      document.getElementById("retry-btn")!.addEventListener("click", () => renderDashboard(password));
+    }
+  }
+}
+
+async function renderLeadsTab(password: string) {
+  root.innerHTML = `<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>`;
+
+  const period = periodFor(currentPreset);
+
+  try {
+    const [leads, witmeApps, witmeResponseStats] = await Promise.all([
+      fetchLeads(password, period, currentSource, currentLeadsPage),
+      fetchWitmeApplications(password, currentWitmePage),
+      fetchWitmeResponseStats(password),
+    ]);
+    const totalLeadsCount = leads[0]?.total_count ?? 0;
+    const totalLeadsPages = Math.max(1, Math.ceil(totalLeadsCount / LEADS_PAGE_SIZE));
+    const totalWitmeCount = witmeApps[0]?.total_count ?? 0;
+    const totalWitmePages = Math.max(1, Math.ceil(totalWitmeCount / WITME_PAGE_SIZE));
+
+    root.innerHTML = `
+      <div class="admin-shell">
+        ${headerHtml("leads")}
+
+        ${filterBarsHtml(period)}
+
+        <section class="admin-card">
           <p class="admin-card-title">Leads (${totalLeadsCount})</p>
           <div class="admin-table-scroll">
             <table class="admin-table">
               <thead>
                 <tr>
                   <th>Fecha</th><th>Nombre</th><th>Email</th><th>Teléfono</th>
-                  <th>CP</th><th>Score</th><th>Banda</th><th>Aprobación</th><th>Estado</th><th>Fuente</th><th>Ofertas clicadas</th>
+                  <th>CP</th><th>Score</th><th>Banda</th><th>Aprobación</th><th>Estado</th><th>Fuente</th>
+                  <th>Enviado a Witme</th><th>Ofertas clicadas</th>
                 </tr>
               </thead>
               <tbody>
@@ -769,6 +840,13 @@ async function renderDashboard(password: string) {
                     <td>${escapeHtml(l.status)}</td>
                     <td>${escapeHtml(SOURCE_LABELS[l.source as SourceKey] ?? l.source)}</td>
                     <td>${
+                      l.source !== "solicitud"
+                        ? `<span title="El quiz corto no envía a Witme">n/a</span>`
+                        : l.witme_submitted
+                          ? `<span class="admin-badge band-excelente">✅ Sí</span>`
+                          : `<span class="admin-badge band-bajo" title="No completó el formulario de identidad/domicilio/vehículo que exige Witme">❌ No</span>`
+                    }</td>
+                    <td>${
                       l.offer_clicks && l.offer_clicks.length > 0
                         ? l.offer_clicks.map((id) => escapeHtml(offerLabel(id))).join(", ")
                         : "—"
@@ -777,7 +855,7 @@ async function renderDashboard(password: string) {
                 `,
                   )
                   .join("")}
-                ${leads.length === 0 ? `<tr><td colspan="11" class="admin-empty">Todavía no hay leads.</td></tr>` : ""}
+                ${leads.length === 0 ? `<tr><td colspan="12" class="admin-empty">Todavía no hay leads.</td></tr>` : ""}
               </tbody>
             </table>
           </div>
@@ -866,34 +944,6 @@ async function renderDashboard(password: string) {
             <button class="admin-btn-ghost" id="witme-next-btn" ${currentWitmePage + 1 >= totalWitmePages ? "disabled" : ""}>Siguiente →</button>
           </div>
         </section>
-
-        <section class="admin-card">
-          <p class="admin-card-title">Clics en ofertas</p>
-          <p class="admin-card-sub">
-            Cuántas veces se ha hecho click en "Ver oferta" y en cuál, en el periodo y
-            embudo seleccionados. No mide si el usuario llegó a contratar, solo el click.
-          </p>
-          <div class="admin-table-scroll">
-            <table class="admin-table">
-              <thead>
-                <tr><th>Oferta</th><th>Clics</th></tr>
-              </thead>
-              <tbody>
-                ${offerClicks
-                  .map(
-                    (o) => `
-                  <tr>
-                    <td>${escapeHtml(offerLabel(o.offer_id))}</td>
-                    <td>${o.clicks}</td>
-                  </tr>
-                `,
-                  )
-                  .join("")}
-                ${offerClicks.length === 0 ? `<tr><td colspan="2" class="admin-empty">Todavía no hay clics registrados.</td></tr>` : ""}
-              </tbody>
-            </table>
-          </div>
-        </section>
       </div>
     `;
 
@@ -903,22 +953,22 @@ async function renderDashboard(password: string) {
     document.getElementById("leads-prev-btn")!.addEventListener("click", () => {
       if (currentLeadsPage > 0) {
         currentLeadsPage--;
-        renderDashboard(password);
+        renderLeadsTab(password);
       }
     });
     document.getElementById("leads-next-btn")!.addEventListener("click", () => {
       currentLeadsPage++;
-      renderDashboard(password);
+      renderLeadsTab(password);
     });
     document.getElementById("witme-prev-btn")!.addEventListener("click", () => {
       if (currentWitmePage > 0) {
         currentWitmePage--;
-        renderDashboard(password);
+        renderLeadsTab(password);
       }
     });
     document.getElementById("witme-next-btn")!.addEventListener("click", () => {
       currentWitmePage++;
-      renderDashboard(password);
+      renderLeadsTab(password);
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
@@ -926,16 +976,13 @@ async function renderDashboard(password: string) {
       sessionStorage.removeItem(SESSION_KEY);
       renderLogin("Tu sesión ha caducado o la contraseña ya no es válida.");
     } else {
-      // Un error que no es de autenticación (p.ej. un bug en una consulta) no
-      // debe borrar la sesión ni decir "contraseña incorrecta" - eso confunde
-      // un fallo del servidor con un problema de acceso.
       root.innerHTML = `
         <div class="admin-shell">
           <p class="admin-error">Ha ocurrido un error inesperado cargando el panel: ${escapeHtml(message)}</p>
           <button class="admin-btn-ghost" id="retry-btn">Reintentar</button>
         </div>
       `;
-      document.getElementById("retry-btn")!.addEventListener("click", () => renderDashboard(password));
+      document.getElementById("retry-btn")!.addEventListener("click", () => renderLeadsTab(password));
     }
   }
 }
