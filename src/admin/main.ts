@@ -1011,8 +1011,17 @@ async function renderLeadsTab(password: string) {
                     if (w.witme_message != null) tooltipParts.push(`Mensaje: ${JSON.stringify(w.witme_message)}`);
                     if (w.witme_redirect_url) tooltipParts.push(`Redirect URL: ${w.witme_redirect_url}`);
                     const statusTooltip = tooltipParts.join("\n");
+                    // Desde que se unificó en una sola petición (servy_id +
+                    // servy_id_2 juntos), el producto es siempre el combinado;
+                    // los valores sueltos son de filas antiguas previas al cambio.
                     const productLabel =
-                      w.product === "car_collateral" ? "Aval coche" : w.product === "debt_consolidation" ? "Reunificación deudas" : "—";
+                      w.product === "car_collateral+debt_consolidation"
+                        ? "Aval coche + Reunificación deudas"
+                        : w.product === "car_collateral"
+                          ? "Aval coche"
+                          : w.product === "debt_consolidation"
+                            ? "Reunificación deudas"
+                            : "—";
                     return `
                   <tr>
                     <td>${dateFmt.format(new Date(w.created_at))}</td>

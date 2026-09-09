@@ -9,13 +9,16 @@ import { supabase } from "./supabase";
 // redirectUrl: solo se registra para tener datos con los que decidir más
 // adelante si merece la pena sacarlo a producción.
 //
+// Es UNA sola petición por solicitud, no una por producto: el mismo payload
+// lleva servy_id (aval coche) y servy_id_2 (reunificación de deudas) juntos
+// en "vars", confirmado por Witme.
+//
 // No tenemos el diccionario completo de Witme para este endpoint, solo los
-// ejemplos de la petición que nos pasaron (mismo esquema, un servy_id
-// distinto por producto). Los campos condicionales que no aparecían en los
-// ejemplos (tipo de vehículo, matrícula, financiación, IBAN) se deducen del
-// mismo patrón en español-con-guiones, y se omiten por completo cuando no
-// aplican - igual que hace el propio ejemplo de Witme cuando
-// vehiculo-propio=false.
+// ejemplos de la petición que nos pasaron. Los campos condicionales que no
+// aparecían en los ejemplos (tipo de vehículo, matrícula, financiación,
+// IBAN) se deducen del mismo patrón en español-con-guiones, y se omiten por
+// completo cuando no aplican - igual que hace el propio ejemplo de Witme
+// cuando vehiculo-propio=false.
 
 interface CarCollateralContact {
   name: string;
@@ -24,12 +27,8 @@ interface CarCollateralContact {
   phoneNumber: string;
 }
 
-export type ServyProduct = "car_collateral" | "debt_consolidation";
-
-const SERVY_ID_BY_PRODUCT: Record<ServyProduct, number> = {
-  car_collateral: 171,
-  debt_consolidation: 151,
-};
+const SERVY_ID_CAR_COLLATERAL = 171;
+const SERVY_ID_DEBT_CONSOLIDATION = 154;
 
 const TEXT_FIELDS: Record<string, string> = {
   dateOfBirth: "fecha-de-nacimiento",
@@ -127,8 +126,7 @@ function buildCarCollateralAnswers(answers: Answers, contact: CarCollateralConta
 // Best-effort, en paralelo al envío normal: nunca debe afectar ni bloquear
 // el flujo principal de la solicitud si falla. Un solo intento (sin
 // reintentos ni cascada) - es un ping para comparar, no un envío real.
-async function submitServyProduct(
-  product: ServyProduct,
+export async function submitCarCollateralAndDebtConsolidationLead(
   answers: Answers,
   contact: CarCollateralContact,
   clickId: string | null,
@@ -139,12 +137,12 @@ async function submitServyProduct(
     await supabase.functions.invoke("witme-proxy", {
       body: {
         action: "submit_car",
-        product,
+        product: "car_collateral+debt_consolidation",
         externalId,
         sentFrom: window.location.href,
         vars: {
-          servy_id: SERVY_ID_BY_PRODUCT[product],
-          servy_id_2: 154,
+          servy_id: SERVY_ID_CAR_COLLATERAL,
+          servy_id_2: SERVY_ID_DEBT_CONSOLIDATION,
           servy_id_3: null,
           origin: "2",
           country: "ES",
@@ -163,24 +161,4 @@ async function submitServyProduct(
   } catch {
     // Ver comentario de la función: nunca debe romper el flujo principal.
   }
-}
-
-export async function submitCarCollateralLead(
-  answers: Answers,
-  contact: CarCollateralContact,
-  clickId: string | null,
-  utmSource: string | null,
-  externalId: string,
-): Promise<void> {
-  return submitServyProduct("car_collateral", answers, contact, clickId, utmSource, externalId);
-}
-
-export async function submitDebtConsolidationLead(
-  answers: Answers,
-  contact: CarCollateralContact,
-  clickId: string | null,
-  utmSource: string | null,
-  externalId: string,
-): Promise<void> {
-  return submitServyProduct("debt_consolidation", answers, contact, clickId, utmSource, externalId);
 }

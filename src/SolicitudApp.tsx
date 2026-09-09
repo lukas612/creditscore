@@ -5,7 +5,7 @@ import { getClickId } from "./lib/postback";
 import { supabase } from "./lib/supabase";
 import type { BreakdownItem } from "./lib/types";
 import { requestWitmeLenderOffer, witmeOfferId, MAX_WITME_ATTEMPTS, type LenderOffer } from "./lib/witme";
-import { submitCarCollateralLead, submitDebtConsolidationLead } from "./lib/witmeCar";
+import { submitCarCollateralAndDebtConsolidationLead } from "./lib/witmeCar";
 import { Header } from "./components/Header";
 import { Landing } from "./components/Landing";
 import { SolicitudWidget } from "./components/SolicitudWidget";
@@ -114,16 +114,22 @@ export default function SolicitudApp() {
     // deudas), en paralelo al envío normal de más abajo - probado con 20
     // leads reales (mitad con coche, mitad sin) y la tasa de aceptación fue
     // la misma (20%) en ambos casos, así que se disparan para todo el
-    // mundo. Solo un ping en background para comparar resultados: nunca se
-    // muestra ninguna oferta de aquí al usuario.
+    // mundo. Una sola petición con ambos servy_id juntos (no una por
+    // producto). Solo un ping en background para comparar resultados: nunca
+    // se muestra ninguna oferta de aquí al usuario.
     const carContact = {
       name: String(fullAnswers.name ?? ""),
       lastName: String(fullAnswers.lastName ?? ""),
       email: String(fullAnswers.email ?? ""),
       phoneNumber: String(fullAnswers.phoneNumber ?? ""),
     };
-    void submitCarCollateralLead(fullAnswers, carContact, clickId, utmSource, scoreData.quizSessionId);
-    void submitDebtConsolidationLead(fullAnswers, carContact, clickId, utmSource, scoreData.quizSessionId);
+    void submitCarCollateralAndDebtConsolidationLead(
+      fullAnswers,
+      carContact,
+      clickId,
+      utmSource,
+      scoreData.quizSessionId,
+    );
 
     // Witme exige el número de cuenta bancaria como campo obligatorio y lo
     // rechaza aunque lo mandemos vacío (ver "The data.bank account number

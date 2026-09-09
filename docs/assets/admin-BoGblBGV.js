@@ -274,7 +274,7 @@ import{C as be,c as ge}from"./validation-DnU8phWm.js";import{q as _e}from"./ques
               </thead>
               <tbody>
                 ${u.map(s=>{const $=[];s.witme_message!=null&&$.push(`Mensaje: ${JSON.stringify(s.witme_message)}`),s.witme_redirect_url&&$.push(`Redirect URL: ${s.witme_redirect_url}`);const q=$.join(`
-`),N=s.product==="car_collateral"?"Aval coche":s.product==="debt_consolidation"?"Reunificación deudas":"—";return`
+`),N=s.product==="car_collateral+debt_consolidation"?"Aval coche + Reunificación deudas":s.product==="car_collateral"?"Aval coche":s.product==="debt_consolidation"?"Reunificación deudas":"—";return`
                   <tr>
                     <td>${W.format(new Date(s.created_at))}</td>
                     <td>${o(N)}</td>
