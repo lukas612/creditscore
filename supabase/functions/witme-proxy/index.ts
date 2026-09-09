@@ -92,6 +92,11 @@ Deno.serve(async (req: Request) => {
       tracking: typeof body.tracking === "object" && body.tracking !== null ? body.tracking : {},
     };
 
+    // De momento no cortamos la llamada a Witme con un timeout propio - no
+    // tenemos datos reales de cuánto tarda normalmente, así que primero
+    // medimos y guardamos witme_response_ms en cada intento (éxito o error)
+    // para poder decidir con datos si merece la pena cortar, y en cuánto.
+    const startedAt = Date.now();
     let upstream: Response;
     try {
       upstream = await fetch(`${WITME_BASE_URL}/leads/new`, {
@@ -102,29 +107,28 @@ Deno.serve(async (req: Request) => {
           Accept: "application/json",
         },
         body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(WITME_TIMEOUT_MS),
       });
     } catch (err) {
-      const timedOut = err instanceof DOMException && err.name === "TimeoutError";
-      const message = timedOut
-        ? `Witme no respondió en ${WITME_TIMEOUT_MS / 1000}s`
-        : `Error contactando con Witme: ${err instanceof Error ? err.message : String(err)}`;
+      const responseMs = Date.now() - startedAt;
+      const message = `Error contactando con Witme: ${err instanceof Error ? err.message : String(err)}`;
 
       const { error: logError } = await supabaseAdmin.from("witme_applications").insert({
         click_id: typeof body.clickId === "string" ? body.clickId : null,
         utm_source: typeof body.utmSource === "string" ? body.utmSource : null,
         request_payload: payload,
         witme_id: null,
-        witme_status: timedOut ? "timeout" : "error",
+        witme_status: "error",
         witme_message: message,
         witme_redirect_url: null,
+        witme_response_ms: responseMs,
       });
       if (logError) {
         console.error("Error logging witme_applications:", logError.message);
       }
 
-      return jsonResponse({ error: message }, 504);
+      return jsonResponse({ error: message }, 502);
     }
+    const responseMs = Date.now() - startedAt;
     const text = await upstream.text();
 
     let parsed: Record<string, unknown> = {};
@@ -142,6 +146,7 @@ Deno.serve(async (req: Request) => {
       witme_status: typeof parsed.status === "string" ? parsed.status : null,
       witme_message: parsed.message ?? null,
       witme_redirect_url: typeof parsed.redirectUrl === "string" ? parsed.redirectUrl : null,
+      witme_response_ms: responseMs,
     });
     if (logError) {
       console.error("Error logging witme_applications:", logError.message);

@@ -330,6 +330,7 @@ interface WitmeApplication {
   approval_probability: number | null;
   offer_clicks: string[] | null;
   total_count: number;
+  witme_response_ms: number | null;
 }
 
 async function fetchWitmeApplications(password: string, page: number): Promise<WitmeApplication[]> {
@@ -340,6 +341,28 @@ async function fetchWitmeApplications(password: string, page: number): Promise<W
   });
   if (error) throw error;
   return (data ?? []) as WitmeApplication[];
+}
+
+interface WitmeResponseStats {
+  count_with_timing: number;
+  avg_ms: number | null;
+  median_ms: number | null;
+  min_ms: number | null;
+  max_ms: number | null;
+  p95_ms: number | null;
+  count_timeout: number;
+  count_error: number;
+}
+
+async function fetchWitmeResponseStats(password: string): Promise<WitmeResponseStats> {
+  const { data, error } = await supabase.rpc("admin_get_witme_response_stats", { p_password: password }).single<WitmeResponseStats>();
+  if (error || !data) throw error ?? new Error("No data");
+  return data;
+}
+
+function fmtMs(ms: number | null): string {
+  if (ms == null) return "—";
+  return `${(ms / 1000).toFixed(1)} s`;
 }
 
 interface OfferClickRow {
@@ -627,13 +650,14 @@ async function renderDashboard(password: string) {
   const period = periodFor(currentPreset);
 
   try {
-    const [stats, leads, funnelOverview, funnelSteps, witmeApps, offerClicks] = await Promise.all([
+    const [stats, leads, funnelOverview, funnelSteps, witmeApps, offerClicks, witmeResponseStats] = await Promise.all([
       fetchStats(password, period, currentSource),
       fetchLeads(password, period, currentSource, currentLeadsPage),
       fetchFunnelOverview(password, period, currentSource),
       fetchFunnelSteps(password, period, currentSource),
       fetchWitmeApplications(password, currentWitmePage),
       fetchOfferClicks(password, period, currentSource),
+      fetchWitmeResponseStats(password),
     ]);
     const totalBands = stats.band_excelente + stats.band_bueno + stats.band_regular + stats.band_bajo;
     const stepDefs = currentSource === "solicitud" ? STEP_DEFS_SOLICITUD : STEP_DEFS;
@@ -762,12 +786,25 @@ async function renderDashboard(password: string) {
             presentó (la destacada de Witme si hubo <code>redirectUrl</code>, o alguna de
             las estáticas si no).
           </p>
+          <section class="admin-stats-grid admin-stats-grid-compact">
+            ${statCard("Tiempo medio de respuesta", fmtMs(witmeResponseStats.avg_ms))}
+            ${statCard("Mediana", fmtMs(witmeResponseStats.median_ms))}
+            ${statCard("P95", fmtMs(witmeResponseStats.p95_ms))}
+            ${statCard("Máximo", fmtMs(witmeResponseStats.max_ms))}
+          </section>
+          <p class="admin-card-sub admin-card-sub-tight">
+            Sobre ${witmeResponseStats.count_with_timing} intentos con tiempo registrado
+            (histórico completo, no solo el periodo/página actual). ${witmeResponseStats.count_error} terminaron
+            en error de conexión con Witme${witmeResponseStats.count_timeout > 0 ? ` y ${witmeResponseStats.count_timeout} en timeout (de cuando sí cortábamos a los 20s)` : ""}.
+            No cortamos la llamada con un timeout propio todavía: primero medimos para
+            decidir con datos si merece la pena y en cuánto.
+          </p>
           <div class="admin-table-scroll">
             <table class="admin-table">
               <thead>
                 <tr>
                   <th>Fecha</th><th>Nombre</th><th>Email</th><th>Importe</th>
-                  <th>Witme ID</th><th>Estado</th>
+                  <th>Witme ID</th><th>Estado</th><th>Tiempo</th>
                   <th>Score</th><th>Aprobación</th><th>Click oferta</th>
                 </tr>
               </thead>
@@ -786,6 +823,7 @@ async function renderDashboard(password: string) {
                     <td>${w.requested_amount != null ? `${w.requested_amount} €` : "—"}</td>
                     <td>${w.witme_id ?? "—"}</td>
                     <td><span class="admin-badge ${w.witme_status === "processed" ? "band-excelente" : "band-bajo"}" ${statusTooltip ? `title="${escapeHtml(statusTooltip)}"` : ""}>${escapeHtml(w.witme_status ?? "—")}</span></td>
+                    <td>${fmtMs(w.witme_response_ms)}</td>
                     <td>${w.score ?? "—"}</td>
                     <td>${
                       w.approval_probability != null
@@ -801,7 +839,7 @@ async function renderDashboard(password: string) {
                 `;
                   })
                   .join("")}
-                ${witmeApps.length === 0 ? `<tr><td colspan="9" class="admin-empty">Todavía no hay solicitudes enviadas a Witme.</td></tr>` : ""}
+                ${witmeApps.length === 0 ? `<tr><td colspan="10" class="admin-empty">Todavía no hay solicitudes enviadas a Witme.</td></tr>` : ""}
               </tbody>
             </table>
           </div>
