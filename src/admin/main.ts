@@ -50,6 +50,28 @@ let currentSource: SourceKey = "all";
 const LEADS_PAGE_SIZE = 25;
 let currentLeadsPage = 0;
 
+type Tab = "dashboard" | "scoring";
+let currentTab: Tab = "dashboard";
+
+// A qué función de scoring alimenta cada regla (calculate_score = quiz corto,
+// calculate_score_solicitud = solicitud larga). Si cambia qué claves lee cada
+// función en SQL, hay que actualizar esto a mano.
+const RULE_USED_BY: Record<string, string> = {
+  base: "Quiz corto + Solicitud",
+  ingreso_mensual: "Quiz corto + Solicitud",
+  otros_creditos: "Quiz corto + Solicitud",
+  asnef: "Quiz corto + Solicitud",
+  ratio_deuda_ingreso: "Quiz corto + Solicitud",
+  edad: "Quiz corto + Solicitud",
+  fuente_ingreso: "Quiz corto",
+  antiguedad_laboral: "Quiz corto",
+  vivienda_propiedad: "Quiz corto",
+  solicitud_fuente_ingreso: "Solicitud",
+  solicitud_antiguedad: "Solicitud",
+  solicitud_vivienda: "Solicitud",
+  solicitud_dependientes: "Solicitud",
+};
+
 const SOURCE_LABELS: Record<SourceKey, string> = {
   all: "Todos",
   quiz: "Quiz corto",
@@ -259,6 +281,40 @@ async function fetchOfferClicks(password: string, period: Period, source: Source
   return (data ?? []) as OfferClickRow[];
 }
 
+interface ScoringRule {
+  key: string;
+  label: string;
+  config: Record<string, unknown>;
+  weight: number;
+  active: boolean;
+  updated_at: string;
+}
+
+let scoringRulesCache: ScoringRule[] = [];
+
+async function fetchScoringRules(password: string): Promise<ScoringRule[]> {
+  const { data, error } = await supabase.rpc("admin_get_scoring_rules", { p_password: password });
+  if (error) throw error;
+  return (data ?? []) as ScoringRule[];
+}
+
+async function updateScoringRule(
+  password: string,
+  key: string,
+  config: Record<string, unknown>,
+  weight: number,
+  active: boolean,
+): Promise<void> {
+  const { error } = await supabase.rpc("admin_update_scoring_rule", {
+    p_password: password,
+    p_key: key,
+    p_config: config,
+    p_weight: weight,
+    p_active: active,
+  });
+  if (error) throw error;
+}
+
 function renderLogin(errorMsg?: string) {
   root.innerHTML = `
     <div class="admin-login-shell">
@@ -278,7 +334,7 @@ function renderLogin(errorMsg?: string) {
     try {
       await fetchStats(password, periodFor("all"), "all");
       sessionStorage.setItem(SESSION_KEY, password);
-      renderDashboard(password);
+      renderApp(password);
     } catch {
       renderLogin("Contraseña incorrecta.");
     }
@@ -345,6 +401,41 @@ function funnelStepsHtml(overview: FunnelOverview, steps: FunnelStepRow[], stepD
   return rows;
 }
 
+function renderApp(password: string) {
+  if (currentTab === "scoring") renderScoringRules(password);
+  else renderDashboard(password);
+}
+
+function headerHtml(activeTab: Tab): string {
+  return `
+    <header class="admin-header">
+      <span class="admin-logo">Creditio <b>Credit Score</b> · Panel interno</span>
+      <div class="admin-header-actions">
+        <div class="admin-tabs">
+          <button class="admin-tab-btn ${activeTab === "dashboard" ? "active" : ""}" data-tab="dashboard">Dashboard</button>
+          <button class="admin-tab-btn ${activeTab === "scoring" ? "active" : ""}" data-tab="scoring">Algoritmo de scoring</button>
+        </div>
+        <button class="admin-btn-ghost" id="refresh-btn">Actualizar</button>
+        <button class="admin-btn-ghost" id="logout-btn">Cerrar sesión</button>
+      </div>
+    </header>
+  `;
+}
+
+function wireHeader(password: string) {
+  document.querySelectorAll<HTMLButtonElement>(".admin-tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      currentTab = btn.dataset.tab as Tab;
+      renderApp(password);
+    });
+  });
+  document.getElementById("refresh-btn")!.addEventListener("click", () => renderApp(password));
+  document.getElementById("logout-btn")!.addEventListener("click", () => {
+    sessionStorage.removeItem(SESSION_KEY);
+    renderLogin();
+  });
+}
+
 async function renderDashboard(password: string) {
   root.innerHTML = `<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>`;
 
@@ -366,13 +457,7 @@ async function renderDashboard(password: string) {
 
     root.innerHTML = `
       <div class="admin-shell">
-        <header class="admin-header">
-          <span class="admin-logo">Creditio <b>Credit Score</b> · Panel interno</span>
-          <div>
-            <button class="admin-btn-ghost" id="refresh-btn">Actualizar</button>
-            <button class="admin-btn-ghost" id="logout-btn">Cerrar sesión</button>
-          </div>
-        </header>
+        ${headerHtml("dashboard")}
 
         <section class="admin-card admin-source-bar">
           <span class="admin-source-label">Embudo:</span>
@@ -569,11 +654,7 @@ async function renderDashboard(password: string) {
       </div>
     `;
 
-    document.getElementById("refresh-btn")!.addEventListener("click", () => renderDashboard(password));
-    document.getElementById("logout-btn")!.addEventListener("click", () => {
-      sessionStorage.removeItem(SESSION_KEY);
-      renderLogin();
-    });
+    wireHeader(password);
 
     document.querySelectorAll<HTMLButtonElement>(".admin-period-btn[data-source]").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -628,9 +709,202 @@ async function renderDashboard(password: string) {
   }
 }
 
+// Solo el último bucket de cada regla es un rango abierto ("X +"); el valor
+// exacto de max (999, 999999...) es solo un límite práctico interno, no algo
+// que se pueda inferir de la magnitud — por eso se decide por posición, no
+// por umbral.
+function humanizeBucketRange(min: number, max: number, isLast: boolean): string {
+  return isLast ? `${min} +` : `${min} – ${max}`;
+}
+
+function sliderRowHtml(
+  ruleKey: string,
+  field: string,
+  label: string,
+  value: number,
+  min: number,
+  max: number,
+  step: number,
+): string {
+  return `
+    <div class="scoring-slider-row">
+      <span class="scoring-slider-label">${escapeHtml(label)}</span>
+      <input
+        type="range"
+        class="scoring-slider"
+        min="${min}"
+        max="${max}"
+        step="${step}"
+        value="${value}"
+        data-rule-key="${ruleKey}"
+        data-field="${field}"
+      />
+      <span class="scoring-slider-value">${value}</span>
+    </div>
+  `;
+}
+
+function ruleFieldsHtml(rule: ScoringRule): string {
+  const cfg = rule.config;
+  if (typeof cfg.value === "number" && Object.keys(cfg).length === 1) {
+    return sliderRowHtml(rule.key, "value", "Puntos base", cfg.value, 300, 850, 5);
+  }
+  if (Array.isArray(cfg.buckets)) {
+    const buckets = cfg.buckets as [number, number, number][];
+    return buckets
+      .map((b, i) =>
+        sliderRowHtml(rule.key, `bucket:${i}`, humanizeBucketRange(b[0], b[1], i === buckets.length - 1), b[2], -200, 200, 5),
+      )
+      .join("");
+  }
+  return Object.entries(cfg)
+    .map(([optKey, pts]) => sliderRowHtml(rule.key, `opt:${optKey}`, optKey, Number(pts), -200, 200, 5))
+    .join("");
+}
+
+function ruleCardHtml(rule: ScoringRule): string {
+  return `
+    <div class="scoring-rule-card" data-rule-card="${rule.key}">
+      <div class="scoring-rule-header">
+        <div>
+          <p class="scoring-rule-label">${escapeHtml(rule.label)}</p>
+          <p class="scoring-rule-used-by">Usado en: ${escapeHtml(RULE_USED_BY[rule.key] ?? "—")} · clave: <code>${escapeHtml(rule.key)}</code></p>
+        </div>
+        <label class="scoring-rule-active">
+          <input type="checkbox" data-field="active" ${rule.active ? "checked" : ""} />
+          Regla activa
+        </label>
+      </div>
+      ${sliderRowHtml(rule.key, "weight", "Peso (multiplica todos los puntos de esta regla)", Number(rule.weight), 0, 3, 0.1)}
+      <div class="scoring-rule-fields">
+        ${ruleFieldsHtml(rule)}
+      </div>
+      <div class="scoring-rule-footer">
+        <button class="admin-btn-ghost" data-save-rule="${rule.key}">Guardar cambios</button>
+        <span class="scoring-rule-status"></span>
+      </div>
+    </div>
+  `;
+}
+
+function wireScoringInputs(password: string) {
+  document.querySelectorAll<HTMLInputElement>(".scoring-slider").forEach((input) => {
+    input.addEventListener("input", () => {
+      const out = input.closest(".scoring-slider-row")?.querySelector(".scoring-slider-value");
+      if (out) out.textContent = input.value;
+    });
+  });
+
+  document.querySelectorAll<HTMLButtonElement>("[data-save-rule]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const key = btn.dataset.saveRule!;
+      const rule = scoringRulesCache.find((r) => r.key === key);
+      const card = document.querySelector<HTMLElement>(`[data-rule-card="${key}"]`);
+      if (!rule || !card) return;
+      const statusEl = card.querySelector<HTMLElement>(".scoring-rule-status")!;
+
+      const fieldValues = new Map<string, string>();
+      card.querySelectorAll<HTMLInputElement>("input[data-field]").forEach((input) => {
+        fieldValues.set(input.dataset.field!, input.type === "checkbox" ? String(input.checked) : input.value);
+      });
+
+      const weight = Number(fieldValues.get("weight"));
+      const active = fieldValues.get("active") === "true";
+
+      const cfg = rule.config;
+      let newConfig: Record<string, unknown>;
+      if (typeof cfg.value === "number" && Object.keys(cfg).length === 1) {
+        newConfig = { value: Number(fieldValues.get("value")) };
+      } else if (Array.isArray(cfg.buckets)) {
+        newConfig = {
+          buckets: (cfg.buckets as [number, number, number][]).map((b, i) => [
+            b[0],
+            b[1],
+            Number(fieldValues.get(`bucket:${i}`)),
+          ]),
+        };
+      } else {
+        newConfig = {};
+        Object.keys(cfg).forEach((optKey) => {
+          newConfig[optKey] = Number(fieldValues.get(`opt:${optKey}`));
+        });
+      }
+
+      btn.disabled = true;
+      statusEl.textContent = "Guardando…";
+      statusEl.className = "scoring-rule-status";
+      try {
+        await updateScoringRule(password, key, newConfig, weight, active);
+        rule.config = newConfig;
+        rule.weight = weight;
+        rule.active = active;
+        statusEl.textContent = "✓ Guardado";
+        statusEl.className = "scoring-rule-status ok";
+        setTimeout(() => {
+          statusEl.textContent = "";
+        }, 2500);
+      } catch {
+        statusEl.textContent = "Error al guardar";
+        statusEl.className = "scoring-rule-status error";
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  });
+}
+
+async function renderScoringRules(password: string) {
+  root.innerHTML = `<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>`;
+
+  try {
+    const rules = await fetchScoringRules(password);
+    scoringRulesCache = rules;
+
+    root.innerHTML = `
+      <div class="admin-shell">
+        ${headerHtml("scoring")}
+
+        <section class="admin-card">
+          <p class="admin-card-title">Algoritmo de scoring</p>
+          <p class="admin-card-sub">
+            La puntuación va de 300 a 850 — el mismo rango que usan los bureaus de
+            crédito reales (FICO), no un porcentaje 0–100, para que se perciba como un
+            credit score de verdad y no como la nota de un test. Se parte de la
+            puntuación base y se suman o restan los puntos de cada regla activa,
+            multiplicados por su peso. <strong>Los cambios se aplican de inmediato a las
+            puntuaciones que verán los usuarios reales</strong> — no hay entorno de pruebas
+            separado.
+          </p>
+        </section>
+
+        <div class="scoring-rules-grid">
+          ${rules.map(ruleCardHtml).join("")}
+        </div>
+      </div>
+    `;
+
+    wireHeader(password);
+    wireScoringInputs(password);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (message.toLowerCase().includes("unauthorized")) {
+      sessionStorage.removeItem(SESSION_KEY);
+      renderLogin("Tu sesión ha caducado o la contraseña ya no es válida.");
+    } else {
+      root.innerHTML = `
+        <div class="admin-shell">
+          <p class="admin-error">Ha ocurrido un error inesperado cargando el algoritmo: ${escapeHtml(message)}</p>
+          <button class="admin-btn-ghost" id="retry-btn">Reintentar</button>
+        </div>
+      `;
+      document.getElementById("retry-btn")!.addEventListener("click", () => renderScoringRules(password));
+    }
+  }
+}
+
 const savedPassword = sessionStorage.getItem(SESSION_KEY);
 if (savedPassword) {
-  renderDashboard(savedPassword);
+  renderApp(savedPassword);
 } else {
   renderLogin();
 }
