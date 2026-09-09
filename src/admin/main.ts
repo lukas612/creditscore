@@ -119,6 +119,9 @@ let currentLeadsPage = 0;
 const WITME_PAGE_SIZE = 25;
 let currentWitmePage = 0;
 
+const WITME_CAR_PAGE_SIZE = 25;
+let currentWitmeCarPage = 0;
+
 type Tab = "dashboard" | "leads" | "scoring" | "fieldstats";
 let currentTab: Tab = "dashboard";
 
@@ -349,6 +352,35 @@ async function fetchWitmeApplications(password: string, page: number): Promise<W
   });
   if (error) throw error;
   return (data ?? []) as WitmeApplication[];
+}
+
+// Producto nuevo en pruebas (prestamistas con aval de coche, endpoint
+// servy-form-wait), corriendo en paralelo al de siempre - de momento solo
+// para comparar resultados, sin mostrar ofertas de aquí al usuario.
+interface WitmeCarApplication {
+  id: string;
+  created_at: string;
+  external_id: string | null;
+  witme_id: number | null;
+  witme_status: string | null;
+  witme_message: unknown;
+  witme_redirect_url: string | null;
+  response_ms: number | null;
+  name: string | null;
+  last_name: string | null;
+  email: string | null;
+  requested_amount: number | null;
+  total_count: number;
+}
+
+async function fetchWitmeCarApplications(password: string, page: number): Promise<WitmeCarApplication[]> {
+  const { data, error } = await supabase.rpc("admin_get_witme_car_applications", {
+    p_password: password,
+    p_limit: WITME_CAR_PAGE_SIZE,
+    p_offset: page * WITME_CAR_PAGE_SIZE,
+  });
+  if (error) throw error;
+  return (data ?? []) as WitmeCarApplication[];
 }
 
 interface WitmeResponseStats {
@@ -800,15 +832,18 @@ async function renderLeadsTab(password: string) {
   const period = periodFor(currentPreset);
 
   try {
-    const [leads, witmeApps, witmeResponseStats] = await Promise.all([
+    const [leads, witmeApps, witmeResponseStats, witmeCarApps] = await Promise.all([
       fetchLeads(password, period, currentSource, currentLeadsPage),
       fetchWitmeApplications(password, currentWitmePage),
       fetchWitmeResponseStats(password),
+      fetchWitmeCarApplications(password, currentWitmeCarPage),
     ]);
     const totalLeadsCount = leads[0]?.total_count ?? 0;
     const totalLeadsPages = Math.max(1, Math.ceil(totalLeadsCount / LEADS_PAGE_SIZE));
     const totalWitmeCount = witmeApps[0]?.total_count ?? 0;
     const totalWitmePages = Math.max(1, Math.ceil(totalWitmeCount / WITME_PAGE_SIZE));
+    const totalWitmeCarCount = witmeCarApps[0]?.total_count ?? 0;
+    const totalWitmeCarPages = Math.max(1, Math.ceil(totalWitmeCarCount / WITME_CAR_PAGE_SIZE));
 
     root.innerHTML = `
       <div class="admin-shell">
@@ -951,6 +986,53 @@ async function renderLeadsTab(password: string) {
             <button class="admin-btn-ghost" id="witme-next-btn" ${currentWitmePage + 1 >= totalWitmePages ? "disabled" : ""}>Siguiente →</button>
           </div>
         </section>
+
+        <section class="admin-card">
+          <p class="admin-card-title">Solicitudes enviadas a Witme · aval coche (${totalWitmeCarCount})</p>
+          <p class="admin-card-sub">
+            Producto nuevo en pruebas (endpoint <code>servy-form-wait</code>), en paralelo
+            al de siempre - solo para lenders con coche propio. De momento solo se registra
+            aquí para comparar resultados; no se muestra ninguna oferta de aquí al usuario
+            todavía.
+          </p>
+          <div class="admin-table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th><th>Nombre</th><th>Email</th><th>Importe</th>
+                  <th>Witme ID</th><th>Estado</th><th>Tiempo</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${witmeCarApps
+                  .map((w) => {
+                    const tooltipParts: string[] = [];
+                    if (w.witme_message != null) tooltipParts.push(`Mensaje: ${JSON.stringify(w.witme_message)}`);
+                    if (w.witme_redirect_url) tooltipParts.push(`Redirect URL: ${w.witme_redirect_url}`);
+                    const statusTooltip = tooltipParts.join("\n");
+                    return `
+                  <tr>
+                    <td>${dateFmt.format(new Date(w.created_at))}</td>
+                    <td><div class="admin-table-name-cell" title="${escapeHtml(w.name ?? "")} ${escapeHtml(w.last_name ?? "")}">${escapeHtml(w.name ?? "")} ${escapeHtml(w.last_name ?? "")}</div></td>
+                    <td><div class="admin-table-name-cell" title="${escapeHtml(w.email ?? "")}">${escapeHtml(w.email ?? "")}</div></td>
+                    <td>${w.requested_amount != null ? `${w.requested_amount} €` : "—"}</td>
+                    <td>${w.witme_id ?? "—"}</td>
+                    <td><span class="admin-badge ${w.witme_status === "processed" ? "band-excelente" : "band-bajo"}" ${statusTooltip ? `title="${escapeHtml(statusTooltip)}"` : ""}>${escapeHtml(w.witme_status ?? "—")}</span></td>
+                    <td>${fmtMs(w.response_ms)}</td>
+                  </tr>
+                `;
+                  })
+                  .join("")}
+                ${witmeCarApps.length === 0 ? `<tr><td colspan="7" class="admin-empty">Todavía no hay solicitudes de aval coche.</td></tr>` : ""}
+              </tbody>
+            </table>
+          </div>
+          <div class="admin-pagination">
+            <button class="admin-btn-ghost" id="witme-car-prev-btn" ${currentWitmeCarPage === 0 ? "disabled" : ""}>← Anterior</button>
+            <span class="admin-pagination-label">Página ${currentWitmeCarPage + 1} de ${totalWitmeCarPages}</span>
+            <button class="admin-btn-ghost" id="witme-car-next-btn" ${currentWitmeCarPage + 1 >= totalWitmeCarPages ? "disabled" : ""}>Siguiente →</button>
+          </div>
+        </section>
       </div>
     `;
 
@@ -975,6 +1057,16 @@ async function renderLeadsTab(password: string) {
     });
     document.getElementById("witme-next-btn")!.addEventListener("click", () => {
       currentWitmePage++;
+      renderLeadsTab(password);
+    });
+    document.getElementById("witme-car-prev-btn")!.addEventListener("click", () => {
+      if (currentWitmeCarPage > 0) {
+        currentWitmeCarPage--;
+        renderLeadsTab(password);
+      }
+    });
+    document.getElementById("witme-car-next-btn")!.addEventListener("click", () => {
+      currentWitmeCarPage++;
       renderLeadsTab(password);
     });
   } catch (err) {
