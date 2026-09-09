@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { questions as QUIZ_QUESTIONS } from "../data/questions";
 import { CREDIT_OFFERS } from "../data/offers";
 import { WITME_QUESTIONS } from "../data/witmeQuestions";
 import "./admin.css";
@@ -7,6 +8,62 @@ const OFFER_LABELS: Record<string, string> = {
   witme_featured: "Witme (oferta destacada)",
   ...Object.fromEntries(CREDIT_OFFERS.map((o) => [o.id, o.name])),
 };
+
+// Traduce los valores crudos guardados en quiz_sessions.answers (códigos como
+// "empleado" o textos ya legibles como "Cuenta ajena (Tiempo completo)") a la
+// misma etiqueta que ve el usuario en el formulario, reutilizando las mismas
+// definiciones de preguntas en vez de duplicar las opciones aquí.
+function optionLabelMap(defs: { key: string; options?: { value: string; label: string }[] }[]): Record<string, Record<string, string>> {
+  const map: Record<string, Record<string, string>> = {};
+  for (const d of defs) {
+    if (d.options) map[d.key] = Object.fromEntries(d.options.map((o) => [o.value, o.label]));
+  }
+  return map;
+}
+const QUIZ_OPTION_LABELS = optionLabelMap(QUIZ_QUESTIONS);
+const WITME_OPTION_LABELS = optionLabelMap(WITME_QUESTIONS);
+const YESNO_LABELS: Record<string, string> = { si: "Sí", no: "No" };
+
+function fieldValueLabel(source: "quiz" | "solicitud", fieldKey: string, value: string): string {
+  const map = source === "solicitud" ? WITME_OPTION_LABELS[fieldKey] : QUIZ_OPTION_LABELS[fieldKey];
+  return map?.[value] ?? YESNO_LABELS[value] ?? value;
+}
+
+const QUIZ_FIELD_LABELS: Record<string, string> = {
+  ingreso_mensual: "Ingreso mensual",
+  importe_total_de_la_deuda: "Deuda total (entre quienes tienen)",
+  creditos_cantidad_a_solicitar: "Importe solicitado",
+  age: "Edad",
+  esta_en_asnef: "En ASNEF",
+  antiguedad_laboral: "Antigüedad laboral",
+  tienes_otros_creditos: "Tiene otras deudas",
+  proposito_del_prestamo: "Propósito del préstamo",
+  fuente_principal_de_ingreso: "Fuente de ingresos",
+  tienes_vivienda_en_propiedad: "Vivienda en propiedad",
+  en_cuantos_meses_deseas_devolverlo: "Plazo de devolución",
+};
+
+const SOLICITUD_FIELD_LABELS: Record<string, string> = {
+  monthlyIncome: "Ingreso mensual",
+  totalDebtAmount: "Deuda total (entre quienes tienen)",
+  requestedAmount: "Importe solicitado",
+  numberOfdependents: "Personas a cargo",
+  age: "Edad",
+  incomeSource: "Fuente de ingresos",
+  hasOwnedHouse: "Situación de vivienda",
+  badCreditHistory: "En ASNEF",
+  hasOtherLoans: "Tiene otras deudas",
+  loanPurpose: "Propósito del préstamo",
+  hasOwnVehicle: "Tiene vehículo propio",
+  hasBankAccount: "Tiene cuenta bancaria",
+  maritalStatus: "Estado civil",
+  educationLevel: "Nivel de estudios",
+  gender: "Género",
+  countryOfBirth: "País de nacimiento",
+  state: "Comunidad autónoma",
+};
+
+const EUR_FIELDS = new Set(["ingreso_mensual", "importe_total_de_la_deuda", "creditos_cantidad_a_solicitar", "monthlyIncome", "totalDebtAmount", "requestedAmount"]);
 
 const url = import.meta.env.VITE_SUPABASE_URL;
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -50,7 +107,7 @@ let currentSource: SourceKey = "all";
 const LEADS_PAGE_SIZE = 25;
 let currentLeadsPage = 0;
 
-type Tab = "dashboard" | "scoring";
+type Tab = "dashboard" | "scoring" | "fieldstats";
 let currentTab: Tab = "dashboard";
 
 // A qué función de scoring alimenta cada regla (calculate_score = quiz corto,
@@ -335,6 +392,36 @@ async function resetAllScoringRules(password: string): Promise<void> {
   if (error) throw error;
 }
 
+interface FieldNumericStat {
+  avg: number | null;
+  median: number | null;
+  min: number | null;
+  max: number | null;
+  count: number;
+}
+
+interface FieldCategoricalOption {
+  value: string;
+  count: number;
+}
+
+interface FieldStatsResult {
+  count: number;
+  numeric: Record<string, FieldNumericStat>;
+  categorical: Record<string, FieldCategoricalOption[]>;
+}
+
+async function fetchFieldStats(password: string, period: Period, source: "quiz" | "solicitud"): Promise<FieldStatsResult> {
+  const { data, error } = await supabase.rpc("admin_get_field_stats", {
+    p_password: password,
+    p_since: period.since,
+    p_until: period.until,
+    p_source: source,
+  });
+  if (error) throw error;
+  return data as FieldStatsResult;
+}
+
 function renderLogin(errorMsg?: string) {
   root.innerHTML = `
     <div class="admin-login-shell">
@@ -430,6 +517,7 @@ function funnelStepsHtml(overview: FunnelOverview, steps: FunnelStepRow[], stepD
 
 function renderApp(password: string) {
   if (currentTab === "scoring") renderScoringRules(password);
+  else if (currentTab === "fieldstats") renderFieldStats(password);
   else renderDashboard(password);
 }
 
@@ -441,6 +529,7 @@ function headerHtml(activeTab: Tab): string {
         <div class="admin-tabs">
           <button class="admin-tab-btn ${activeTab === "dashboard" ? "active" : ""}" data-tab="dashboard">Dashboard</button>
           <button class="admin-tab-btn ${activeTab === "scoring" ? "active" : ""}" data-tab="scoring">Algoritmo de scoring</button>
+          <button class="admin-tab-btn ${activeTab === "fieldstats" ? "active" : ""}" data-tab="fieldstats">Estadísticas</button>
         </div>
         <button class="admin-btn-ghost" id="refresh-btn">Actualizar</button>
         <button class="admin-btn-ghost" id="logout-btn">Cerrar sesión</button>
@@ -460,6 +549,62 @@ function wireHeader(password: string) {
   document.getElementById("logout-btn")!.addEventListener("click", () => {
     sessionStorage.removeItem(SESSION_KEY);
     renderLogin();
+  });
+}
+
+function filterBarsHtml(period: Period): string {
+  return `
+    <section class="admin-card admin-source-bar">
+      <span class="admin-source-label">Embudo:</span>
+      <div class="admin-period-presets">
+        ${(Object.keys(SOURCE_LABELS) as SourceKey[])
+          .map(
+            (key) =>
+              `<button class="admin-period-btn ${currentSource === key ? "active" : ""}" data-source="${key}">${SOURCE_LABELS[key]}</button>`,
+          )
+          .join("")}
+      </div>
+    </section>
+
+    <section class="admin-card admin-period-bar">
+      <div class="admin-period-presets">
+        <button class="admin-period-btn ${currentPreset === "today" ? "active" : ""}" data-preset="today">Hoy</button>
+        <button class="admin-period-btn ${currentPreset === "7d" ? "active" : ""}" data-preset="7d">7 días</button>
+        <button class="admin-period-btn ${currentPreset === "all" ? "active" : ""}" data-preset="all">Todo</button>
+      </div>
+      <div class="admin-period-custom ${currentPreset === "custom" ? "active" : ""}">
+        <input type="date" id="period-from" value="${customFrom}" />
+        <span>–</span>
+        <input type="date" id="period-to" value="${customTo}" />
+        <button class="admin-btn-ghost" id="period-apply-btn">Aplicar</button>
+      </div>
+      <p class="admin-period-label">${escapeHtml(periodLabel(currentPreset, period))}</p>
+    </section>
+  `;
+}
+
+function wireFilterBars(password: string) {
+  document.querySelectorAll<HTMLButtonElement>(".admin-period-btn[data-source]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      currentSource = btn.dataset.source as SourceKey;
+      currentLeadsPage = 0;
+      renderApp(password);
+    });
+  });
+
+  document.querySelectorAll<HTMLButtonElement>(".admin-period-btn[data-preset]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      currentPreset = btn.dataset.preset as PresetKey;
+      currentLeadsPage = 0;
+      renderApp(password);
+    });
+  });
+  document.getElementById("period-apply-btn")?.addEventListener("click", () => {
+    customFrom = (document.getElementById("period-from") as HTMLInputElement).value || customFrom;
+    customTo = (document.getElementById("period-to") as HTMLInputElement).value || customTo;
+    currentPreset = "custom";
+    currentLeadsPage = 0;
+    renderApp(password);
   });
 }
 
@@ -486,32 +631,7 @@ async function renderDashboard(password: string) {
       <div class="admin-shell">
         ${headerHtml("dashboard")}
 
-        <section class="admin-card admin-source-bar">
-          <span class="admin-source-label">Embudo:</span>
-          <div class="admin-period-presets">
-            ${(Object.keys(SOURCE_LABELS) as SourceKey[])
-              .map(
-                (key) =>
-                  `<button class="admin-period-btn ${currentSource === key ? "active" : ""}" data-source="${key}">${SOURCE_LABELS[key]}</button>`,
-              )
-              .join("")}
-          </div>
-        </section>
-
-        <section class="admin-card admin-period-bar">
-          <div class="admin-period-presets">
-            <button class="admin-period-btn ${currentPreset === "today" ? "active" : ""}" data-preset="today">Hoy</button>
-            <button class="admin-period-btn ${currentPreset === "7d" ? "active" : ""}" data-preset="7d">7 días</button>
-            <button class="admin-period-btn ${currentPreset === "all" ? "active" : ""}" data-preset="all">Todo</button>
-          </div>
-          <div class="admin-period-custom ${currentPreset === "custom" ? "active" : ""}">
-            <input type="date" id="period-from" value="${customFrom}" />
-            <span>–</span>
-            <input type="date" id="period-to" value="${customTo}" />
-            <button class="admin-btn-ghost" id="period-apply-btn">Aplicar</button>
-          </div>
-          <p class="admin-period-label">${escapeHtml(periodLabel(currentPreset, period))}</p>
-        </section>
+        ${filterBarsHtml(period)}
 
         <section class="admin-stats-grid">
           ${statCard("Leads totales (histórico)", String(stats.total_leads))}
@@ -700,29 +820,7 @@ async function renderDashboard(password: string) {
     `;
 
     wireHeader(password);
-
-    document.querySelectorAll<HTMLButtonElement>(".admin-period-btn[data-source]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        currentSource = btn.dataset.source as SourceKey;
-        currentLeadsPage = 0;
-        renderDashboard(password);
-      });
-    });
-
-    document.querySelectorAll<HTMLButtonElement>(".admin-period-btn[data-preset]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        currentPreset = btn.dataset.preset as PresetKey;
-        currentLeadsPage = 0;
-        renderDashboard(password);
-      });
-    });
-    document.getElementById("period-apply-btn")!.addEventListener("click", () => {
-      customFrom = (document.getElementById("period-from") as HTMLInputElement).value || customFrom;
-      customTo = (document.getElementById("period-to") as HTMLInputElement).value || customTo;
-      currentPreset = "custom";
-      currentLeadsPage = 0;
-      renderDashboard(password);
-    });
+    wireFilterBars(password);
 
     document.getElementById("leads-prev-btn")!.addEventListener("click", () => {
       if (currentLeadsPage > 0) {
@@ -987,6 +1085,119 @@ async function renderScoringRules(password: string) {
         </div>
       `;
       document.getElementById("retry-btn")!.addEventListener("click", () => renderScoringRules(password));
+    }
+  }
+}
+
+const numFmt = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 1 });
+
+function fmtStatValue(value: number | null, isEur: boolean): string {
+  if (value == null) return "—";
+  return isEur ? `${numFmt.format(value)} €` : numFmt.format(value);
+}
+
+function numericStatCardHtml(label: string, key: string, stat: FieldNumericStat): string {
+  const isEur = EUR_FIELDS.has(key);
+  return `
+    <div class="fieldstat-card">
+      <p class="fieldstat-label">${escapeHtml(label)}</p>
+      <div class="fieldstat-row"><span>Mediana</span><strong>${fmtStatValue(stat.median, isEur)}</strong></div>
+      <div class="fieldstat-row"><span>Media</span><strong>${fmtStatValue(stat.avg, isEur)}</strong></div>
+      <div class="fieldstat-row"><span>Rango</span><strong>${fmtStatValue(stat.min, isEur)} – ${fmtStatValue(stat.max, isEur)}</strong></div>
+      <p class="fieldstat-count">${stat.count} respuestas</p>
+    </div>
+  `;
+}
+
+function categoricalCardHtml(
+  label: string,
+  options: FieldCategoricalOption[],
+  source: "quiz" | "solicitud",
+  fieldKey: string,
+): string {
+  const total = options.reduce((sum, o) => sum + o.count, 0);
+  return `
+    <div class="fieldstat-card">
+      <p class="fieldstat-label">${escapeHtml(label)}</p>
+      ${options
+        .map((o) => {
+          const pct = total > 0 ? Math.round((o.count / total) * 100) : 0;
+          return `
+            <div class="admin-band-row">
+              <span class="admin-band-label">${escapeHtml(fieldValueLabel(source, fieldKey, o.value))}</span>
+              <div class="admin-band-track"><div class="admin-band-fill funnel-fill" style="width:${pct}%"></div></div>
+              <span class="admin-band-count">${o.count} (${pct}%)</span>
+            </div>
+          `;
+        })
+        .join("")}
+      ${options.length === 0 ? `<p class="fieldstat-count">Sin datos todavía.</p>` : ""}
+    </div>
+  `;
+}
+
+function fieldStatsSectionHtml(source: "quiz" | "solicitud", stats: FieldStatsResult): string {
+  const labels = source === "solicitud" ? SOLICITUD_FIELD_LABELS : QUIZ_FIELD_LABELS;
+  const title = source === "solicitud" ? "Solicitud completa" : "Quiz corto";
+
+  return `
+    <section class="admin-card">
+      <p class="admin-card-title">${title} (${stats.count} sesiones)</p>
+      <div class="fieldstats-grid">
+        ${Object.entries(stats.numeric)
+          .map(([key, stat]) => numericStatCardHtml(labels[key] ?? key, key, stat))
+          .join("")}
+        ${Object.entries(stats.categorical)
+          .map(([key, options]) => categoricalCardHtml(labels[key] ?? key, options, source, key))
+          .join("")}
+      </div>
+    </section>
+  `;
+}
+
+async function renderFieldStats(password: string) {
+  root.innerHTML = `<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>`;
+
+  const period = periodFor(currentPreset);
+  const sourcesToShow: ("quiz" | "solicitud")[] = currentSource === "solicitud" ? ["solicitud"] : currentSource === "quiz" ? ["quiz"] : ["quiz", "solicitud"];
+
+  try {
+    const results = await Promise.all(sourcesToShow.map((s) => fetchFieldStats(password, period, s)));
+
+    root.innerHTML = `
+      <div class="admin-shell">
+        ${headerHtml("fieldstats")}
+
+        ${filterBarsHtml(period)}
+
+        <section class="admin-card">
+          <p class="admin-card-title">Estadísticas de leads</p>
+          <p class="admin-card-sub">
+            Importes, deuda, edad y el resto de campos del formulario, agregados sobre el
+            periodo y embudo seleccionados. La mediana pesa menos que la media cuando hay
+            valores atípicos (alguien que escribe un importe absurdo, por ejemplo).
+          </p>
+        </section>
+
+        ${sourcesToShow.map((s, i) => fieldStatsSectionHtml(s, results[i])).join("")}
+      </div>
+    `;
+
+    wireHeader(password);
+    wireFilterBars(password);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (message.toLowerCase().includes("unauthorized")) {
+      sessionStorage.removeItem(SESSION_KEY);
+      renderLogin("Tu sesión ha caducado o la contraseña ya no es válida.");
+    } else {
+      root.innerHTML = `
+        <div class="admin-shell">
+          <p class="admin-error">Ha ocurrido un error inesperado cargando las estadísticas: ${escapeHtml(message)}</p>
+          <button class="admin-btn-ghost" id="retry-btn">Reintentar</button>
+        </div>
+      `;
+      document.getElementById("retry-btn")!.addEventListener("click", () => renderFieldStats(password));
     }
   }
 }
