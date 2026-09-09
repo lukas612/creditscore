@@ -113,13 +113,13 @@ let customTo = toDateInputValue(today);
 type SourceKey = "all" | "quiz" | "solicitud";
 let currentSource: SourceKey = "all";
 
-const LEADS_PAGE_SIZE = 25;
+const LEADS_PAGE_SIZE = 10;
 let currentLeadsPage = 0;
 
-const WITME_PAGE_SIZE = 25;
+const WITME_PAGE_SIZE = 10;
 let currentWitmePage = 0;
 
-const WITME_CAR_PAGE_SIZE = 25;
+const WITME_CAR_PAGE_SIZE = 10;
 let currentWitmeCarPage = 0;
 
 type Tab = "dashboard" | "leads" | "scoring" | "fieldstats";
