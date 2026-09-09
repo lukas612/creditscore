@@ -118,6 +118,7 @@ function buildCarCollateralAnswers(answers: Answers, contact: CarCollateralConta
 export async function submitCarCollateralLead(
   answers: Answers,
   contact: CarCollateralContact,
+  clickId: string | null,
   utmSource: string | null,
   externalId: string,
 ): Promise<void> {
@@ -139,7 +140,7 @@ export async function submitCarCollateralLead(
         },
         hidden: {
           svyid: "w4ud70bl9k0k8haj3ip52fum",
-          servy_click: "",
+          servy_click: clickId ?? "",
           utm_source: utmSource ?? "",
         },
         answers: buildCarCollateralAnswers(answers, contact),

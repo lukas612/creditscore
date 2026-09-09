@@ -122,6 +122,7 @@ export default function SolicitudApp() {
         email: String(fullAnswers.email ?? ""),
         phoneNumber: String(fullAnswers.phoneNumber ?? ""),
       },
+      clickId,
       utmSource,
       scoreData.quizSessionId,
     );
