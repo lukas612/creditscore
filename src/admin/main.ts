@@ -352,6 +352,12 @@ interface WitmeResponseStats {
   p95_ms: number | null;
   count_timeout: number;
   count_error: number;
+  total_applications: number;
+  count_accepted: number;
+  count_processed_no_offer: number;
+  count_failed: number;
+  pct_accepted: number | null;
+  pct_failed: number | null;
 }
 
 async function fetchWitmeResponseStats(password: string): Promise<WitmeResponseStats> {
@@ -363,6 +369,10 @@ async function fetchWitmeResponseStats(password: string): Promise<WitmeResponseS
 function fmtMs(ms: number | null): string {
   if (ms == null) return "—";
   return `${(ms / 1000).toFixed(1)} s`;
+}
+
+function fmtPct(pct: number | null): string {
+  return pct == null ? "—" : `${pct}%`;
 }
 
 interface OfferClickRow {
@@ -791,6 +801,13 @@ async function renderDashboard(password: string) {
             ${statCard("Mediana", fmtMs(witmeResponseStats.median_ms))}
             ${statCard("P95", fmtMs(witmeResponseStats.p95_ms))}
             ${statCard("Máximo", fmtMs(witmeResponseStats.max_ms))}
+          </section>
+          <p class="admin-card-sub admin-card-sub-tight">Tasa de aceptación (histórico completo)</p>
+          <section class="admin-stats-grid admin-stats-grid-compact">
+            ${statCard("% Aceptados (con oferta)", fmtPct(witmeResponseStats.pct_accepted))}
+            ${statCard("% Rechazados por Witme", fmtPct(witmeResponseStats.pct_failed))}
+            ${statCard("Con oferta", String(witmeResponseStats.count_accepted))}
+            ${statCard("Total solicitudes", String(witmeResponseStats.total_applications))}
           </section>
           <p class="admin-card-sub admin-card-sub-tight">
             Sobre ${witmeResponseStats.count_with_timing} intentos con tiempo registrado
