@@ -706,8 +706,8 @@ async function renderDashboard(password: string) {
                     (l) => `
                   <tr>
                     <td>${dateFmt.format(new Date(l.created_at))}</td>
-                    <td>${escapeHtml(l.first_name)} ${escapeHtml(l.last_name ?? "")}</td>
-                    <td>${escapeHtml(l.email)}</td>
+                    <td><div class="admin-table-name-cell" title="${escapeHtml(l.first_name)} ${escapeHtml(l.last_name ?? "")}">${escapeHtml(l.first_name)} ${escapeHtml(l.last_name ?? "")}</div></td>
+                    <td><div class="admin-table-name-cell" title="${escapeHtml(l.email)}">${escapeHtml(l.email)}</div></td>
                     <td>${escapeHtml(l.phone ?? "")}</td>
                     <td>${escapeHtml(l.zip_code ?? "")}</td>
                     <td>${l.score ?? "—"}</td>
@@ -752,22 +752,22 @@ async function renderDashboard(password: string) {
               <thead>
                 <tr>
                   <th>Fecha</th><th>Nombre</th><th>Email</th><th>Importe</th>
-                  <th>Witme ID</th><th>Estado</th><th>Mensaje</th>
-                  <th>Score</th><th>Aprobación</th><th>Click oferta</th>
+                  <th>Witme ID</th><th>Estado</th>
+                  <th>Score</th><th>Aprobación</th><th>Click oferta</th><th>Mensaje</th>
                 </tr>
               </thead>
               <tbody>
                 ${witmeApps
-                  .map(
-                    (w) => `
+                  .map((w) => {
+                    const messageText = JSON.stringify(w.witme_message ?? "");
+                    return `
                   <tr>
                     <td>${dateFmt.format(new Date(w.created_at))}</td>
-                    <td>${escapeHtml(w.name ?? "")} ${escapeHtml(w.last_name ?? "")}</td>
-                    <td>${escapeHtml(w.email ?? "")}</td>
+                    <td><div class="admin-table-name-cell" title="${escapeHtml(w.name ?? "")} ${escapeHtml(w.last_name ?? "")}">${escapeHtml(w.name ?? "")} ${escapeHtml(w.last_name ?? "")}</div></td>
+                    <td><div class="admin-table-name-cell" title="${escapeHtml(w.email ?? "")}">${escapeHtml(w.email ?? "")}</div></td>
                     <td>${w.requested_amount != null ? `${w.requested_amount} €` : "—"}</td>
                     <td>${w.witme_id ?? "—"}</td>
                     <td><span class="admin-badge ${w.witme_status === "processed" ? "band-excelente" : "band-bajo"}">${escapeHtml(w.witme_status ?? "—")}</span></td>
-                    <td>${escapeHtml(JSON.stringify(w.witme_message ?? ""))}</td>
                     <td>${w.score ?? "—"}</td>
                     <td>${
                       w.approval_probability != null
@@ -779,9 +779,10 @@ async function renderDashboard(password: string) {
                         ? `✅ ${w.offer_clicks.map((id) => escapeHtml(OFFER_LABELS[id] ?? id)).join(", ")}`
                         : "—"
                     }</td>
+                    <td><div class="admin-table-message-cell" title="${escapeHtml(messageText)}">${escapeHtml(messageText)}</div></td>
                   </tr>
-                `,
-                  )
+                `;
+                  })
                   .join("")}
                 ${witmeApps.length === 0 ? `<tr><td colspan="10" class="admin-empty">Todavía no hay solicitudes enviadas a Witme.</td></tr>` : ""}
               </tbody>
