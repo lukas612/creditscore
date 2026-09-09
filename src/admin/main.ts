@@ -107,6 +107,9 @@ let currentSource: SourceKey = "all";
 const LEADS_PAGE_SIZE = 25;
 let currentLeadsPage = 0;
 
+const WITME_PAGE_SIZE = 25;
+let currentWitmePage = 0;
+
 type Tab = "dashboard" | "scoring" | "fieldstats";
 let currentTab: Tab = "dashboard";
 
@@ -244,7 +247,7 @@ const dateFmt = new Intl.DateTimeFormat("es-ES", {
 function escapeHtml(value: string): string {
   const div = document.createElement("div");
   div.textContent = value;
-  return div.innerHTML;
+  return div.innerHTML.replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
 function sourceParam(source: SourceKey): string | null {
@@ -317,13 +320,14 @@ interface WitmeApplication {
   score: number | null;
   approval_probability: number | null;
   offer_clicks: string[] | null;
+  total_count: number;
 }
 
-async function fetchWitmeApplications(password: string): Promise<WitmeApplication[]> {
+async function fetchWitmeApplications(password: string, page: number): Promise<WitmeApplication[]> {
   const { data, error } = await supabase.rpc("admin_get_witme_applications", {
     p_password: password,
-    p_limit: 100,
-    p_offset: 0,
+    p_limit: WITME_PAGE_SIZE,
+    p_offset: page * WITME_PAGE_SIZE,
   });
   if (error) throw error;
   return (data ?? []) as WitmeApplication[];
@@ -619,13 +623,15 @@ async function renderDashboard(password: string) {
       fetchLeads(password, period, currentSource, currentLeadsPage),
       fetchFunnelOverview(password, period, currentSource),
       fetchFunnelSteps(password, period, currentSource),
-      fetchWitmeApplications(password),
+      fetchWitmeApplications(password, currentWitmePage),
       fetchOfferClicks(password, period, currentSource),
     ]);
     const totalBands = stats.band_excelente + stats.band_bueno + stats.band_regular + stats.band_bajo;
     const stepDefs = currentSource === "solicitud" ? STEP_DEFS_SOLICITUD : STEP_DEFS;
     const totalLeadsCount = leads[0]?.total_count ?? 0;
     const totalLeadsPages = Math.max(1, Math.ceil(totalLeadsCount / LEADS_PAGE_SIZE));
+    const totalWitmeCount = witmeApps[0]?.total_count ?? 0;
+    const totalWitmePages = Math.max(1, Math.ceil(totalWitmeCount / WITME_PAGE_SIZE));
 
     root.innerHTML = `
       <div class="admin-shell">
@@ -740,7 +746,7 @@ async function renderDashboard(password: string) {
         </section>
 
         <section class="admin-card">
-          <p class="admin-card-title">Solicitudes enviadas a Witme (${witmeApps.length})</p>
+          <p class="admin-card-title">Solicitudes enviadas a Witme (${totalWitmeCount})</p>
           <p class="admin-card-sub">
             Copia propia de cada envío a la API de Witme, con su respuesta, el score y la
             probabilidad de aprobación de ese lead, y si hizo click en la oferta que se le
@@ -753,13 +759,16 @@ async function renderDashboard(password: string) {
                 <tr>
                   <th>Fecha</th><th>Nombre</th><th>Email</th><th>Importe</th>
                   <th>Witme ID</th><th>Estado</th>
-                  <th>Score</th><th>Aprobación</th><th>Click oferta</th><th>Mensaje</th>
+                  <th>Score</th><th>Aprobación</th><th>Click oferta</th>
                 </tr>
               </thead>
               <tbody>
                 ${witmeApps
                   .map((w) => {
-                    const messageText = JSON.stringify(w.witme_message ?? "");
+                    const tooltipParts: string[] = [];
+                    if (w.witme_message != null) tooltipParts.push(`Mensaje: ${JSON.stringify(w.witme_message)}`);
+                    if (w.witme_redirect_url) tooltipParts.push(`Redirect URL: ${w.witme_redirect_url}`);
+                    const statusTooltip = tooltipParts.join("\n");
                     return `
                   <tr>
                     <td>${dateFmt.format(new Date(w.created_at))}</td>
@@ -767,7 +776,7 @@ async function renderDashboard(password: string) {
                     <td><div class="admin-table-name-cell" title="${escapeHtml(w.email ?? "")}">${escapeHtml(w.email ?? "")}</div></td>
                     <td>${w.requested_amount != null ? `${w.requested_amount} €` : "—"}</td>
                     <td>${w.witme_id ?? "—"}</td>
-                    <td><span class="admin-badge ${w.witme_status === "processed" ? "band-excelente" : "band-bajo"}">${escapeHtml(w.witme_status ?? "—")}</span></td>
+                    <td><span class="admin-badge ${w.witme_status === "processed" ? "band-excelente" : "band-bajo"}" ${statusTooltip ? `title="${escapeHtml(statusTooltip)}"` : ""}>${escapeHtml(w.witme_status ?? "—")}</span></td>
                     <td>${w.score ?? "—"}</td>
                     <td>${
                       w.approval_probability != null
@@ -779,14 +788,18 @@ async function renderDashboard(password: string) {
                         ? `✅ ${w.offer_clicks.map((id) => escapeHtml(OFFER_LABELS[id] ?? id)).join(", ")}`
                         : "—"
                     }</td>
-                    <td><div class="admin-table-message-cell" title="${escapeHtml(messageText)}">${escapeHtml(messageText)}</div></td>
                   </tr>
                 `;
                   })
                   .join("")}
-                ${witmeApps.length === 0 ? `<tr><td colspan="10" class="admin-empty">Todavía no hay solicitudes enviadas a Witme.</td></tr>` : ""}
+                ${witmeApps.length === 0 ? `<tr><td colspan="9" class="admin-empty">Todavía no hay solicitudes enviadas a Witme.</td></tr>` : ""}
               </tbody>
             </table>
+          </div>
+          <div class="admin-pagination">
+            <button class="admin-btn-ghost" id="witme-prev-btn" ${currentWitmePage === 0 ? "disabled" : ""}>← Anterior</button>
+            <span class="admin-pagination-label">Página ${currentWitmePage + 1} de ${totalWitmePages}</span>
+            <button class="admin-btn-ghost" id="witme-next-btn" ${currentWitmePage + 1 >= totalWitmePages ? "disabled" : ""}>Siguiente →</button>
           </div>
         </section>
 
@@ -831,6 +844,16 @@ async function renderDashboard(password: string) {
     });
     document.getElementById("leads-next-btn")!.addEventListener("click", () => {
       currentLeadsPage++;
+      renderDashboard(password);
+    });
+    document.getElementById("witme-prev-btn")!.addEventListener("click", () => {
+      if (currentWitmePage > 0) {
+        currentWitmePage--;
+        renderDashboard(password);
+      }
+    });
+    document.getElementById("witme-next-btn")!.addEventListener("click", () => {
+      currentWitmePage++;
       renderDashboard(password);
     });
   } catch (err) {
