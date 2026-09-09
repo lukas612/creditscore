@@ -29,8 +29,8 @@ export interface WitmeQuestionDef {
 // Fases antes del gate (solo lo que hace falta para calcular la puntuación),
 // estilo quiz corto. El resto de datos que exige Witme (identidad, domicilio,
 // vehículo, cuenta bancaria) se piden después de desbloquear el informe.
-const SCORE_PHASE_KEYS: WitmePhase[] = ["perfil", "finanzas", "solicitud"];
-const EXTRA_PHASE_KEYS: WitmePhase[] = ["identidad", "domicilio", "patrimonio"];
+export const SCORE_PHASE_KEYS: WitmePhase[] = ["perfil", "finanzas", "solicitud"];
+export const EXTRA_PHASE_KEYS: WitmePhase[] = ["identidad", "domicilio", "patrimonio"];
 
 export const WITME_PHASES: { key: WitmePhase; label: string }[] = [
   { key: "perfil", label: "Tu perfil" },

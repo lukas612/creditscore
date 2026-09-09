@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { questions as QUIZ_QUESTIONS } from "../data/questions";
 import { CREDIT_OFFERS } from "../data/offers";
-import { WITME_QUESTIONS } from "../data/witmeQuestions";
+import { WITME_QUESTIONS, SCORE_PHASE_KEYS } from "../data/witmeQuestions";
 import "./admin.css";
 
 const OFFER_LABELS: Record<string, string> = {
@@ -220,12 +220,19 @@ const STEP_DEFS: StepDef[] = [
 
 // Deriva las preguntas de la solicitud larga directamente de
 // src/data/witmeQuestions.ts (misma fuente que usa el formulario), en vez de
-// mantener otra lista a mano.
-const STEP_DEFS_SOLICITUD: StepDef[] = WITME_QUESTIONS.map((q) => ({
-  key: q.key,
-  label: q.label,
-  conditional: !!q.condition,
-}));
+// mantener otra lista a mano. Se insertan a mano dos pasos que no son
+// preguntas de WITME_QUESTIONS: el gate (nombre/email/teléfono, entre las
+// preguntas de puntuación y las de después del gate - WitmeGate.tsx) y el
+// envío final del formulario completo (WitmeApp.tsx, tras el gate).
+const scoreQuestions = WITME_QUESTIONS.filter((q) => SCORE_PHASE_KEYS.includes(q.phase));
+const extraQuestions = WITME_QUESTIONS.filter((q) => !SCORE_PHASE_KEYS.includes(q.phase));
+const toStepDef = (q: (typeof WITME_QUESTIONS)[number]): StepDef => ({ key: q.key, label: q.label, conditional: !!q.condition });
+const STEP_DEFS_SOLICITUD: StepDef[] = [
+  ...scoreQuestions.map(toStepDef),
+  { key: "gate_contact", label: "Deja sus datos de contacto (nombre, email, teléfono)" },
+  ...extraQuestions.map(toStepDef),
+  { key: "application_completed", label: "✅ Termina la solicitud completa" },
+];
 
 interface Lead {
   id: string;

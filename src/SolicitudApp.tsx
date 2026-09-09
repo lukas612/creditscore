@@ -103,6 +103,12 @@ export default function SolicitudApp() {
       return;
     }
 
+    // Marca que el usuario ha terminado el formulario completo (llegó al
+    // final y le dio a enviar), independientemente de si luego se intenta o
+    // no el envío a Witme - es la señal de "completa todo el proceso" que
+    // usa el panel admin para medir la caída del embudo.
+    trackFunnelEvent("question_reached", "application_completed", "solicitud");
+
     // Witme exige el número de cuenta bancaria como campo obligatorio y lo
     // rechaza aunque lo mandemos vacío (ver "The data.bank account number
     // field is required." incluso con hasBankAccount=false) - sin cuenta

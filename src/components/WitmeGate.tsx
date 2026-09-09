@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { trackFunnelEvent } from "../lib/funnel";
 import { fireServyPostback } from "../lib/postback";
 import { supabase } from "../lib/supabase";
 import { isValidEmail, isValidSpanishPhone, normalizeSpanishPhone } from "../lib/validation";
@@ -36,6 +37,10 @@ export function WitmeGate({
   const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    trackFunnelEvent("question_reached", "gate_contact", "solicitud");
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
