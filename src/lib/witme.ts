@@ -21,6 +21,12 @@ export function buildWitmeDataPayload(answers: Answers): Record<string, unknown>
   const data: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(answers)) {
     if (key === "consentPrivacy") continue;
+    if (key === "phoneNumber") {
+      // Guardamos el teléfono normalizado sin prefijo (formato nacional de 9
+      // dígitos), pero Witme lo exige con +34 delante.
+      data[key] = `+34${value}`;
+      continue;
+    }
     data[key] = BOOLEAN_FIELDS.includes(key) ? value === "si" : value;
   }
   for (const [key, defaultValue] of Object.entries(CONDITIONAL_FIELD_DEFAULTS)) {
