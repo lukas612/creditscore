@@ -145,33 +145,61 @@ export default function SolicitudApp() {
     setStage("submitting");
 
     const sessionId = scoreData.quizSessionId;
-    const first = await requestWitmeLenderOffer(fullAnswers, clickId, utmSource, sessionId, witmeOfferId(1));
-    setApplicationSubmitted(first.succeeded);
-    setWitmeOffers(first.offer ? [first.offer] : []);
-    setStage("result");
 
     // Cada llamada aceptada consume una posición de la cascada de
-    // prestamistas de Witme para esta misma solicitud; en cuanto una no
-    // vuelve con oferta (rechazo o fallo) asumimos que no quedan más y
-    // dejamos de insistir. No bloquea la UI: el usuario ya ve el resultado
-    // con la primera oferta (si la hay) y las ofertas estáticas de siempre,
-    // y cada oferta adicional aceptada se añade a la lista según llega.
-    //
-    // Nadie hacía click en la 2ª/3ª oferta de Witme: aparecía casi a la vez
-    // que la primera y pasaba desapercibida. Retrasamos 5s la 2ª petición
-    // para que se note como una oferta nueva y no una más del mismo golpe.
-    let accepted = first.offer != null;
-    if (accepted) setFetchingMoreOffers(true);
-    for (let attempt = 2; accepted && attempt <= MAX_WITME_ATTEMPTS; attempt++) {
-      if (attempt === 2) await new Promise((resolve) => setTimeout(resolve, 5000));
-      const next = await requestWitmeLenderOffer(fullAnswers, clickId, utmSource, sessionId, witmeOfferId(attempt));
-      accepted = next.offer != null;
-      if (next.offer) {
-        const offer = next.offer;
-        setWitmeOffers((prev) => [...prev, offer]);
-      }
-    }
-    setFetchingMoreOffers(false);
+    // prestamistas de Witme para esta misma solicitud; en cuanto una
+    // responde sin oferta (rechazo o fallo) asumimos que no quedan más y
+    // dejamos de lanzar nuevas. Witme puede tardar bastante en responder
+    // (mediana ~4s, hasta 30s+): en vez de esperar cada respuesta antes de
+    // pedir la siguiente, si una no ha respondido a los 3s ya lanzamos la
+    // siguiente en paralelo (sin esperar más); si responde antes, no se
+    // espera ese margen y se actúa al momento. Las que ya estaban en vuelo
+    // se dejan terminar aunque otra posterior haya cerrado la cascada.
+    const RACE_TIMEOUT_MS = 3000;
+    const offersByAttempt: Record<number, LenderOffer> = {};
+    let stopped = false;
+    let active = 0;
+
+    const applyOffers = () => {
+      const ordered = Object.keys(offersByAttempt)
+        .map(Number)
+        .sort((a, b) => a - b)
+        .map((attempt) => offersByAttempt[attempt]);
+      setWitmeOffers(ordered);
+    };
+
+    const launch = (attempt: number) => {
+      if (attempt > MAX_WITME_ATTEMPTS || stopped) return;
+      active++;
+      let nextLaunched = false;
+      const launchNext = () => {
+        if (!nextLaunched && !stopped) {
+          nextLaunched = true;
+          launch(attempt + 1);
+        }
+      };
+      const raceTimer = setTimeout(launchNext, RACE_TIMEOUT_MS);
+
+      requestWitmeLenderOffer(fullAnswers, clickId, utmSource, sessionId, witmeOfferId(attempt)).then((result) => {
+        clearTimeout(raceTimer);
+        active--;
+        if (attempt === 1) {
+          setApplicationSubmitted(result.succeeded);
+          setStage("result");
+        }
+        if (result.offer) {
+          offersByAttempt[attempt] = result.offer;
+          applyOffers();
+          launchNext();
+        } else {
+          stopped = true;
+        }
+        if (active === 0) setFetchingMoreOffers(false);
+      });
+    };
+
+    setFetchingMoreOffers(true);
+    launch(1);
   };
 
   return (
