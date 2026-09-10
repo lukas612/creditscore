@@ -1,45 +1,28 @@
 import type { Answers } from "../data/witmeQuestions";
+import { buildCarCollateralAnswers, type CarCollateralContact } from "./witmeCar";
 import { supabase } from "./supabase";
-
-const BOOLEAN_FIELDS = ["hasOwnVehicle", "hasBankAccount", "hasOtherLoans", "badCreditHistory"];
-
-// Campos que solo se preguntan bajo una condición (p.ej. bankAccountNumber
-// solo si hasBankAccount==="si"): cuando no aplican, nunca llegan a
-// `answers`. Witme los exige presentes igualmente (hemos visto fallar un
-// envío real con "The data.bank account number field is required." pese a
-// que el usuario respondió que no tenía cuenta), así que se rellenan con un
-// valor vacío en vez de omitirlos.
-const CONDITIONAL_FIELD_DEFAULTS: Record<string, string | number> = {
-  totalDebtAmount: 0,
-  vehicleType: "",
-  hasFinancedVehicle: "",
-  vehiclePlate: "",
-  bankAccountNumber: "",
-};
-
-export function buildWitmeDataPayload(answers: Answers): Record<string, unknown> {
-  const data: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(answers)) {
-    if (key === "consentPrivacy") continue;
-    if (key === "phoneNumber") {
-      // Guardamos el teléfono normalizado sin prefijo (formato nacional de 9
-      // dígitos), pero Witme lo exige con +34 delante.
-      data[key] = `+34${value}`;
-      continue;
-    }
-    data[key] = BOOLEAN_FIELDS.includes(key) ? value === "si" : value;
-  }
-  for (const [key, defaultValue] of Object.entries(CONDITIONAL_FIELD_DEFAULTS)) {
-    if (!(key in data)) data[key] = defaultValue;
-  }
-  return data;
-}
 
 export interface WitmeSubmitResult {
   id: number;
   status: string;
   message: unknown;
   redirectUrl: string | null;
+}
+
+// Prestamista normal: antes llamaba a leads/new (la API "de siempre" de
+// Witme); ahora usa el mismo endpoint servy-form-wait que aval coche/
+// reunificación y Pingtree, con su propio servy_id (375), en paralelo a
+// esos otros servicios que se siguen disparando aparte sin cambios. Mismo
+// mapeo de campos reutilizado (buildCarCollateralAnswers).
+const SERVY_ID_LENDER = 375;
+
+function contactFromAnswers(answers: Answers): CarCollateralContact {
+  return {
+    name: String(answers.name ?? ""),
+    lastName: String(answers.lastName ?? ""),
+    email: String(answers.email ?? ""),
+    phoneNumber: String(answers.phoneNumber ?? ""),
+  };
 }
 
 export async function submitWitmeApplication(
@@ -50,19 +33,27 @@ export async function submitWitmeApplication(
 ): Promise<WitmeSubmitResult> {
   const { data, error } = await supabase.functions.invoke("witme-proxy", {
     body: {
-      action: "submit",
+      action: "submit_lender",
       clickId,
       utmSource,
       externalId,
       sentFrom: window.location.href,
-      data: buildWitmeDataPayload(answers),
-      tracking: {
-        source: utmSource ?? "",
-        medium: "",
-        campaign: "",
-        term: "",
-        content: "",
+      vars: {
+        servy_id: SERVY_ID_LENDER,
+        servy_id_2: null,
+        servy_id_3: null,
+        origin: "2",
+        country: "ES",
+        credit_to_debt_sent: false,
+        skip_debts: "0",
+        only_pingtree: "0",
       },
+      hidden: {
+        svyid: clickId ?? "",
+        servy_click: clickId ?? "",
+        utm_source: utmSource ?? "",
+      },
+      answers: buildCarCollateralAnswers(answers, contactFromAnswers(answers)),
     },
   });
   if (error) throw error;

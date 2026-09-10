@@ -231,6 +231,108 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+  // Reemplazo del prestamista normal (antes "submit" -> leads/new): mismo
+  // endpoint servy-form-wait que submit_car/submit_pingtree, con el servy_id
+  // 375, pero registrado en witme_applications (la tabla de siempre para
+  // "Solicitudes enviadas a Witme") para no perder el histórico ni romper
+  // las stats/admin ya existentes. Se añade 'externalId' al nivel superior
+  // del request_payload guardado (no al que se envía a Witme) porque esas
+  // consultas ya buscan ahí.
+  if (body.action === "submit_lender") {
+    const vars = body.vars;
+    const hidden = body.hidden;
+    const answers = body.answers;
+    if (!vars || typeof vars !== "object" || !hidden || typeof hidden !== "object" || !answers || typeof answers !== "object") {
+      return jsonResponse({ error: "Falta 'vars', 'hidden' o 'answers'" }, 400);
+    }
+
+    const ipFrom =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      req.headers.get("x-real-ip") ??
+      "0.0.0.0";
+    const userAgent = req.headers.get("user-agent") ?? "unknown";
+    const nowMs = Date.now();
+    const sentFrom = typeof body.sentFrom === "string" ? body.sentFrom : "unknown";
+    const externalId = typeof body.externalId === "string" ? body.externalId : null;
+    const clickId = typeof body.clickId === "string" ? body.clickId : null;
+    const utmSource = typeof body.utmSource === "string" ? body.utmSource : null;
+
+    const payload = {
+      formSchema: [],
+      meta: {
+        landedAt: nowMs,
+        sentFrom,
+        userAgent,
+        sentAt: nowMs,
+        ipFrom,
+        sessionId: externalId ?? crypto.randomUUID(),
+        containerHref: sentFrom,
+      },
+      data: { vars, hidden, answers },
+    };
+    // Lo que se envía a Witme es `payload` tal cual; lo que guardamos en
+    // nuestra tabla añade externalId aparte, solo para nuestras consultas.
+    const storedPayload = { ...payload, externalId };
+
+    const startedAt = Date.now();
+    let upstream: Response;
+    let responseBody: string;
+    try {
+      upstream = await fetch(WITME_CAR_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(payload),
+      });
+      responseBody = await upstream.text();
+    } catch (err) {
+      const responseMs = Date.now() - startedAt;
+      const message = `Error contactando con Witme: ${err instanceof Error ? err.message : String(err)}`;
+
+      const { error: logError } = await supabaseAdmin.from("witme_applications").insert({
+        click_id: clickId,
+        utm_source: utmSource,
+        request_payload: storedPayload,
+        witme_id: null,
+        witme_status: "error",
+        witme_message: message,
+        witme_redirect_url: null,
+        witme_response_ms: responseMs,
+      });
+      if (logError) {
+        console.error("Error logging witme_applications:", logError.message);
+      }
+
+      return jsonResponse({ error: message }, 502);
+    }
+    const responseMs = Date.now() - startedAt;
+
+    let parsed: Record<string, unknown> = {};
+    try {
+      parsed = JSON.parse(responseBody);
+    } catch {
+      // seguimos igualmente para al menos dejar constancia del intento
+    }
+
+    const { error: logError } = await supabaseAdmin.from("witme_applications").insert({
+      click_id: clickId,
+      utm_source: utmSource,
+      request_payload: storedPayload,
+      witme_id: typeof parsed.id === "number" ? parsed.id : null,
+      witme_status: typeof parsed.status === "string" ? parsed.status : null,
+      witme_message: parsed.message ?? null,
+      witme_redirect_url: typeof parsed.redirectUrl === "string" ? parsed.redirectUrl : null,
+      witme_response_ms: responseMs,
+    });
+    if (logError) {
+      console.error("Error logging witme_applications:", logError.message);
+    }
+
+    return new Response(responseBody, {
+      status: upstream.status,
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+    });
+  }
+
   const token = Deno.env.get("WITME_API_TOKEN");
   if (!token) {
     return jsonResponse({ error: "WITME_API_TOKEN no configurado en los secretos del proyecto" }, 500);
@@ -349,5 +451,5 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  return jsonResponse({ error: "Acción desconocida. Usa 'catalog', 'submit', 'submit_car' o 'submit_pingtree'." }, 400);
+  return jsonResponse({ error: "Acción desconocida. Usa 'catalog', 'submit', 'submit_lender', 'submit_car' o 'submit_pingtree'." }, 400);
 });
