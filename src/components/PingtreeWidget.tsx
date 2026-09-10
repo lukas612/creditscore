@@ -76,10 +76,7 @@ export function PingtreeWidget({
 
       {stage === "submitting" && scoreData && (
         <div className="quiz-card">
-          <div className="score-teaser">
-            <span className="score-teaser-value">{scoreData.score}</span>
-            <span className="score-teaser-blur">/ 850</span>
-          </div>
+          <span className="score-value">{scoreData.score}</span>
           <LoadingSpinner text="Con tu score, te vamos a redirigir a tu mejor opción…" />
         </div>
       )}
