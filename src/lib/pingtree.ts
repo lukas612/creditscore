@@ -8,7 +8,7 @@ import { supabase } from "./supabase";
 // una comparación silenciosa. Los tres servy_id se piden juntos en la misma
 // petición y, si Witme devuelve redirectUrl, el llamador redirige ahí en
 // vez de mostrar la página de resultados propia.
-const SERVY_ID_PINGTREE = 151; // Creditio Pingtree
+const SERVY_ID_PINGTREE = 375; // Creditio Pingtree
 const SERVY_ID_DEBT_CONSOLIDATION = 154; // Créditos a deudas
 const SERVY_ID_CAR_COLLATERAL = 171; // Aval coche
 
