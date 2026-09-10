@@ -7,9 +7,10 @@ interface Props {
   fetchingMoreOffers: boolean;
   clickId: string | null;
   quizSessionId: string;
+  source?: "solicitud" | "pingtree";
 }
 
-export function SolicitudOffers({ witmeOffers, fetchingMoreOffers, clickId, quizSessionId }: Props) {
+export function SolicitudOffers({ witmeOffers, fetchingMoreOffers, clickId, quizSessionId, source = "solicitud" }: Props) {
   return (
     <div className="offers-section">
       <p className="offers-eyebrow">Tu siguiente paso</p>
@@ -33,7 +34,7 @@ export function SolicitudOffers({ witmeOffers, fetchingMoreOffers, clickId, quiz
               href={witmeOffer.url}
               target="_blank"
               rel="noreferrer sponsored"
-              onClick={() => trackFunnelEvent("offer_click", witmeOffer.id, "solicitud", quizSessionId)}
+              onClick={() => trackFunnelEvent("offer_click", witmeOffer.id, source, quizSessionId)}
             >
               Ver oferta →
             </a>
@@ -50,7 +51,7 @@ export function SolicitudOffers({ witmeOffers, fetchingMoreOffers, clickId, quiz
               href={offer.buildUrl(clickId)}
               target="_blank"
               rel="noreferrer sponsored"
-              onClick={() => trackFunnelEvent("offer_click", offer.id, "solicitud", quizSessionId)}
+              onClick={() => trackFunnelEvent("offer_click", offer.id, source, quizSessionId)}
             >
               Ver oferta →
             </a>

@@ -16,6 +16,7 @@ interface Props {
   clickId: string | null;
   quizSessionId: string;
   applicationSubmitted: boolean;
+  offersSource?: "solicitud" | "pingtree";
 }
 
 const BAND_COPY: Record<string, { title: string; tip: string }> = {
@@ -54,6 +55,7 @@ export function SolicitudResult({
   clickId,
   quizSessionId,
   applicationSubmitted,
+  offersSource = "solicitud",
 }: Props) {
   const copy = BAND_COPY[scoreBand] ?? BAND_COPY.regular;
   const pct = Math.round(((score - 300) / (850 - 300)) * 100);
@@ -78,6 +80,7 @@ export function SolicitudResult({
         fetchingMoreOffers={fetchingMoreOffers}
         clickId={clickId}
         quizSessionId={quizSessionId}
+        source={offersSource}
       />
 
       <ShareResult score={score} scoreBand={scoreBand} />

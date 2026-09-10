@@ -4,17 +4,21 @@ import { trackFunnelEvent } from "./lib/funnel";
 import { getClickId } from "./lib/postback";
 import { submitPingtreeLead } from "./lib/pingtree";
 import { supabase } from "./lib/supabase";
+import type { BreakdownItem } from "./lib/types";
 import { Header } from "./components/Header";
 import { Landing } from "./components/Landing";
 import { PingtreeWidget } from "./components/PingtreeWidget";
 import type { GateContact } from "./components/WitmeGate";
 
-type Stage = "quiz" | "loading" | "gate" | "extra" | "submitting" | "redirecting" | "no-offer" | "error";
+type Stage = "quiz" | "loading" | "gate" | "extra" | "submitting" | "redirecting" | "result" | "error";
 
 interface ScoreData {
   quizSessionId: string;
   score: number;
   scoreBand: string;
+  breakdown: BreakdownItem[];
+  capacidadMensual: number;
+  capacidadMaxima: number;
   approvalProbability: number | null;
 }
 
@@ -29,6 +33,7 @@ export default function PingtreeApp() {
   const [stage, setStage] = useState<Stage>("quiz");
   const [answers, setAnswers] = useState<Answers>({});
   const [scoreData, setScoreData] = useState<ScoreData | null>(null);
+  const [applicationSubmitted, setApplicationSubmitted] = useState(false);
   const [clickId] = useState<string | null>(() => getClickId());
 
   const params = new URLSearchParams(window.location.search);
@@ -56,7 +61,13 @@ export default function PingtreeApp() {
 
     const { data: scored, error: scoreError } = await supabase
       .rpc("calculate_score_solicitud", { p_answers: quizAnswers })
-      .single<{ score: number; score_band: string; capacidad_maxima: number }>();
+      .single<{
+        score: number;
+        score_band: string;
+        breakdown: BreakdownItem[];
+        capacidad_mensual: number;
+        capacidad_maxima: number;
+      }>();
 
     if (scoreError || !scored) {
       setStage("error");
@@ -73,6 +84,9 @@ export default function PingtreeApp() {
       quizSessionId,
       score: scored.score,
       scoreBand: scored.score_band,
+      breakdown: scored.breakdown,
+      capacidadMensual: scored.capacidad_mensual,
+      capacidadMaxima: scored.capacidad_maxima,
       approvalProbability: approvalProbability ?? null,
     });
     setStage("gate");
@@ -108,7 +122,11 @@ export default function PingtreeApp() {
       return;
     }
 
-    setStage("no-offer");
+    // Witme no aceptó (sin redirectUrl): en vez de un mensaje sin más,
+    // caemos al mismo resultado de siempre (score + las 4 ofertas
+    // estáticas), como en /solicitud.html.
+    setApplicationSubmitted(result.succeeded);
+    setStage("result");
   };
 
   return (
@@ -121,6 +139,7 @@ export default function PingtreeApp() {
             answers={answers}
             scoreData={scoreData}
             clickId={clickId}
+            applicationSubmitted={applicationSubmitted}
             onQuizComplete={handleQuizComplete}
             onGateUnlock={handleGateUnlock}
             onExtraComplete={handleExtraComplete}
