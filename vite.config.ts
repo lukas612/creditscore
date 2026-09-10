@@ -14,6 +14,7 @@ export default defineConfig({
         main: resolve(__dirname, "index.html"),
         admin: resolve(__dirname, "admin.html"),
         solicitud: resolve(__dirname, "solicitud.html"),
+        pingtree: resolve(__dirname, "pingtree.html"),
       },
     },
   },

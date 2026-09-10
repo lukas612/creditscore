@@ -137,6 +137,100 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+  // Flujo "completo - pingtree": mismo endpoint y esquema que submit_car,
+  // pero con otro trío de servy_id (Creditio Pingtree / reunificación /
+  // aval coche) y como flujo principal, no en background - el llamador
+  // espera la redirectUrl para redirigir ahí en vez de mostrar resultados
+  // propios. Log aparte en pingtree_applications para tener sus stats
+  // independientes.
+  if (body.action === "submit_pingtree") {
+    const vars = body.vars;
+    const hidden = body.hidden;
+    const answers = body.answers;
+    if (!vars || typeof vars !== "object" || !hidden || typeof hidden !== "object" || !answers || typeof answers !== "object") {
+      return jsonResponse({ error: "Falta 'vars', 'hidden' o 'answers'" }, 400);
+    }
+
+    const ipFrom =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      req.headers.get("x-real-ip") ??
+      "0.0.0.0";
+    const userAgent = req.headers.get("user-agent") ?? "unknown";
+    const nowMs = Date.now();
+    const sentFrom = typeof body.sentFrom === "string" ? body.sentFrom : "unknown";
+    const externalId = typeof body.externalId === "string" ? body.externalId : null;
+
+    const payload = {
+      formSchema: [],
+      meta: {
+        landedAt: nowMs,
+        sentFrom,
+        userAgent,
+        sentAt: nowMs,
+        ipFrom,
+        sessionId: externalId ?? crypto.randomUUID(),
+        containerHref: sentFrom,
+      },
+      data: { vars, hidden, answers },
+    };
+
+    const startedAt = Date.now();
+    let upstream: Response;
+    let responseBody: string;
+    try {
+      upstream = await fetch(WITME_CAR_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(payload),
+      });
+      responseBody = await upstream.text();
+    } catch (err) {
+      const responseMs = Date.now() - startedAt;
+      const message = `Error contactando con Witme (pingtree): ${err instanceof Error ? err.message : String(err)}`;
+
+      const { error: logError } = await supabaseAdmin.from("pingtree_applications").insert({
+        external_id: externalId,
+        request_payload: payload,
+        response_status: null,
+        response_body: message,
+        response_ms: responseMs,
+      });
+      if (logError) {
+        console.error("Error logging pingtree_applications:", logError.message);
+      }
+
+      return jsonResponse({ error: message }, 502);
+    }
+    const responseMs = Date.now() - startedAt;
+
+    let parsed: Record<string, unknown> = {};
+    try {
+      parsed = JSON.parse(responseBody);
+    } catch {
+      // seguimos igualmente para al menos dejar constancia del intento
+    }
+
+    const { error: logError } = await supabaseAdmin.from("pingtree_applications").insert({
+      external_id: externalId,
+      request_payload: payload,
+      response_status: upstream.status,
+      response_body: responseBody,
+      response_ms: responseMs,
+      witme_id: typeof parsed.id === "number" ? parsed.id : null,
+      witme_status: typeof parsed.status === "string" ? parsed.status : null,
+      witme_message: parsed.message ?? null,
+      witme_redirect_url: typeof parsed.redirectUrl === "string" ? parsed.redirectUrl : null,
+    });
+    if (logError) {
+      console.error("Error logging pingtree_applications:", logError.message);
+    }
+
+    return new Response(responseBody, {
+      status: upstream.status,
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+    });
+  }
+
   const token = Deno.env.get("WITME_API_TOKEN");
   if (!token) {
     return jsonResponse({ error: "WITME_API_TOKEN no configurado en los secretos del proyecto" }, 500);
@@ -255,5 +349,5 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  return jsonResponse({ error: "Acción desconocida. Usa 'catalog', 'submit' o 'submit_car'." }, 400);
+  return jsonResponse({ error: "Acción desconocida. Usa 'catalog', 'submit', 'submit_car' o 'submit_pingtree'." }, 400);
 });

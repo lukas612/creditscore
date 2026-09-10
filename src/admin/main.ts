@@ -122,6 +122,9 @@ let currentWitmePage = 0;
 const WITME_CAR_PAGE_SIZE = 10;
 let currentWitmeCarPage = 0;
 
+const PINGTREE_PAGE_SIZE = 10;
+let currentPingtreePage = 0;
+
 type Tab = "dashboard" | "leads" | "scoring" | "fieldstats";
 let currentTab: Tab = "dashboard";
 
@@ -382,6 +385,53 @@ async function fetchWitmeCarApplications(password: string, page: number): Promis
   });
   if (error) throw error;
   return (data ?? []) as WitmeCarApplication[];
+}
+
+// Versión independiente "completo - pingtree": mismo endpoint servy-form-wait
+// pero como flujo principal (no en background) con otro trío de servy_id
+// (Creditio Pingtree / reunificación / aval coche), redirigiendo al usuario
+// a la URL que devuelva Witme en vez de mostrar resultados propios.
+interface PingtreeApplication {
+  id: string;
+  created_at: string;
+  external_id: string | null;
+  witme_id: number | null;
+  witme_status: string | null;
+  witme_message: unknown;
+  witme_redirect_url: string | null;
+  response_ms: number | null;
+  name: string | null;
+  last_name: string | null;
+  email: string | null;
+  requested_amount: number | null;
+  total_count: number;
+}
+
+async function fetchPingtreeApplications(password: string, page: number): Promise<PingtreeApplication[]> {
+  const { data, error } = await supabase.rpc("admin_get_pingtree_applications", {
+    p_password: password,
+    p_limit: PINGTREE_PAGE_SIZE,
+    p_offset: page * PINGTREE_PAGE_SIZE,
+  });
+  if (error) throw error;
+  return (data ?? []) as PingtreeApplication[];
+}
+
+interface PingtreeResponseStats {
+  avg_ms: number | null;
+  median_ms: number | null;
+  p95_ms: number | null;
+  max_ms: number | null;
+  count_with_time: number;
+  count_accepted: number;
+  count_total: number;
+  pct_accepted: number | null;
+}
+
+async function fetchPingtreeResponseStats(password: string): Promise<PingtreeResponseStats> {
+  const { data, error } = await supabase.rpc("admin_get_pingtree_response_stats", { p_password: password }).single<PingtreeResponseStats>();
+  if (error || !data) throw error ?? new Error("No data");
+  return data;
 }
 
 interface WitmeResponseStats {
@@ -833,11 +883,13 @@ async function renderLeadsTab(password: string) {
   const period = periodFor(currentPreset);
 
   try {
-    const [leads, witmeApps, witmeResponseStats, witmeCarApps] = await Promise.all([
+    const [leads, witmeApps, witmeResponseStats, witmeCarApps, pingtreeApps, pingtreeResponseStats] = await Promise.all([
       fetchLeads(password, period, currentSource, currentLeadsPage),
       fetchWitmeApplications(password, currentWitmePage),
       fetchWitmeResponseStats(password),
       fetchWitmeCarApplications(password, currentWitmeCarPage),
+      fetchPingtreeApplications(password, currentPingtreePage),
+      fetchPingtreeResponseStats(password),
     ]);
     const totalLeadsCount = leads[0]?.total_count ?? 0;
     const totalLeadsPages = Math.max(1, Math.ceil(totalLeadsCount / LEADS_PAGE_SIZE));
@@ -845,6 +897,8 @@ async function renderLeadsTab(password: string) {
     const totalWitmePages = Math.max(1, Math.ceil(totalWitmeCount / WITME_PAGE_SIZE));
     const totalWitmeCarCount = witmeCarApps[0]?.total_count ?? 0;
     const totalWitmeCarPages = Math.max(1, Math.ceil(totalWitmeCarCount / WITME_CAR_PAGE_SIZE));
+    const totalPingtreeCount = pingtreeApps[0]?.total_count ?? 0;
+    const totalPingtreePages = Math.max(1, Math.ceil(totalPingtreeCount / PINGTREE_PAGE_SIZE));
 
     root.innerHTML = `
       <div class="admin-shell">
@@ -881,13 +935,15 @@ async function renderLeadsTab(password: string) {
                         : "—"
                     }</td>
                     <td>${escapeHtml(l.status)}</td>
-                    <td>${escapeHtml(SOURCE_LABELS[l.source as SourceKey] ?? l.source)}</td>
+                    <td>${escapeHtml(l.source === "pingtree" ? "Pingtree" : (SOURCE_LABELS[l.source as SourceKey] ?? l.source))}</td>
                     <td>${
-                      l.source !== "solicitud"
-                        ? `<span title="El quiz corto no envía a Witme">n/a</span>`
-                        : l.witme_submitted
-                          ? `<span class="admin-badge band-excelente">✅ Sí</span>`
-                          : `<span class="admin-badge band-bajo" title="No completó el formulario de identidad/domicilio/vehículo que exige Witme">❌ No</span>`
+                      l.source === "pingtree"
+                        ? `<span title="Este flujo usa solo la API pingtree - ver sección 'Solicitudes enviadas a Pingtree'">Ver Pingtree</span>`
+                        : l.source !== "solicitud"
+                          ? `<span title="El quiz corto no envía a Witme">n/a</span>`
+                          : l.witme_submitted
+                            ? `<span class="admin-badge band-excelente">✅ Sí</span>`
+                            : `<span class="admin-badge band-bajo" title="No completó el formulario de identidad/domicilio/vehículo que exige Witme">❌ No</span>`
                     }</td>
                     <td>${
                       l.offer_clicks && l.offer_clicks.length > 0
@@ -1046,6 +1102,65 @@ async function renderLeadsTab(password: string) {
             <button class="admin-btn-ghost" id="witme-car-next-btn" ${currentWitmeCarPage + 1 >= totalWitmeCarPages ? "disabled" : ""}>Siguiente →</button>
           </div>
         </section>
+
+        <section class="admin-card">
+          <p class="admin-card-title">Solicitudes enviadas a Pingtree (${totalPingtreeCount})</p>
+          <p class="admin-card-sub">
+            Versión independiente de la solicitud completa (<code>/pingtree.html</code>):
+            usa solo el endpoint <code>servy-form-wait</code> con los servy_id 151
+            (Creditio Pingtree), 154 (reunificación) y 171 (aval coche) juntos, y
+            redirige directamente a la <code>redirectUrl</code> de Witme en vez de
+            mostrar resultados propios.
+          </p>
+          <section class="admin-stats-grid admin-stats-grid-compact">
+            ${statCard("Tiempo medio de respuesta", fmtMs(pingtreeResponseStats.avg_ms))}
+            ${statCard("Mediana", fmtMs(pingtreeResponseStats.median_ms))}
+            ${statCard("P95", fmtMs(pingtreeResponseStats.p95_ms))}
+            ${statCard("Máximo", fmtMs(pingtreeResponseStats.max_ms))}
+          </section>
+          <section class="admin-stats-grid admin-stats-grid-compact">
+            ${statCard("% Aceptados (con redirectUrl)", fmtPct(pingtreeResponseStats.pct_accepted))}
+            ${statCard("Con oferta", String(pingtreeResponseStats.count_accepted))}
+            ${statCard("Total solicitudes", String(pingtreeResponseStats.count_total))}
+          </section>
+          <div class="admin-table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th><th>Nombre</th><th>Email</th><th>Importe</th>
+                  <th>Witme ID</th><th>Estado</th><th>Tiempo</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${pingtreeApps
+                  .map((p) => {
+                    const tooltipParts: string[] = [];
+                    if (p.witme_message != null) tooltipParts.push(`Mensaje: ${JSON.stringify(p.witme_message)}`);
+                    if (p.witme_redirect_url) tooltipParts.push(`Redirect URL: ${p.witme_redirect_url}`);
+                    const statusTooltip = tooltipParts.join("\n");
+                    return `
+                  <tr>
+                    <td>${dateFmt.format(new Date(p.created_at))}</td>
+                    <td><div class="admin-table-name-cell" title="${escapeHtml(p.name ?? "")} ${escapeHtml(p.last_name ?? "")}">${escapeHtml(p.name ?? "")} ${escapeHtml(p.last_name ?? "")}</div></td>
+                    <td><div class="admin-table-name-cell" title="${escapeHtml(p.email ?? "")}">${escapeHtml(p.email ?? "")}</div></td>
+                    <td>${p.requested_amount != null ? `${p.requested_amount} €` : "—"}</td>
+                    <td>${p.witme_id ?? "—"}</td>
+                    <td><span class="admin-badge ${p.witme_status === "processed" ? "band-excelente" : "band-bajo"}" ${statusTooltip ? `title="${escapeHtml(statusTooltip)}"` : ""}>${escapeHtml(p.witme_status ?? "—")}</span></td>
+                    <td>${fmtMs(p.response_ms)}</td>
+                  </tr>
+                `;
+                  })
+                  .join("")}
+                ${pingtreeApps.length === 0 ? `<tr><td colspan="7" class="admin-empty">Todavía no hay solicitudes de Pingtree.</td></tr>` : ""}
+              </tbody>
+            </table>
+          </div>
+          <div class="admin-pagination">
+            <button class="admin-btn-ghost" id="pingtree-prev-btn" ${currentPingtreePage === 0 ? "disabled" : ""}>← Anterior</button>
+            <span class="admin-pagination-label">Página ${currentPingtreePage + 1} de ${totalPingtreePages}</span>
+            <button class="admin-btn-ghost" id="pingtree-next-btn" ${currentPingtreePage + 1 >= totalPingtreePages ? "disabled" : ""}>Siguiente →</button>
+          </div>
+        </section>
       </div>
     `;
 
@@ -1080,6 +1195,16 @@ async function renderLeadsTab(password: string) {
     });
     document.getElementById("witme-car-next-btn")!.addEventListener("click", () => {
       currentWitmeCarPage++;
+      renderLeadsTab(password);
+    });
+    document.getElementById("pingtree-prev-btn")!.addEventListener("click", () => {
+      if (currentPingtreePage > 0) {
+        currentPingtreePage--;
+        renderLeadsTab(password);
+      }
+    });
+    document.getElementById("pingtree-next-btn")!.addEventListener("click", () => {
+      currentPingtreePage++;
       renderLeadsTab(password);
     });
   } catch (err) {

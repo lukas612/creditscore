@@ -20,7 +20,7 @@ import { supabase } from "./supabase";
 // completo cuando no aplican - igual que hace el propio ejemplo de Witme
 // cuando vehiculo-propio=false.
 
-interface CarCollateralContact {
+export interface CarCollateralContact {
   name: string;
   lastName: string;
   email: string;
@@ -83,7 +83,7 @@ const VEHICLE_CONDITIONAL_FIELDS: Record<string, string> = {
 // decidamos si hace falta añadir la pregunta también aquí.
 const DEFAULT_LOAN_TERM_MONTHS = 24;
 
-function buildCarCollateralAnswers(answers: Answers, contact: CarCollateralContact): Record<string, unknown> {
+export function buildCarCollateralAnswers(answers: Answers, contact: CarCollateralContact): Record<string, unknown> {
   const data: Record<string, unknown> = {
     "en-cuantos-meses-deseas-devolverlo": DEFAULT_LOAN_TERM_MONTHS,
     // WitmeGate ya exige marcar el consentimiento antes de poder llegar

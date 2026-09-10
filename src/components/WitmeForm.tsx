@@ -12,12 +12,13 @@ interface Props {
   visibleQuestions: (answers: Answers) => WitmeQuestionDef[];
   phases: { key: WitmePhase; label: string }[];
   intro?: string;
+  source?: "solicitud" | "pingtree";
   onComplete: (answers: Answers) => void;
 }
 
 const GENERIC_REASSURANCE = "🔒 Tus respuestas están cifradas y protegidas.";
 
-export function WitmeForm({ initialAnswers, visibleQuestions, phases, intro, onComplete }: Props) {
+export function WitmeForm({ initialAnswers, visibleQuestions, phases, intro, source = "solicitud", onComplete }: Props) {
   const [answers, setAnswers] = useState<Answers>(initialAnswers ?? {});
   const [stepIndex, setStepIndex] = useState(0);
 
@@ -27,8 +28,8 @@ export function WitmeForm({ initialAnswers, visibleQuestions, phases, intro, onC
   const isLast = stepIndex === steps.length - 1;
 
   useEffect(() => {
-    trackFunnelEvent("question_reached", question.key, "solicitud");
-  }, [question.key]);
+    trackFunnelEvent("question_reached", question.key, source);
+  }, [question.key, source]);
 
   const handleAnswer = (value: string | number | boolean) => {
     const next: Answers = { ...answers, [question.key]: value };

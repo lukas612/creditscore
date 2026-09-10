@@ -18,6 +18,7 @@ interface Props {
   zipCode: string;
   approvalProbability: number | null;
   clickId: string | null;
+  source?: "solicitud" | "pingtree";
   onUnlock: (contact: GateContact) => void;
 }
 
@@ -28,6 +29,7 @@ export function WitmeGate({
   zipCode,
   approvalProbability,
   clickId,
+  source = "solicitud",
   onUnlock,
 }: Props) {
   const [name, setName] = useState("");
@@ -39,8 +41,8 @@ export function WitmeGate({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    trackFunnelEvent("question_reached", "gate_contact", "solicitud");
-  }, []);
+    trackFunnelEvent("question_reached", "gate_contact", source);
+  }, [source]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -72,7 +74,7 @@ export function WitmeGate({
       score,
       score_band: scoreBand,
       approval_probability: approvalProbability,
-      source: "solicitud",
+      source,
     });
 
     setSubmitting(false);

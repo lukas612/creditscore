@@ -18,7 +18,7 @@ function getFunnelSessionId(): string {
 export function trackFunnelEvent(
   event: "page_view" | "question_reached" | "offer_click",
   questionKey?: string,
-  source: "quiz" | "solicitud" = "quiz",
+  source: "quiz" | "solicitud" | "pingtree" = "quiz",
   sessionIdOverride?: string,
 ) {
   supabase
