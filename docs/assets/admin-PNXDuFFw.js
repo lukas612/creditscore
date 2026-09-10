@@ -324,7 +324,7 @@ import{C as Pe,c as Ce}from"./validation-DnU8phWm.js";import{q as Ae}from"./ques
             <table class="admin-table">
               <thead>
                 <tr>
-                  <th>Fecha</th><th>Nombre</th><th>Email</th>
+                  <th>Fecha</th><th>Nombre</th><th>Email</th><th>Tiempo</th>
                   <th>Enviado</th><th>Aceptado</th><th>Redirigido</th>
                 </tr>
               </thead>
@@ -335,12 +335,13 @@ import{C as Pe,c as Ce}from"./validation-DnU8phWm.js";import{q as Ae}from"./ques
                     <td>${D.format(new Date(i.created_at))}</td>
                     <td><div class="admin-table-name-cell" title="${o(i.name??"")} ${o(i.last_name??"")}">${o(i.name??"")} ${o(i.last_name??"")}</div></td>
                     <td><div class="admin-table-name-cell" title="${o(i.email??"")}">${o(i.email??"")}</div></td>
+                    <td>${y(i.response_ms)}</td>
                     <td>${R?'<span class="admin-badge band-excelente">✅ Sí</span>':'<span class="admin-badge band-bajo">❌ No</span>'}</td>
                     <td><span class="admin-badge ${pe?"band-excelente":"band-bajo"}" ${w?`title="${o(w)}"`:""}>${pe?"✅ Sí":"❌ No"}</span></td>
                     <td>${Te?`<span class="admin-badge band-excelente" title="${o(i.witme_redirect_url??"")}">✅ Sí</span>`:'<span class="admin-badge band-bajo">❌ No</span>'}</td>
                   </tr>
                 `}).join("")}
-                ${G.length===0?'<tr><td colspan="6" class="admin-empty">Todavía no hay solicitudes de Pingtree.</td></tr>':""}
+                ${G.length===0?'<tr><td colspan="7" class="admin-empty">Todavía no hay solicitudes de Pingtree.</td></tr>':""}
               </tbody>
             </table>
           </div>
