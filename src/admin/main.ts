@@ -970,6 +970,7 @@ async function renderLeadsTab(password: string) {
           </div>
         </section>
 
+        ${(currentSource === "all" || currentSource === "solicitud") ? `
         <section class="admin-card">
           <p class="admin-card-title">Solicitudes enviadas a Witme (${totalWitmeCount})</p>
           <p class="admin-card-sub">
@@ -1107,7 +1108,9 @@ async function renderLeadsTab(password: string) {
             <button class="admin-btn-ghost" id="witme-car-next-btn" ${currentWitmeCarPage + 1 >= totalWitmeCarPages ? "disabled" : ""}>Siguiente →</button>
           </div>
         </section>
+        ` : ""}
 
+        ${(currentSource === "all" || currentSource === "pingtree") ? `
         <section class="admin-card">
           <p class="admin-card-title">Solicitudes enviadas a Pingtree (${totalPingtreeCount})</p>
           <p class="admin-card-sub">
@@ -1168,6 +1171,7 @@ async function renderLeadsTab(password: string) {
             <button class="admin-btn-ghost" id="pingtree-next-btn" ${currentPingtreePage + 1 >= totalPingtreePages ? "disabled" : ""}>Siguiente →</button>
           </div>
         </section>
+        ` : ""}
       </div>
     `;
 
@@ -1184,33 +1188,33 @@ async function renderLeadsTab(password: string) {
       currentLeadsPage++;
       renderLeadsTab(password);
     });
-    document.getElementById("witme-prev-btn")!.addEventListener("click", () => {
+    document.getElementById("witme-prev-btn")?.addEventListener("click", () => {
       if (currentWitmePage > 0) {
         currentWitmePage--;
         renderLeadsTab(password);
       }
     });
-    document.getElementById("witme-next-btn")!.addEventListener("click", () => {
+    document.getElementById("witme-next-btn")?.addEventListener("click", () => {
       currentWitmePage++;
       renderLeadsTab(password);
     });
-    document.getElementById("witme-car-prev-btn")!.addEventListener("click", () => {
+    document.getElementById("witme-car-prev-btn")?.addEventListener("click", () => {
       if (currentWitmeCarPage > 0) {
         currentWitmeCarPage--;
         renderLeadsTab(password);
       }
     });
-    document.getElementById("witme-car-next-btn")!.addEventListener("click", () => {
+    document.getElementById("witme-car-next-btn")?.addEventListener("click", () => {
       currentWitmeCarPage++;
       renderLeadsTab(password);
     });
-    document.getElementById("pingtree-prev-btn")!.addEventListener("click", () => {
+    document.getElementById("pingtree-prev-btn")?.addEventListener("click", () => {
       if (currentPingtreePage > 0) {
         currentPingtreePage--;
         renderLeadsTab(password);
       }
     });
-    document.getElementById("pingtree-next-btn")!.addEventListener("click", () => {
+    document.getElementById("pingtree-next-btn")?.addEventListener("click", () => {
       currentPingtreePage++;
       renderLeadsTab(password);
     });
