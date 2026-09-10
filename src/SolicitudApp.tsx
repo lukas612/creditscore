@@ -159,6 +159,7 @@ export default function SolicitudApp() {
     const offersByAttempt: Record<number, LenderOffer> = {};
     let stopped = false;
     let active = 0;
+    let resultShown = false;
 
     const applyOffers = () => {
       const ordered = Object.keys(offersByAttempt)
@@ -183,16 +184,23 @@ export default function SolicitudApp() {
       requestWitmeLenderOffer(fullAnswers, clickId, utmSource, sessionId, witmeOfferId(attempt)).then((result) => {
         clearTimeout(raceTimer);
         active--;
-        if (attempt === 1) {
-          setApplicationSubmitted(result.succeeded);
-          setStage("result");
-        }
         if (result.offer) {
           offersByAttempt[attempt] = result.offer;
           applyOffers();
           launchNext();
         } else {
           stopped = true;
+        }
+        // En cuanto sabemos el resultado del primer intento, o en cuanto
+        // cualquier intento (aunque no sea el primero) nos dice que no hay
+        // oferta -y por tanto la cascada ya no va a lanzar más- dejamos de
+        // mostrar la pantalla de "enviando". Los intentos que ya estaban en
+        // vuelo se dejan terminar y, si traen oferta, se añaden después via
+        // applyOffers (misma mecánica que "buscando más ofertas").
+        if (!resultShown && (attempt === 1 || !result.offer)) {
+          resultShown = true;
+          setApplicationSubmitted(result.succeeded);
+          setStage("result");
         }
         if (active === 0) setFetchingMoreOffers(false);
       });
