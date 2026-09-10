@@ -33,8 +33,8 @@ const QUIZ_OPTION_LABELS = optionLabelMap(QUIZ_QUESTIONS);
 const WITME_OPTION_LABELS = optionLabelMap(WITME_QUESTIONS);
 const YESNO_LABELS: Record<string, string> = { si: "Sí", no: "No" };
 
-function fieldValueLabel(source: "quiz" | "solicitud", fieldKey: string, value: string): string {
-  const map = source === "solicitud" ? WITME_OPTION_LABELS[fieldKey] : QUIZ_OPTION_LABELS[fieldKey];
+function fieldValueLabel(source: "quiz" | "solicitud" | "pingtree", fieldKey: string, value: string): string {
+  const map = source === "quiz" ? QUIZ_OPTION_LABELS[fieldKey] : WITME_OPTION_LABELS[fieldKey];
   return map?.[value] ?? YESNO_LABELS[value] ?? value;
 }
 
@@ -110,7 +110,7 @@ let currentPreset: PresetKey = "all";
 let customFrom = toDateInputValue(today);
 let customTo = toDateInputValue(today);
 
-type SourceKey = "all" | "quiz" | "solicitud";
+type SourceKey = "all" | "quiz" | "solicitud" | "pingtree";
 let currentSource: SourceKey = "all";
 
 const LEADS_PAGE_SIZE = 10;
@@ -153,6 +153,7 @@ const SOURCE_LABELS: Record<SourceKey, string> = {
   all: "Todos",
   quiz: "Quiz corto",
   solicitud: "Solicitud completa",
+  pingtree: "Pingtree",
 };
 
 function periodFor(preset: PresetKey): Period {
@@ -548,7 +549,7 @@ interface FieldStatsResult {
   categorical: Record<string, FieldCategoricalOption[]>;
 }
 
-async function fetchFieldStats(password: string, period: Period, source: "quiz" | "solicitud"): Promise<FieldStatsResult> {
+async function fetchFieldStats(password: string, period: Period, source: "quiz" | "solicitud" | "pingtree"): Promise<FieldStatsResult> {
   const { data, error } = await supabase.rpc("admin_get_field_stats", {
     p_password: password,
     p_since: period.since,
@@ -760,7 +761,10 @@ async function renderDashboard(password: string) {
       fetchOfferClicks(password, period, currentSource),
     ]);
     const totalBands = stats.band_excelente + stats.band_bueno + stats.band_regular + stats.band_bajo;
-    const stepDefs = currentSource === "solicitud" ? STEP_DEFS_SOLICITUD : STEP_DEFS;
+    // Pingtree reutiliza exactamente las mismas preguntas que la solicitud
+    // completa (mismo WITME_QUESTIONS), solo cambia qué API recibe el envío
+    // final - así que comparte el mismo listado de pasos del embudo.
+    const stepDefs = currentSource === "solicitud" || currentSource === "pingtree" ? STEP_DEFS_SOLICITUD : STEP_DEFS;
 
     root.innerHTML = `
       <div class="admin-shell">
@@ -805,7 +809,7 @@ async function renderDashboard(password: string) {
           <p class="admin-card-title">Dónde se cae la gente</p>
           ${
             currentSource === "all"
-              ? `<p class="admin-card-sub">Selecciona un embudo concreto arriba (Quiz corto o Solicitud completa) para ver la caída pregunta a pregunta — mezclar los dos no tiene sentido, son formularios distintos.</p>`
+              ? `<p class="admin-card-sub">Selecciona un embudo concreto arriba (Quiz corto, Solicitud completa o Pingtree) para ver la caída pregunta a pregunta — mezclarlos no tiene sentido, son formularios distintos.</p>`
               : `<p class="admin-card-sub">
                   Ya excluye el rebote instantáneo: es la caída real entre quienes empiezan
                   a interactuar de verdad (${funnelOverview.engaged_visits} sesiones). Las
@@ -1484,7 +1488,7 @@ function numericStatCardHtml(label: string, key: string, stat: FieldNumericStat)
 function categoricalCardHtml(
   label: string,
   options: FieldCategoricalOption[],
-  source: "quiz" | "solicitud",
+  source: "quiz" | "solicitud" | "pingtree",
   fieldKey: string,
 ): string {
   const total = options.reduce((sum, o) => sum + o.count, 0);
@@ -1508,9 +1512,9 @@ function categoricalCardHtml(
   `;
 }
 
-function fieldStatsSectionHtml(source: "quiz" | "solicitud", stats: FieldStatsResult): string {
-  const labels = source === "solicitud" ? SOLICITUD_FIELD_LABELS : QUIZ_FIELD_LABELS;
-  const title = source === "solicitud" ? "Solicitud completa" : "Quiz corto";
+function fieldStatsSectionHtml(source: "quiz" | "solicitud" | "pingtree", stats: FieldStatsResult): string {
+  const labels = source === "quiz" ? QUIZ_FIELD_LABELS : SOLICITUD_FIELD_LABELS;
+  const title = source === "solicitud" ? "Solicitud completa" : source === "pingtree" ? "Pingtree" : "Quiz corto";
 
   return `
     <section class="admin-card">
@@ -1531,7 +1535,10 @@ async function renderFieldStats(password: string) {
   root.innerHTML = `<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>`;
 
   const period = periodFor(currentPreset);
-  const sourcesToShow: ("quiz" | "solicitud")[] = currentSource === "solicitud" ? ["solicitud"] : currentSource === "quiz" ? ["quiz"] : ["quiz", "solicitud"];
+  const sourcesToShow: ("quiz" | "solicitud" | "pingtree")[] =
+    currentSource === "solicitud" || currentSource === "quiz" || currentSource === "pingtree"
+      ? [currentSource]
+      : ["quiz", "solicitud", "pingtree"];
 
   try {
     const results = await Promise.all(sourcesToShow.map((s) => fetchFieldStats(password, period, s)));
