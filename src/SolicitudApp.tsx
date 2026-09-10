@@ -156,9 +156,14 @@ export default function SolicitudApp() {
     // dejamos de insistir. No bloquea la UI: el usuario ya ve el resultado
     // con la primera oferta (si la hay) y las ofertas estáticas de siempre,
     // y cada oferta adicional aceptada se añade a la lista según llega.
+    //
+    // Nadie hacía click en la 2ª/3ª oferta de Witme: aparecía casi a la vez
+    // que la primera y pasaba desapercibida. Retrasamos 5s la 2ª petición
+    // para que se note como una oferta nueva y no una más del mismo golpe.
     let accepted = first.offer != null;
     if (accepted) setFetchingMoreOffers(true);
     for (let attempt = 2; accepted && attempt <= MAX_WITME_ATTEMPTS; attempt++) {
+      if (attempt === 2) await new Promise((resolve) => setTimeout(resolve, 5000));
       const next = await requestWitmeLenderOffer(fullAnswers, clickId, utmSource, sessionId, witmeOfferId(attempt));
       accepted = next.offer != null;
       if (next.offer) {
