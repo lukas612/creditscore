@@ -28,6 +28,17 @@ interface Props {
   onExtraComplete: (answers: Answers) => void;
 }
 
+// Mismo tono de "enhorabuena" para las 4 bandas, pero sin prometer de más a
+// quien tiene un score bajo (a diferencia de la copia de SolicitudResult,
+// pensada para la página de resultado final, no para este mensaje breve de
+// espera).
+const REDIRECT_COPY: Record<string, string> = {
+  excelente: "te permite optar a las mejores condiciones del mercado",
+  bueno: "te permite optar a muy buenas condiciones de financiación",
+  regular: "te permite optar a varias opciones de financiación",
+  bajo: "aun así tenemos opciones pensadas para tu perfil",
+};
+
 export function PingtreeWidget({
   stage,
   answers,
@@ -76,8 +87,18 @@ export function PingtreeWidget({
 
       {stage === "submitting" && scoreData && (
         <div className="quiz-card">
+          <div className="score-gauge">
+            <div
+              className="score-gauge-fill"
+              style={{ width: `${Math.round(((scoreData.score - 300) / (850 - 300)) * 100)}%` }}
+            />
+          </div>
           <span className="score-value">{scoreData.score}</span>
-          <LoadingSpinner text="Con tu score, te vamos a redirigir a tu mejor opción…" />
+          <span className="score-band">¡Enhorabuena!</span>
+          <p className="result-sub">
+            Tu score de {scoreData.score} puntos {REDIRECT_COPY[scoreData.scoreBand] ?? REDIRECT_COPY.regular}.
+          </p>
+          <LoadingSpinner text="Te estamos redirigiendo a la oferta que mejor se adapta a tus necesidades…" />
         </div>
       )}
 
