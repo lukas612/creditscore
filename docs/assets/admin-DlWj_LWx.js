@@ -1,4 +1,4 @@
-import{c as ye}from"./validation-B4TxmlFv.js";import{q as Se}from"./questions-D4Dn-9Ya.js";import{C as Ee}from"./offers-BrJogE82.js";import{W as ee,S as pe}from"./witmeQuestions-BRs2Lqdt.js";const de={witme_featured:"Witme (oferta destacada)",...Object.fromEntries(Ee.map(e=>[e.id,e.name]))};function G(e){if(e in de)return de[e];const t=e.match(/^witme_featured_(\d+)$/);return t?`Witme (oferta destacada ${t[1]})`:e}function be(e){const t={};for(const a of e)a.options&&(t[a.key]=Object.fromEntries(a.options.map(n=>[n.value,n.label])));return t}const ke=be(Se),Le=be(ee),we={si:"Sí",no:"No"};function Ie(e,t,a){const n=e==="quiz"?ke[t]:Le[t];return(n==null?void 0:n[a])??we[a]??a}const Te={ingreso_mensual:"Ingreso mensual",importe_total_de_la_deuda:"Deuda total (entre quienes tienen)",creditos_cantidad_a_solicitar:"Importe solicitado",age:"Edad",esta_en_asnef:"En ASNEF",antiguedad_laboral:"Antigüedad laboral",tienes_otros_creditos:"Tiene otras deudas",proposito_del_prestamo:"Propósito del préstamo",fuente_principal_de_ingreso:"Fuente de ingresos",tienes_vivienda_en_propiedad:"Vivienda en propiedad",en_cuantos_meses_deseas_devolverlo:"Plazo de devolución"},Pe={monthlyIncome:"Ingreso mensual",totalDebtAmount:"Deuda total (entre quienes tienen)",requestedAmount:"Importe solicitado",numberOfdependents:"Personas a cargo",age:"Edad",incomeSource:"Fuente de ingresos",hasOwnedHouse:"Situación de vivienda",badCreditHistory:"En ASNEF",hasOtherLoans:"Tiene otras deudas",loanPurpose:"Propósito del préstamo",hasOwnVehicle:"Tiene vehículo propio",hasBankAccount:"Tiene cuenta bancaria",maritalStatus:"Estado civil",educationLevel:"Nivel de estudios",gender:"Género",countryOfBirth:"País de nacimiento",state:"Comunidad autónoma"},Ce=new Set(["ingreso_mensual","importe_total_de_la_deuda","creditos_cantidad_a_solicitar","monthlyIncome","totalDebtAmount","requestedAmount"]),Ae="https://pgyaigdsedkdqvhtexrz.supabase.co",qe="sb_publishable_yL99vHU_H5kGZ3SMuPS0hA_GJ_TWTMr",b=ye(Ae,qe),A="cs_admin_pw",f=document.getElementById("admin-root");function ge(e){return e.toISOString().slice(0,10)}const _e=new Date;let S="all",B=ge(_e),N=ge(_e),g="all";const Z=10;let y=0;const Y=10;let I=0;const J=10;let T=0;const K=10;let P=0,x="dashboard";const Oe={base:"Quiz corto + Solicitud",ingreso_mensual:"Quiz corto + Solicitud",otros_creditos:"Quiz corto + Solicitud",asnef:"Quiz corto + Solicitud",ratio_deuda_ingreso:"Quiz corto + Solicitud",edad:"Quiz corto + Solicitud",fuente_ingreso:"Quiz corto",antiguedad_laboral:"Quiz corto",vivienda_propiedad:"Quiz corto",solicitud_fuente_ingreso:"Solicitud",solicitud_antiguedad:"Solicitud",solicitud_vivienda:"Solicitud",solicitud_dependientes:"Solicitud",aprobacion_base:"Probabilidad de aprobación (quiz + solicitud)",aprobacion_ratio_importe:"Probabilidad de aprobación (quiz + solicitud)"},X={all:"Todos",quiz:"Quiz corto",solicitud:"Solicitud completa",pingtree:"Pingtree"};function H(e){const t=new Date;if(e==="today")return{since:new Date(t.getFullYear(),t.getMonth(),t.getDate(),0,0,0,0).toISOString(),until:t.toISOString()};if(e==="7d")return{since:new Date(t.getTime()-6048e5).toISOString(),until:t.toISOString()};if(e==="custom"){const a=new Date(`${B}T00:00:00`),n=new Date(`${N}T23:59:59.999`);return a.getTime()>n.getTime()?{since:n.toISOString(),until:a.toISOString()}:{since:a.toISOString(),until:n.toISOString()}}return{since:"2000-01-01T00:00:00.000Z",until:t.toISOString()}}const re=new Intl.DateTimeFormat("es-ES",{day:"2-digit",month:"short",year:"numeric"});function je(e,t){return e==="all"?"Todo el histórico":`${re.format(new Date(t.since))} – ${re.format(new Date(t.until))}`}const Re=[{key:"fecha_de_nacimiento",label:"Fecha de nacimiento"},{key:"codigo_postal",label:"Código postal"},{key:"fuente_principal_de_ingreso",label:"Fuente de ingresos"},{key:"antiguedad_laboral",label:"Antigüedad laboral",conditional:!0},{key:"tienes_vivienda_en_propiedad",label:"Vivienda en propiedad"},{key:"ingreso_mensual",label:"Ingreso mensual"},{key:"esta_en_asnef",label:"Asnef"},{key:"tienes_otros_creditos",label:"Otros créditos"},{key:"importe_total_de_la_deuda",label:"Importe de la deuda",conditional:!0},{key:"proposito_del_prestamo",label:"Propósito del préstamo"},{key:"creditos_cantidad_a_solicitar",label:"Importe a solicitar"},{key:"en_cuantos_meses_deseas_devolverlo",label:"Plazo de devolución"}],De=ee.filter(e=>pe.includes(e.phase)),Me=ee.filter(e=>!pe.includes(e.phase)),ce=e=>({key:e.key,label:e.label,conditional:!!e.condition}),xe=[...De.map(ce),{key:"gate_contact",label:"Deja sus datos de contacto (nombre, email, teléfono)"},...Me.map(ce),{key:"application_completed",label:"✅ Termina la solicitud completa"}],R=new Intl.DateTimeFormat("es-ES",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});function o(e){const t=document.createElement("div");return t.textContent=e,t.innerHTML.replace(/"/g,"&quot;").replace(/'/g,"&#39;")}function O(e){return e==="all"?null:e}async function he(e,t,a){const{data:n,error:s}=await b.rpc("admin_get_stats",{p_password:e,p_since:t.since,p_until:t.until,p_source:O(a)}).single();if(s||!n)throw s??new Error("No data");return n}async function ze(e,t,a){const{data:n,error:s}=await b.rpc("admin_get_funnel_overview",{p_password:e,p_since:t.since,p_until:t.until,p_source:O(a)}).single();if(s||!n)throw s??new Error("No data");return n}async function Be(e,t,a){const{data:n,error:s}=await b.rpc("admin_get_funnel_steps",{p_password:e,p_since:t.since,p_until:t.until,p_source:O(a)});if(s)throw s;return n??[]}async function Ne(e,t,a,n){const{data:s,error:d}=await b.rpc("admin_list_leads",{p_password:e,p_limit:Z,p_offset:n*Z,p_since:t.since,p_until:t.until,p_source:O(a)});if(d)throw d;return s??[]}async function Fe(e,t){const{data:a,error:n}=await b.rpc("admin_get_witme_applications",{p_password:e,p_limit:Y,p_offset:t*Y});if(n)throw n;return a??[]}async function He(e,t){const{data:a,error:n}=await b.rpc("admin_get_witme_car_applications",{p_password:e,p_limit:J,p_offset:t*J});if(n)throw n;return a??[]}async function We(e,t){const{data:a,error:n}=await b.rpc("admin_get_pingtree_applications",{p_password:e,p_limit:K,p_offset:t*K});if(n)throw n;return a??[]}async function Qe(e){const{data:t,error:a}=await b.rpc("admin_get_pingtree_response_stats",{p_password:e}).single();if(a||!t)throw a??new Error("No data");return t}async function Ue(e){const{data:t,error:a}=await b.rpc("admin_get_witme_response_stats",{p_password:e}).single();if(a||!t)throw a??new Error("No data");return t}function v(e){return e==null?"—":`${(e/1e3).toFixed(1)} s`}function V(e){return e==null?"—":`${e}%`}async function Ve(e,t,a){const{data:n,error:s}=await b.rpc("admin_get_offer_clicks",{p_password:e,p_since:t.since,p_until:t.until,p_source:O(a)});if(s)throw s;return n??[]}let fe=[];async function Ge(e){const{data:t,error:a}=await b.rpc("admin_get_scoring_rules",{p_password:e});if(a)throw a;return t??[]}async function Ze(e,t,a,n,s){const{error:d}=await b.rpc("admin_update_scoring_rule",{p_password:e,p_key:t,p_config:a,p_weight:n,p_active:s});if(d)throw d}async function Ye(e,t){const{error:a}=await b.rpc("admin_reset_scoring_rule",{p_password:e,p_key:t});if(a)throw a}async function Je(e){const{error:t}=await b.rpc("admin_reset_all_scoring_rules",{p_password:e});if(t)throw t}async function Ke(e,t,a){const{data:n,error:s}=await b.rpc("admin_get_field_stats",{p_password:e,p_since:t.since,p_until:t.until,p_source:a});if(s)throw s;return n}function q(e){f.innerHTML=`
+import{c as Ee}from"./validation-B4TxmlFv.js";import{q as ke}from"./questions-D4Dn-9Ya.js";import{C as Le}from"./offers-BrJogE82.js";import{W as ee,S as be}from"./witmeQuestions-BRs2Lqdt.js";const re={witme_featured:"Witme (oferta destacada)",...Object.fromEntries(Le.map(e=>[e.id,e.name]))};function G(e){if(e in re)return re[e];const t=e.match(/^witme_featured_(\d+)$/);return t?`Witme (oferta destacada ${t[1]})`:e}function ge(e){const t={};for(const a of e)a.options&&(t[a.key]=Object.fromEntries(a.options.map(n=>[n.value,n.label])));return t}const we=ge(ke),Ie=ge(ee),Te={si:"Sí",no:"No"};function Pe(e,t,a){const n=e==="quiz"?we[t]:Ie[t];return(n==null?void 0:n[a])??Te[a]??a}const Ce={ingreso_mensual:"Ingreso mensual",importe_total_de_la_deuda:"Deuda total (entre quienes tienen)",creditos_cantidad_a_solicitar:"Importe solicitado",age:"Edad",esta_en_asnef:"En ASNEF",antiguedad_laboral:"Antigüedad laboral",tienes_otros_creditos:"Tiene otras deudas",proposito_del_prestamo:"Propósito del préstamo",fuente_principal_de_ingreso:"Fuente de ingresos",tienes_vivienda_en_propiedad:"Vivienda en propiedad",en_cuantos_meses_deseas_devolverlo:"Plazo de devolución"},Ae={monthlyIncome:"Ingreso mensual",totalDebtAmount:"Deuda total (entre quienes tienen)",requestedAmount:"Importe solicitado",numberOfdependents:"Personas a cargo",age:"Edad",incomeSource:"Fuente de ingresos",hasOwnedHouse:"Situación de vivienda",badCreditHistory:"En ASNEF",hasOtherLoans:"Tiene otras deudas",loanPurpose:"Propósito del préstamo",hasOwnVehicle:"Tiene vehículo propio",hasBankAccount:"Tiene cuenta bancaria",maritalStatus:"Estado civil",educationLevel:"Nivel de estudios",gender:"Género",countryOfBirth:"País de nacimiento",state:"Comunidad autónoma"},je=new Set(["ingreso_mensual","importe_total_de_la_deuda","creditos_cantidad_a_solicitar","monthlyIncome","totalDebtAmount","requestedAmount"]),qe="https://pgyaigdsedkdqvhtexrz.supabase.co",Oe="sb_publishable_yL99vHU_H5kGZ3SMuPS0hA_GJ_TWTMr",b=Ee(qe,Oe),A="cs_admin_pw",f=document.getElementById("admin-root");function _e(e){return e.toISOString().slice(0,10)}const he=new Date;let S="all",B=_e(he),F=_e(he),g="all";const Z=10;let y=0;const Y=10;let I=0;const J=10;let T=0;const K=10;let P=0,N="dashboard";const Re={base:"Quiz corto + Solicitud",ingreso_mensual:"Quiz corto + Solicitud",otros_creditos:"Quiz corto + Solicitud",asnef:"Quiz corto + Solicitud",ratio_deuda_ingreso:"Quiz corto + Solicitud",edad:"Quiz corto + Solicitud",fuente_ingreso:"Quiz corto",antiguedad_laboral:"Quiz corto",vivienda_propiedad:"Quiz corto",solicitud_fuente_ingreso:"Solicitud",solicitud_antiguedad:"Solicitud",solicitud_vivienda:"Solicitud",solicitud_dependientes:"Solicitud",aprobacion_base:"Probabilidad de aprobación (quiz + solicitud)",aprobacion_ratio_importe:"Probabilidad de aprobación (quiz + solicitud)"},X={all:"Todos",quiz:"Quiz corto",solicitud:"Solicitud completa",pingtree:"Pingtree"};function W(e){const t=new Date;if(e==="today")return{since:new Date(t.getFullYear(),t.getMonth(),t.getDate(),0,0,0,0).toISOString(),until:t.toISOString()};if(e==="7d")return{since:new Date(t.getTime()-6048e5).toISOString(),until:t.toISOString()};if(e==="custom"){const a=new Date(`${B}T00:00:00`),n=new Date(`${F}T23:59:59.999`);return a.getTime()>n.getTime()?{since:n.toISOString(),until:a.toISOString()}:{since:a.toISOString(),until:n.toISOString()}}return{since:"2000-01-01T00:00:00.000Z",until:t.toISOString()}}const ce=new Intl.DateTimeFormat("es-ES",{day:"2-digit",month:"short",year:"numeric"});function xe(e,t){return e==="all"?"Todo el histórico":`${ce.format(new Date(t.since))} – ${ce.format(new Date(t.until))}`}const De=[{key:"fecha_de_nacimiento",label:"Fecha de nacimiento"},{key:"codigo_postal",label:"Código postal"},{key:"fuente_principal_de_ingreso",label:"Fuente de ingresos"},{key:"antiguedad_laboral",label:"Antigüedad laboral",conditional:!0},{key:"tienes_vivienda_en_propiedad",label:"Vivienda en propiedad"},{key:"ingreso_mensual",label:"Ingreso mensual"},{key:"esta_en_asnef",label:"Asnef"},{key:"tienes_otros_creditos",label:"Otros créditos"},{key:"importe_total_de_la_deuda",label:"Importe de la deuda",conditional:!0},{key:"proposito_del_prestamo",label:"Propósito del préstamo"},{key:"creditos_cantidad_a_solicitar",label:"Importe a solicitar"},{key:"en_cuantos_meses_deseas_devolverlo",label:"Plazo de devolución"}],Me=ee.filter(e=>be.includes(e.phase)),Ne=ee.filter(e=>!be.includes(e.phase)),le=e=>({key:e.key,label:e.label,conditional:!!e.condition}),ze=[...Me.map(le),{key:"gate_contact",label:"Deja sus datos de contacto (nombre, email, teléfono)"},...Ne.map(le),{key:"application_completed",label:"✅ Termina la solicitud completa"}],x=new Intl.DateTimeFormat("es-ES",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});function o(e){const t=document.createElement("div");return t.textContent=e,t.innerHTML.replace(/"/g,"&quot;").replace(/'/g,"&#39;")}function O(e){return e==="all"?null:e}async function fe(e,t,a){const{data:n,error:s}=await b.rpc("admin_get_stats",{p_password:e,p_since:t.since,p_until:t.until,p_source:O(a)}).single();if(s||!n)throw s??new Error("No data");return n}async function Be(e,t,a){const{data:n,error:s}=await b.rpc("admin_get_funnel_overview",{p_password:e,p_since:t.since,p_until:t.until,p_source:O(a)}).single();if(s||!n)throw s??new Error("No data");return n}async function Fe(e,t,a){const{data:n,error:s}=await b.rpc("admin_get_funnel_steps",{p_password:e,p_since:t.since,p_until:t.until,p_source:O(a)});if(s)throw s;return n??[]}async function He(e,t,a,n){const{data:s,error:d}=await b.rpc("admin_list_leads",{p_password:e,p_limit:Z,p_offset:n*Z,p_since:t.since,p_until:t.until,p_source:O(a)});if(d)throw d;return s??[]}async function We(e,t){const{data:a,error:n}=await b.rpc("admin_get_witme_applications",{p_password:e,p_limit:Y,p_offset:t*Y});if(n)throw n;return a??[]}async function Qe(e,t){const{data:a,error:n}=await b.rpc("admin_get_witme_car_applications",{p_password:e,p_limit:J,p_offset:t*J});if(n)throw n;return a??[]}async function Ue(e,t){const{data:a,error:n}=await b.rpc("admin_get_pingtree_applications",{p_password:e,p_limit:K,p_offset:t*K});if(n)throw n;return a??[]}async function Ve(e){const{data:t,error:a}=await b.rpc("admin_get_pingtree_response_stats",{p_password:e}).single();if(a||!t)throw a??new Error("No data");return t}async function Ge(e){const{data:t,error:a}=await b.rpc("admin_get_witme_response_stats",{p_password:e}).single();if(a||!t)throw a??new Error("No data");return t}function v(e){return e==null?"—":`${(e/1e3).toFixed(1)} s`}function V(e){return e==null?"—":`${e}%`}async function Ze(e,t,a){const{data:n,error:s}=await b.rpc("admin_get_offer_clicks",{p_password:e,p_since:t.since,p_until:t.until,p_source:O(a)});if(s)throw s;return n??[]}let ve=[];async function Ye(e){const{data:t,error:a}=await b.rpc("admin_get_scoring_rules",{p_password:e});if(a)throw a;return t??[]}async function Je(e,t,a,n,s){const{error:d}=await b.rpc("admin_update_scoring_rule",{p_password:e,p_key:t,p_config:a,p_weight:n,p_active:s});if(d)throw d}async function Ke(e,t){const{error:a}=await b.rpc("admin_reset_scoring_rule",{p_password:e,p_key:t});if(a)throw a}async function Xe(e){const{error:t}=await b.rpc("admin_reset_all_scoring_rules",{p_password:e});if(t)throw t}async function et(e,t,a){const{data:n,error:s}=await b.rpc("admin_get_field_stats",{p_password:e,p_since:t.since,p_until:t.until,p_source:a});if(s)throw s;return n}function j(e){f.innerHTML=`
     <div class="admin-login-shell">
       <form class="admin-login-card" id="login-form">
         <h1>Panel interno</h1>
@@ -8,13 +8,13 @@ import{c as ye}from"./validation-B4TxmlFv.js";import{q as Se}from"./questions-D4
         <button type="submit">Entrar</button>
       </form>
     </div>
-  `,document.getElementById("login-form").addEventListener("submit",async t=>{t.preventDefault();const a=document.getElementById("pw-input").value;try{await he(a,H("all"),"all"),sessionStorage.setItem(A,a),C(a)}catch{q("Contraseña incorrecta.")}})}function l(e,t){return`<div class="admin-stat"><span class="admin-stat-value">${t}</span><span class="admin-stat-label">${e}</span></div>`}function D(e,t,a,n){const s=a>0?Math.round(t/a*100):0;return`
+  `,document.getElementById("login-form").addEventListener("submit",async t=>{t.preventDefault();const a=document.getElementById("pw-input").value;try{await fe(a,W("all"),"all"),sessionStorage.setItem(A,a),C(a)}catch{j("Contraseña incorrecta.")}})}function l(e,t){return`<div class="admin-stat"><span class="admin-stat-value">${t}</span><span class="admin-stat-label">${e}</span></div>`}function D(e,t,a,n){const s=a>0?Math.round(t/a*100):0;return`
     <div class="admin-band-row">
       <span class="admin-band-label">${e}</span>
       <div class="admin-band-track"><div class="admin-band-fill ${n}" style="width:${s}%"></div></div>
       <span class="admin-band-count">${t}</span>
     </div>
-  `}function le(e){return e>=60?"band-excelente":e>=35?"band-bueno":e>=15?"band-regular":"band-bajo"}function Xe(e,t,a){var u;const n=new Map(t.map(c=>[c.question_key,Number(c.reached)])),s=e.engaged_visits;let d="",r=(u=a[0])==null?void 0:u.key;return a.forEach((c,E)=>{const _=n.get(c.key)??0,p=s>0?Math.round(_/s*100):0;let m="";if(E>0&&!c.conditional){const L=n.get(r)??0;if(L>0){const w=Math.round((1-_/L)*100),j=w>=25?"high":w>=10?"mid":"low";m=w>0?`<span class="funnel-drop funnel-drop-${j}">-${w}% respecto al paso anterior</span>`:'<span class="funnel-drop funnel-drop-low">sin caída</span>'}}d+=`
+  `}function ue(e){return e>=60?"band-excelente":e>=35?"band-bueno":e>=15?"band-regular":"band-bajo"}function tt(e,t,a){var u;const n=new Map(t.map(c=>[c.question_key,Number(c.reached)])),s=e.engaged_visits;let d="",r=(u=a[0])==null?void 0:u.key;return a.forEach((c,E)=>{const _=n.get(c.key)??0,p=s>0?Math.round(_/s*100):0;let m="";if(E>0&&!c.conditional){const L=n.get(r)??0;if(L>0){const w=Math.round((1-_/L)*100),R=w>=25?"high":w>=10?"mid":"low";m=w>0?`<span class="funnel-drop funnel-drop-${R}">-${w}% respecto al paso anterior</span>`:'<span class="funnel-drop funnel-drop-low">sin caída</span>'}}d+=`
       <div class="funnel-step">
         <div class="funnel-step-top">
           <span class="funnel-step-label">${E+1}. ${o(c.label)}${c.conditional?' <span class="funnel-conditional">(condicional, no todos la ven)</span>':""}</span>
@@ -23,7 +23,7 @@ import{c as ye}from"./validation-B4TxmlFv.js";import{q as Se}from"./questions-D4
         <div class="admin-band-track"><div class="admin-band-fill funnel-fill" style="width:${p}%"></div></div>
         ${m}
       </div>
-    `,c.conditional||(r=c.key)}),d}function C(e){x==="scoring"?F(e):x==="fieldstats"?$e(e):x==="leads"?$(e):ve(e)}function W(e){return`
+    `,c.conditional||(r=c.key)}),d}function C(e){N==="scoring"?H(e):N==="fieldstats"?ye(e):N==="leads"?$(e):$e(e)}function Q(e){return`
     <header class="admin-header">
       <span class="admin-logo">Creditio <b>Credit Score</b> · Panel interno</span>
       <div class="admin-header-actions">
@@ -37,7 +37,7 @@ import{c as ye}from"./validation-B4TxmlFv.js";import{q as Se}from"./questions-D4
         <button class="admin-btn-ghost" id="logout-btn">Cerrar sesión</button>
       </div>
     </header>
-  `}function Q(e){document.querySelectorAll(".admin-tab-btn").forEach(t=>{t.addEventListener("click",()=>{x=t.dataset.tab,C(e)})}),document.getElementById("refresh-btn").addEventListener("click",()=>C(e)),document.getElementById("logout-btn").addEventListener("click",()=>{sessionStorage.removeItem(A),q()})}function te(e){return`
+  `}function U(e){document.querySelectorAll(".admin-tab-btn").forEach(t=>{t.addEventListener("click",()=>{N=t.dataset.tab,C(e)})}),document.getElementById("refresh-btn").addEventListener("click",()=>C(e)),document.getElementById("logout-btn").addEventListener("click",()=>{sessionStorage.removeItem(A),j()})}function te(e){return`
     <section class="admin-card admin-source-bar">
       <span class="admin-source-label">Embudo:</span>
       <div class="admin-period-presets">
@@ -54,14 +54,14 @@ import{c as ye}from"./validation-B4TxmlFv.js";import{q as Se}from"./questions-D4
       <div class="admin-period-custom ${S==="custom"?"active":""}">
         <input type="date" id="period-from" value="${B}" />
         <span>–</span>
-        <input type="date" id="period-to" value="${N}" />
+        <input type="date" id="period-to" value="${F}" />
         <button class="admin-btn-ghost" id="period-apply-btn">Aplicar</button>
       </div>
-      <p class="admin-period-label">${o(je(S,e))}</p>
+      <p class="admin-period-label">${o(xe(S,e))}</p>
     </section>
-  `}function ae(e){var t;document.querySelectorAll(".admin-period-btn[data-source]").forEach(a=>{a.addEventListener("click",()=>{g=a.dataset.source,y=0,C(e)})}),document.querySelectorAll(".admin-period-btn[data-preset]").forEach(a=>{a.addEventListener("click",()=>{S=a.dataset.preset,y=0,C(e)})}),(t=document.getElementById("period-apply-btn"))==null||t.addEventListener("click",()=>{B=document.getElementById("period-from").value||B,N=document.getElementById("period-to").value||N,S="custom",y=0,C(e)})}async function ve(e){f.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';const t=H(S);try{const[a,n,s,d]=await Promise.all([he(e,t,g),ze(e,t,g),Be(e,t,g),Ve(e,t,g)]),r=a.band_excelente+a.band_bueno+a.band_regular+a.band_bajo,u=g==="solicitud"||g==="pingtree"?xe:Re;f.innerHTML=`
+  `}function ae(e){var t;document.querySelectorAll(".admin-period-btn[data-source]").forEach(a=>{a.addEventListener("click",()=>{g=a.dataset.source,y=0,C(e)})}),document.querySelectorAll(".admin-period-btn[data-preset]").forEach(a=>{a.addEventListener("click",()=>{S=a.dataset.preset,y=0,C(e)})}),(t=document.getElementById("period-apply-btn"))==null||t.addEventListener("click",()=>{B=document.getElementById("period-from").value||B,F=document.getElementById("period-to").value||F,S="custom",y=0,C(e)})}async function $e(e){f.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';const t=W(S);try{const[a,n,s,d]=await Promise.all([fe(e,t,g),Be(e,t,g),Fe(e,t,g),Ze(e,t,g)]),r=a.band_excelente+a.band_bueno+a.band_regular+a.band_bajo,u=g==="solicitud"||g==="pingtree"?ze:De;f.innerHTML=`
       <div class="admin-shell">
-        ${W("dashboard")}
+        ${Q("dashboard")}
 
         ${te(t)}
 
@@ -107,7 +107,7 @@ import{c as ye}from"./validation-B4TxmlFv.js";import{q as Se}from"./questions-D4
                   el siguiente paso obligatorio calcula su caída respecto al último paso que
                   ven todos.
                 </p>
-                ${Xe(n,s,u)}`}
+                ${tt(n,s,u)}`}
         </section>
 
         <section class="admin-card">
@@ -142,14 +142,14 @@ import{c as ye}from"./validation-B4TxmlFv.js";import{q as Se}from"./questions-D4
           </div>
         </section>
       </div>
-    `,Q(e),ae(e)}catch(a){const n=a instanceof Error?a.message:String(a);n.toLowerCase().includes("unauthorized")?(sessionStorage.removeItem(A),q("Tu sesión ha caducado o la contraseña ya no es válida.")):(f.innerHTML=`
+    `,U(e),ae(e)}catch(a){const n=a instanceof Error?a.message:String(a);n.toLowerCase().includes("unauthorized")?(sessionStorage.removeItem(A),j("Tu sesión ha caducado o la contraseña ya no es válida.")):(f.innerHTML=`
         <div class="admin-shell">
           <p class="admin-error">Ha ocurrido un error inesperado cargando el panel: ${o(n)}</p>
           <button class="admin-btn-ghost" id="retry-btn">Reintentar</button>
         </div>
-      `,document.getElementById("retry-btn").addEventListener("click",()=>ve(e)))}}async function $(e){var a,n,s,d;f.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';const t=H(S);try{const[r,u,c,E,_,p]=await Promise.all([Ne(e,t,g,y),Fe(e,I),Ue(e),He(e,T),We(e,P),Qe(e)]),m=((a=r[0])==null?void 0:a.total_count)??0,L=Math.max(1,Math.ceil(m/Z)),w=((n=u[0])==null?void 0:n.total_count)??0,j=Math.max(1,Math.ceil(w/Y)),ne=((s=E[0])==null?void 0:s.total_count)??0,ie=Math.max(1,Math.ceil(ne/J)),se=((d=_[0])==null?void 0:d.total_count)??0,oe=Math.max(1,Math.ceil(se/K));f.innerHTML=`
+      `,document.getElementById("retry-btn").addEventListener("click",()=>$e(e)))}}async function $(e){var a,n,s,d;f.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';const t=W(S);try{const[r,u,c,E,_,p]=await Promise.all([He(e,t,g,y),We(e,I),Ge(e),Qe(e,T),Ue(e,P),Ve(e)]),m=((a=r[0])==null?void 0:a.total_count)??0,L=Math.max(1,Math.ceil(m/Z)),w=((n=u[0])==null?void 0:n.total_count)??0,R=Math.max(1,Math.ceil(w/Y)),ne=((s=E[0])==null?void 0:s.total_count)??0,ie=Math.max(1,Math.ceil(ne/J)),se=((d=_[0])==null?void 0:d.total_count)??0,oe=Math.max(1,Math.ceil(se/K));f.innerHTML=`
       <div class="admin-shell">
-        ${W("leads")}
+        ${Q("leads")}
 
         ${te(t)}
 
@@ -167,14 +167,14 @@ import{c as ye}from"./validation-B4TxmlFv.js";import{q as Se}from"./questions-D4
               <tbody>
                 ${r.map(i=>`
                   <tr>
-                    <td>${R.format(new Date(i.created_at))}</td>
+                    <td>${x.format(new Date(i.created_at))}</td>
                     <td><div class="admin-table-name-cell" title="${o(i.first_name)} ${o(i.last_name??"")}">${o(i.first_name)} ${o(i.last_name??"")}</div></td>
                     <td><div class="admin-table-name-cell" title="${o(i.email)}">${o(i.email)}</div></td>
                     <td>${o(i.phone??"")}</td>
                     <td>${o(i.zip_code??"")}</td>
                     <td>${i.score??"—"}</td>
                     <td><span class="admin-badge band-${i.score_band??""}">${i.score_band??"—"}</span></td>
-                    <td>${i.approval_probability!=null?`<span class="admin-badge ${le(i.approval_probability)}">${i.approval_probability}%</span>`:"—"}</td>
+                    <td>${i.approval_probability!=null?`<span class="admin-badge ${ue(i.approval_probability)}">${i.approval_probability}%</span>`:"—"}</td>
                     <td>${o(i.status)}</td>
                     <td>${o(i.source==="pingtree"?"Pingtree":X[i.source]??i.source)}</td>
                     <td>${i.source==="pingtree"?`<span title="Este flujo usa solo la API pingtree - ver sección 'Solicitudes enviadas a Pingtree'">Ver Pingtree</span>`:i.source!=="solicitud"?'<span title="El quiz corto no envía a Witme">n/a</span>':i.witme_submitted?'<span class="admin-badge band-excelente">✅ Sí</span>':'<span class="admin-badge band-bajo" title="No completó el formulario de identidad/domicilio/vehículo que exige Witme">❌ No</span>'}</td>
@@ -233,7 +233,7 @@ import{c as ye}from"./validation-B4TxmlFv.js";import{q as Se}from"./questions-D4
                 ${u.map(i=>{const h=[];i.witme_message!=null&&h.push(`Mensaje: ${JSON.stringify(i.witme_message)}`),i.witme_redirect_url&&h.push(`Redirect URL: ${i.witme_redirect_url}`);const k=h.join(`
 `);return`
                   <tr>
-                    <td>${R.format(new Date(i.created_at))}</td>
+                    <td>${x.format(new Date(i.created_at))}</td>
                     <td><div class="admin-table-name-cell" title="${o(i.name??"")} ${o(i.last_name??"")}">${o(i.name??"")} ${o(i.last_name??"")}</div></td>
                     <td><div class="admin-table-name-cell" title="${o(i.email??"")}">${o(i.email??"")}</div></td>
                     <td>${i.requested_amount!=null?`${i.requested_amount} €`:"—"}</td>
@@ -241,8 +241,8 @@ import{c as ye}from"./validation-B4TxmlFv.js";import{q as Se}from"./questions-D4
                     <td><span class="admin-badge ${i.witme_status==="processed"?"band-excelente":"band-bajo"}" ${k?`title="${o(k)}"`:""}>${o(i.witme_status??"—")}</span></td>
                     <td>${v(i.witme_response_ms)}</td>
                     <td>${i.score??"—"}</td>
-                    <td>${i.approval_probability!=null?`<span class="admin-badge ${le(i.approval_probability)}">${i.approval_probability}%</span>`:"—"}</td>
-                    <td>${i.offer_clicks&&i.offer_clicks.length>0?`✅ ${i.offer_clicks.map(U=>o(G(U))).join(", ")}`:"—"}</td>
+                    <td>${i.approval_probability!=null?`<span class="admin-badge ${ue(i.approval_probability)}">${i.approval_probability}%</span>`:"—"}</td>
+                    <td>${i.offer_clicks&&i.offer_clicks.length>0?`✅ ${i.offer_clicks.map(q=>o(G(q))).join(", ")}`:"—"}</td>
                   </tr>
                 `}).join("")}
                 ${u.length===0?'<tr><td colspan="10" class="admin-empty">Todavía no hay solicitudes enviadas a Witme.</td></tr>':""}
@@ -251,8 +251,8 @@ import{c as ye}from"./validation-B4TxmlFv.js";import{q as Se}from"./questions-D4
           </div>
           <div class="admin-pagination">
             <button class="admin-btn-ghost" id="witme-prev-btn" ${I===0?"disabled":""}>← Anterior</button>
-            <span class="admin-pagination-label">Página ${I+1} de ${j}</span>
-            <button class="admin-btn-ghost" id="witme-next-btn" ${I+1>=j?"disabled":""}>Siguiente →</button>
+            <span class="admin-pagination-label">Página ${I+1} de ${R}</span>
+            <button class="admin-btn-ghost" id="witme-next-btn" ${I+1>=R?"disabled":""}>Siguiente →</button>
           </div>
         </section>
 
@@ -274,10 +274,10 @@ import{c as ye}from"./validation-B4TxmlFv.js";import{q as Se}from"./questions-D4
               </thead>
               <tbody>
                 ${E.map(i=>{const h=[];i.witme_message!=null&&h.push(`Mensaje: ${JSON.stringify(i.witme_message)}`),i.witme_redirect_url&&h.push(`Redirect URL: ${i.witme_redirect_url}`);const k=h.join(`
-`),U=i.product==="car_collateral+debt_consolidation"?"Aval coche + Reunificación deudas":i.product==="car_collateral"?"Aval coche":i.product==="debt_consolidation"?"Reunificación deudas":"—";return`
+`),q=i.product==="car_collateral+debt_consolidation"?"Aval coche + Reunificación deudas":i.product==="car_collateral"?"Aval coche":i.product==="debt_consolidation"?"Reunificación deudas":"—";return`
                   <tr>
-                    <td>${R.format(new Date(i.created_at))}</td>
-                    <td>${o(U)}</td>
+                    <td>${x.format(new Date(i.created_at))}</td>
+                    <td>${o(q)}</td>
                     <td><div class="admin-table-name-cell" title="${o(i.name??"")} ${o(i.last_name??"")}">${o(i.name??"")} ${o(i.last_name??"")}</div></td>
                     <td><div class="admin-table-name-cell" title="${o(i.email??"")}">${o(i.email??"")}</div></td>
                     <td>${i.requested_amount!=null?`${i.requested_amount} €`:"—"}</td>
@@ -321,24 +321,23 @@ import{c as ye}from"./validation-B4TxmlFv.js";import{q as Se}from"./questions-D4
             <table class="admin-table">
               <thead>
                 <tr>
-                  <th>Fecha</th><th>Nombre</th><th>Email</th><th>Importe</th>
-                  <th>Witme ID</th><th>Estado</th><th>Tiempo</th>
+                  <th>Fecha</th><th>Nombre</th><th>Email</th>
+                  <th>Enviado</th><th>Aceptado</th><th>Redirigido</th>
                 </tr>
               </thead>
               <tbody>
                 ${_.map(i=>{const h=[];i.witme_message!=null&&h.push(`Mensaje: ${JSON.stringify(i.witme_message)}`),i.witme_redirect_url&&h.push(`Redirect URL: ${i.witme_redirect_url}`);const k=h.join(`
-`);return`
+`),q=i.response_status!=null,de=i.witme_status==="processed",Se=i.witme_redirect_url!=null;return`
                   <tr>
-                    <td>${R.format(new Date(i.created_at))}</td>
+                    <td>${x.format(new Date(i.created_at))}</td>
                     <td><div class="admin-table-name-cell" title="${o(i.name??"")} ${o(i.last_name??"")}">${o(i.name??"")} ${o(i.last_name??"")}</div></td>
                     <td><div class="admin-table-name-cell" title="${o(i.email??"")}">${o(i.email??"")}</div></td>
-                    <td>${i.requested_amount!=null?`${i.requested_amount} €`:"—"}</td>
-                    <td>${i.witme_id??"—"}</td>
-                    <td><span class="admin-badge ${i.witme_status==="processed"?"band-excelente":"band-bajo"}" ${k?`title="${o(k)}"`:""}>${o(i.witme_status??"—")}</span></td>
-                    <td>${v(i.response_ms)}</td>
+                    <td>${q?'<span class="admin-badge band-excelente">✅ Sí</span>':'<span class="admin-badge band-bajo">❌ No</span>'}</td>
+                    <td><span class="admin-badge ${de?"band-excelente":"band-bajo"}" ${k?`title="${o(k)}"`:""}>${de?"✅ Sí":"❌ No"}</span></td>
+                    <td>${Se?`<span class="admin-badge band-excelente" title="${o(i.witme_redirect_url??"")}">✅ Sí</span>`:'<span class="admin-badge band-bajo">❌ No</span>'}</td>
                   </tr>
                 `}).join("")}
-                ${_.length===0?'<tr><td colspan="7" class="admin-empty">Todavía no hay solicitudes de Pingtree.</td></tr>':""}
+                ${_.length===0?'<tr><td colspan="6" class="admin-empty">Todavía no hay solicitudes de Pingtree.</td></tr>':""}
               </tbody>
             </table>
           </div>
@@ -349,12 +348,12 @@ import{c as ye}from"./validation-B4TxmlFv.js";import{q as Se}from"./questions-D4
           </div>
         </section>
       </div>
-    `,Q(e),ae(e),document.getElementById("leads-prev-btn").addEventListener("click",()=>{y>0&&(y--,$(e))}),document.getElementById("leads-next-btn").addEventListener("click",()=>{y++,$(e)}),document.getElementById("witme-prev-btn").addEventListener("click",()=>{I>0&&(I--,$(e))}),document.getElementById("witme-next-btn").addEventListener("click",()=>{I++,$(e)}),document.getElementById("witme-car-prev-btn").addEventListener("click",()=>{T>0&&(T--,$(e))}),document.getElementById("witme-car-next-btn").addEventListener("click",()=>{T++,$(e)}),document.getElementById("pingtree-prev-btn").addEventListener("click",()=>{P>0&&(P--,$(e))}),document.getElementById("pingtree-next-btn").addEventListener("click",()=>{P++,$(e)})}catch(r){const u=r instanceof Error?r.message:String(r);u.toLowerCase().includes("unauthorized")?(sessionStorage.removeItem(A),q("Tu sesión ha caducado o la contraseña ya no es válida.")):(f.innerHTML=`
+    `,U(e),ae(e),document.getElementById("leads-prev-btn").addEventListener("click",()=>{y>0&&(y--,$(e))}),document.getElementById("leads-next-btn").addEventListener("click",()=>{y++,$(e)}),document.getElementById("witme-prev-btn").addEventListener("click",()=>{I>0&&(I--,$(e))}),document.getElementById("witme-next-btn").addEventListener("click",()=>{I++,$(e)}),document.getElementById("witme-car-prev-btn").addEventListener("click",()=>{T>0&&(T--,$(e))}),document.getElementById("witme-car-next-btn").addEventListener("click",()=>{T++,$(e)}),document.getElementById("pingtree-prev-btn").addEventListener("click",()=>{P>0&&(P--,$(e))}),document.getElementById("pingtree-next-btn").addEventListener("click",()=>{P++,$(e)})}catch(r){const u=r instanceof Error?r.message:String(r);u.toLowerCase().includes("unauthorized")?(sessionStorage.removeItem(A),j("Tu sesión ha caducado o la contraseña ya no es válida.")):(f.innerHTML=`
         <div class="admin-shell">
           <p class="admin-error">Ha ocurrido un error inesperado cargando el panel: ${o(u)}</p>
           <button class="admin-btn-ghost" id="retry-btn">Reintentar</button>
         </div>
-      `,document.getElementById("retry-btn").addEventListener("click",()=>$(e)))}}function et(e,t,a){return a?`${e} +`:`${e} – ${t}`}function z(e,t,a,n,s,d,r){return`
+      `,document.getElementById("retry-btn").addEventListener("click",()=>$(e)))}}function at(e,t,a){return a?`${e} +`:`${e} – ${t}`}function z(e,t,a,n,s,d,r){return`
     <div class="scoring-slider-row">
       <span class="scoring-slider-label">${o(a)}</span>
       <input
@@ -369,12 +368,12 @@ import{c as ye}from"./validation-B4TxmlFv.js";import{q as Se}from"./questions-D4
       />
       <span class="scoring-slider-value">${n}</span>
     </div>
-  `}function tt(e){const t=e.config;if(typeof t.value=="number"&&Object.keys(t).length===1)return z(e.key,"value","Puntos base",t.value,300,850,5);if(Array.isArray(t.buckets)){const a=t.buckets;return a.map((n,s)=>z(e.key,`bucket:${s}`,et(n[0],n[1],s===a.length-1),n[2],-200,200,5)).join("")}return Object.entries(t).map(([a,n])=>z(e.key,`opt:${a}`,a,Number(n),-200,200,5)).join("")}function at(e){return`
+  `}function nt(e){const t=e.config;if(typeof t.value=="number"&&Object.keys(t).length===1)return z(e.key,"value","Puntos base",t.value,300,850,5);if(Array.isArray(t.buckets)){const a=t.buckets;return a.map((n,s)=>z(e.key,`bucket:${s}`,at(n[0],n[1],s===a.length-1),n[2],-200,200,5)).join("")}return Object.entries(t).map(([a,n])=>z(e.key,`opt:${a}`,a,Number(n),-200,200,5)).join("")}function it(e){return`
     <div class="scoring-rule-card" data-rule-card="${e.key}">
       <div class="scoring-rule-header">
         <div>
           <p class="scoring-rule-label">${o(e.label)}</p>
-          <p class="scoring-rule-used-by">Usado en: ${o(Oe[e.key]??"—")} · clave: <code>${o(e.key)}</code></p>
+          <p class="scoring-rule-used-by">Usado en: ${o(Re[e.key]??"—")} · clave: <code>${o(e.key)}</code></p>
         </div>
         <label class="scoring-rule-active">
           <input type="checkbox" data-field="active" ${e.active?"checked":""} />
@@ -383,7 +382,7 @@ import{c as ye}from"./validation-B4TxmlFv.js";import{q as Se}from"./questions-D4
       </div>
       ${z(e.key,"weight","Peso (multiplica todos los puntos de esta regla)",Number(e.weight),0,3,.1)}
       <div class="scoring-rule-fields">
-        ${tt(e)}
+        ${nt(e)}
       </div>
       <div class="scoring-rule-footer">
         <button class="admin-btn-ghost" data-save-rule="${e.key}">Guardar cambios</button>
@@ -391,9 +390,9 @@ import{c as ye}from"./validation-B4TxmlFv.js";import{q as Se}from"./questions-D4
         <span class="scoring-rule-status"></span>
       </div>
     </div>
-  `}function nt(e){var t;document.querySelectorAll(".scoring-slider").forEach(a=>{a.addEventListener("input",()=>{var s;const n=(s=a.closest(".scoring-slider-row"))==null?void 0:s.querySelector(".scoring-slider-value");n&&(n.textContent=a.value)})}),document.querySelectorAll("[data-save-rule]").forEach(a=>{a.addEventListener("click",async()=>{const n=a.dataset.saveRule,s=fe.find(m=>m.key===n),d=document.querySelector(`[data-rule-card="${n}"]`);if(!s||!d)return;const r=d.querySelector(".scoring-rule-status"),u=new Map;d.querySelectorAll("input[data-field]").forEach(m=>{u.set(m.dataset.field,m.type==="checkbox"?String(m.checked):m.value)});const c=Number(u.get("weight")),E=u.get("active")==="true",_=s.config;let p;typeof _.value=="number"&&Object.keys(_).length===1?p={value:Number(u.get("value"))}:Array.isArray(_.buckets)?p={buckets:_.buckets.map((m,L)=>[m[0],m[1],Number(u.get(`bucket:${L}`))])}:(p={},Object.keys(_).forEach(m=>{p[m]=Number(u.get(`opt:${m}`))})),a.disabled=!0,r.textContent="Guardando…",r.className="scoring-rule-status";try{await Ze(e,n,p,c,E),s.config=p,s.weight=c,s.active=E,r.textContent="✓ Guardado",r.className="scoring-rule-status ok",setTimeout(()=>{r.textContent=""},2500)}catch{r.textContent="Error al guardar",r.className="scoring-rule-status error"}finally{a.disabled=!1}})}),document.querySelectorAll("[data-reset-rule]").forEach(a=>{a.addEventListener("click",async()=>{const n=a.dataset.resetRule,s=document.querySelector(`[data-rule-card="${n}"]`);if(!s||!confirm("¿Restaurar esta regla a sus valores por defecto? Se aplicará de inmediato."))return;const d=s.querySelector(".scoring-rule-status");a.disabled=!0,d.textContent="Restaurando…",d.className="scoring-rule-status";try{await Ye(e,n),await F(e)}catch{d.textContent="Error al restaurar",d.className="scoring-rule-status error",a.disabled=!1}})}),(t=document.getElementById("reset-all-rules-btn"))==null||t.addEventListener("click",async()=>{if(confirm("¿Restaurar TODAS las reglas de scoring a sus valores por defecto? Esto sobrescribe cualquier ajuste manual y se aplica de inmediato a las puntuaciones reales."))try{await Je(e),await F(e)}catch{alert("No se ha podido restaurar. Inténtalo de nuevo.")}})}async function F(e){f.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';try{const t=await Ge(e);fe=t,f.innerHTML=`
+  `}function st(e){var t;document.querySelectorAll(".scoring-slider").forEach(a=>{a.addEventListener("input",()=>{var s;const n=(s=a.closest(".scoring-slider-row"))==null?void 0:s.querySelector(".scoring-slider-value");n&&(n.textContent=a.value)})}),document.querySelectorAll("[data-save-rule]").forEach(a=>{a.addEventListener("click",async()=>{const n=a.dataset.saveRule,s=ve.find(m=>m.key===n),d=document.querySelector(`[data-rule-card="${n}"]`);if(!s||!d)return;const r=d.querySelector(".scoring-rule-status"),u=new Map;d.querySelectorAll("input[data-field]").forEach(m=>{u.set(m.dataset.field,m.type==="checkbox"?String(m.checked):m.value)});const c=Number(u.get("weight")),E=u.get("active")==="true",_=s.config;let p;typeof _.value=="number"&&Object.keys(_).length===1?p={value:Number(u.get("value"))}:Array.isArray(_.buckets)?p={buckets:_.buckets.map((m,L)=>[m[0],m[1],Number(u.get(`bucket:${L}`))])}:(p={},Object.keys(_).forEach(m=>{p[m]=Number(u.get(`opt:${m}`))})),a.disabled=!0,r.textContent="Guardando…",r.className="scoring-rule-status";try{await Je(e,n,p,c,E),s.config=p,s.weight=c,s.active=E,r.textContent="✓ Guardado",r.className="scoring-rule-status ok",setTimeout(()=>{r.textContent=""},2500)}catch{r.textContent="Error al guardar",r.className="scoring-rule-status error"}finally{a.disabled=!1}})}),document.querySelectorAll("[data-reset-rule]").forEach(a=>{a.addEventListener("click",async()=>{const n=a.dataset.resetRule,s=document.querySelector(`[data-rule-card="${n}"]`);if(!s||!confirm("¿Restaurar esta regla a sus valores por defecto? Se aplicará de inmediato."))return;const d=s.querySelector(".scoring-rule-status");a.disabled=!0,d.textContent="Restaurando…",d.className="scoring-rule-status";try{await Ke(e,n),await H(e)}catch{d.textContent="Error al restaurar",d.className="scoring-rule-status error",a.disabled=!1}})}),(t=document.getElementById("reset-all-rules-btn"))==null||t.addEventListener("click",async()=>{if(confirm("¿Restaurar TODAS las reglas de scoring a sus valores por defecto? Esto sobrescribe cualquier ajuste manual y se aplica de inmediato a las puntuaciones reales."))try{await Xe(e),await H(e)}catch{alert("No se ha podido restaurar. Inténtalo de nuevo.")}})}async function H(e){f.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';try{const t=await Ye(e);ve=t,f.innerHTML=`
       <div class="admin-shell">
-        ${W("scoring")}
+        ${Q("scoring")}
 
         <section class="admin-card">
           <div class="scoring-intro-row">
@@ -414,15 +413,15 @@ import{c as ye}from"./validation-B4TxmlFv.js";import{q as Se}from"./questions-D4
         </section>
 
         <div class="scoring-rules-grid">
-          ${t.map(at).join("")}
+          ${t.map(it).join("")}
         </div>
       </div>
-    `,Q(e),nt(e)}catch(t){const a=t instanceof Error?t.message:String(t);a.toLowerCase().includes("unauthorized")?(sessionStorage.removeItem(A),q("Tu sesión ha caducado o la contraseña ya no es válida.")):(f.innerHTML=`
+    `,U(e),st(e)}catch(t){const a=t instanceof Error?t.message:String(t);a.toLowerCase().includes("unauthorized")?(sessionStorage.removeItem(A),j("Tu sesión ha caducado o la contraseña ya no es válida.")):(f.innerHTML=`
         <div class="admin-shell">
           <p class="admin-error">Ha ocurrido un error inesperado cargando el algoritmo: ${o(a)}</p>
           <button class="admin-btn-ghost" id="retry-btn">Reintentar</button>
         </div>
-      `,document.getElementById("retry-btn").addEventListener("click",()=>F(e)))}}const ue=new Intl.NumberFormat("es-ES",{maximumFractionDigits:1});function M(e,t){return e==null?"—":t?`${ue.format(e)} €`:ue.format(e)}function it(e,t,a){const n=Ce.has(t);return`
+      `,document.getElementById("retry-btn").addEventListener("click",()=>H(e)))}}const me=new Intl.NumberFormat("es-ES",{maximumFractionDigits:1});function M(e,t){return e==null?"—":t?`${me.format(e)} €`:me.format(e)}function ot(e,t,a){const n=je.has(t);return`
     <div class="fieldstat-card">
       <p class="fieldstat-label">${o(e)}</p>
       <div class="fieldstat-row"><span>Mediana</span><strong>${M(a.median,n)}</strong></div>
@@ -430,29 +429,29 @@ import{c as ye}from"./validation-B4TxmlFv.js";import{q as Se}from"./questions-D4
       <div class="fieldstat-row"><span>Rango</span><strong>${M(a.min,n)} – ${M(a.max,n)}</strong></div>
       <p class="fieldstat-count">${a.count} respuestas</p>
     </div>
-  `}function st(e,t,a,n){const s=t.reduce((d,r)=>d+r.count,0);return`
+  `}function dt(e,t,a,n){const s=t.reduce((d,r)=>d+r.count,0);return`
     <div class="fieldstat-card">
       <p class="fieldstat-label">${o(e)}</p>
       ${t.map(d=>{const r=s>0?Math.round(d.count/s*100):0;return`
             <div class="admin-band-row">
-              <span class="admin-band-label">${o(Ie(a,n,d.value))}</span>
+              <span class="admin-band-label">${o(Pe(a,n,d.value))}</span>
               <div class="admin-band-track"><div class="admin-band-fill funnel-fill" style="width:${r}%"></div></div>
               <span class="admin-band-count">${d.count} (${r}%)</span>
             </div>
           `}).join("")}
       ${t.length===0?'<p class="fieldstat-count">Sin datos todavía.</p>':""}
     </div>
-  `}function ot(e,t){const a=e==="quiz"?Te:Pe;return`
+  `}function rt(e,t){const a=e==="quiz"?Ce:Ae;return`
     <section class="admin-card">
       <p class="admin-card-title">${e==="solicitud"?"Solicitud completa":e==="pingtree"?"Pingtree":"Quiz corto"} (${t.count} sesiones)</p>
       <div class="fieldstats-grid">
-        ${Object.entries(t.numeric).map(([s,d])=>it(a[s]??s,s,d)).join("")}
-        ${Object.entries(t.categorical).map(([s,d])=>st(a[s]??s,d,e,s)).join("")}
+        ${Object.entries(t.numeric).map(([s,d])=>ot(a[s]??s,s,d)).join("")}
+        ${Object.entries(t.categorical).map(([s,d])=>dt(a[s]??s,d,e,s)).join("")}
       </div>
     </section>
-  `}async function $e(e){f.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';const t=H(S),a=g==="solicitud"||g==="quiz"||g==="pingtree"?[g]:["quiz","solicitud","pingtree"];try{const n=await Promise.all(a.map(s=>Ke(e,t,s)));f.innerHTML=`
+  `}async function ye(e){f.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';const t=W(S),a=g==="solicitud"||g==="quiz"||g==="pingtree"?[g]:["quiz","solicitud","pingtree"];try{const n=await Promise.all(a.map(s=>et(e,t,s)));f.innerHTML=`
       <div class="admin-shell">
-        ${W("fieldstats")}
+        ${Q("fieldstats")}
 
         ${te(t)}
 
@@ -465,11 +464,11 @@ import{c as ye}from"./validation-B4TxmlFv.js";import{q as Se}from"./questions-D4
           </p>
         </section>
 
-        ${a.map((s,d)=>ot(s,n[d])).join("")}
+        ${a.map((s,d)=>rt(s,n[d])).join("")}
       </div>
-    `,Q(e),ae(e)}catch(n){const s=n instanceof Error?n.message:String(n);s.toLowerCase().includes("unauthorized")?(sessionStorage.removeItem(A),q("Tu sesión ha caducado o la contraseña ya no es válida.")):(f.innerHTML=`
+    `,U(e),ae(e)}catch(n){const s=n instanceof Error?n.message:String(n);s.toLowerCase().includes("unauthorized")?(sessionStorage.removeItem(A),j("Tu sesión ha caducado o la contraseña ya no es válida.")):(f.innerHTML=`
         <div class="admin-shell">
           <p class="admin-error">Ha ocurrido un error inesperado cargando las estadísticas: ${o(s)}</p>
           <button class="admin-btn-ghost" id="retry-btn">Reintentar</button>
         </div>
-      `,document.getElementById("retry-btn").addEventListener("click",()=>$e(e)))}}const me=sessionStorage.getItem(A);me?C(me):q();
+      `,document.getElementById("retry-btn").addEventListener("click",()=>ye(e)))}}const pe=sessionStorage.getItem(A);pe?C(pe):j();

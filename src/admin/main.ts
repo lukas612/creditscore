@@ -396,6 +396,7 @@ interface PingtreeApplication {
   id: string;
   created_at: string;
   external_id: string | null;
+  response_status: number | null;
   witme_id: number | null;
   witme_status: string | null;
   witme_message: unknown;
@@ -1131,8 +1132,8 @@ async function renderLeadsTab(password: string) {
             <table class="admin-table">
               <thead>
                 <tr>
-                  <th>Fecha</th><th>Nombre</th><th>Email</th><th>Importe</th>
-                  <th>Witme ID</th><th>Estado</th><th>Tiempo</th>
+                  <th>Fecha</th><th>Nombre</th><th>Email</th>
+                  <th>Enviado</th><th>Aceptado</th><th>Redirigido</th>
                 </tr>
               </thead>
               <tbody>
@@ -1142,20 +1143,22 @@ async function renderLeadsTab(password: string) {
                     if (p.witme_message != null) tooltipParts.push(`Mensaje: ${JSON.stringify(p.witme_message)}`);
                     if (p.witme_redirect_url) tooltipParts.push(`Redirect URL: ${p.witme_redirect_url}`);
                     const statusTooltip = tooltipParts.join("\n");
+                    const enviado = p.response_status != null;
+                    const aceptado = p.witme_status === "processed";
+                    const redirigido = p.witme_redirect_url != null;
                     return `
                   <tr>
                     <td>${dateFmt.format(new Date(p.created_at))}</td>
                     <td><div class="admin-table-name-cell" title="${escapeHtml(p.name ?? "")} ${escapeHtml(p.last_name ?? "")}">${escapeHtml(p.name ?? "")} ${escapeHtml(p.last_name ?? "")}</div></td>
                     <td><div class="admin-table-name-cell" title="${escapeHtml(p.email ?? "")}">${escapeHtml(p.email ?? "")}</div></td>
-                    <td>${p.requested_amount != null ? `${p.requested_amount} €` : "—"}</td>
-                    <td>${p.witme_id ?? "—"}</td>
-                    <td><span class="admin-badge ${p.witme_status === "processed" ? "band-excelente" : "band-bajo"}" ${statusTooltip ? `title="${escapeHtml(statusTooltip)}"` : ""}>${escapeHtml(p.witme_status ?? "—")}</span></td>
-                    <td>${fmtMs(p.response_ms)}</td>
+                    <td>${enviado ? `<span class="admin-badge band-excelente">✅ Sí</span>` : `<span class="admin-badge band-bajo">❌ No</span>`}</td>
+                    <td><span class="admin-badge ${aceptado ? "band-excelente" : "band-bajo"}" ${statusTooltip ? `title="${escapeHtml(statusTooltip)}"` : ""}>${aceptado ? "✅ Sí" : "❌ No"}</span></td>
+                    <td>${redirigido ? `<span class="admin-badge band-excelente" title="${escapeHtml(p.witme_redirect_url ?? "")}">✅ Sí</span>` : `<span class="admin-badge band-bajo">❌ No</span>`}</td>
                   </tr>
                 `;
                   })
                   .join("")}
-                ${pingtreeApps.length === 0 ? `<tr><td colspan="7" class="admin-empty">Todavía no hay solicitudes de Pingtree.</td></tr>` : ""}
+                ${pingtreeApps.length === 0 ? `<tr><td colspan="6" class="admin-empty">Todavía no hay solicitudes de Pingtree.</td></tr>` : ""}
               </tbody>
             </table>
           </div>
