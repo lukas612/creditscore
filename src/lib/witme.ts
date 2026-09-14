@@ -11,10 +11,10 @@ export interface WitmeSubmitResult {
 
 // Prestamista normal: antes llamaba a leads/new (la API "de siempre" de
 // Witme); ahora usa el mismo endpoint servy-form-wait que aval coche/
-// reunificación y Pingtree, con su propio servy_id (375), en paralelo a
-// esos otros servicios que se siguen disparando aparte sin cambios. Mismo
+// reunificación y Pingtree, con su propio servy_id, en paralelo a esos
+// otros servicios que se siguen disparando aparte sin cambios. Mismo
 // mapeo de campos reutilizado (buildCarCollateralAnswers).
-const SERVY_ID_LENDER = 375;
+const SERVY_ID_LENDER = 151;
 
 function contactFromAnswers(answers: Answers): CarCollateralContact {
   return {
