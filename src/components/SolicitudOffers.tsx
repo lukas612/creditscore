@@ -37,6 +37,11 @@ export function SolicitudOffers({
   ctaLabel = "Ver oferta →",
   loadingText = "Buscando más ofertas preaprobadas para ti…",
 }: Props) {
+  // Si Witme ya aceptó al menos una oferta, no diluimos la conversión
+  // mostrando también las ofertas estáticas por defecto: esas solo tienen
+  // sentido como red de seguridad cuando Witme no asignó ningún prestamista.
+  const showStaticOffers = witmeOffers.length === 0;
+
   return (
     <div className="offers-section">
       <p className="offers-eyebrow">{eyebrow}</p>
@@ -63,7 +68,7 @@ export function SolicitudOffers({
             </a>
           </div>
         ))}
-        {staticOffers.map((offer) => (
+        {showStaticOffers && staticOffers.map((offer) => (
           <div key={offer.id} className="offer-card">
             <div className="offer-card-body">
               <span className="offer-name">{offer.name}</span>
