@@ -35,6 +35,9 @@ interface Props {
     title?: string;
     subText?: string;
     preapprovedBadge?: string;
+    firstOfferName?: string;
+    otherOfferName?: string;
+    offerDesc?: string;
     ctaLabel?: string;
     loadingText?: string;
   };

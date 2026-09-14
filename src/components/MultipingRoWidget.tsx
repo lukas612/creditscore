@@ -161,6 +161,9 @@ export function MultipingRoWidget({
             title: "Oferte pentru tine",
             subText: "Aceste instituții s-ar putea potrivi profilului tău. Fiecare are propriile condiții și proces de solicitare independent.",
             preapprovedBadge: "✓ Preaprobat pentru tine",
+            firstOfferName: "Împrumutul tău preaprobat",
+            otherOfferName: "O altă ofertă preaprobată pentru tine",
+            offerDesc: "Apasă pentru a-ți primi banii.",
             ctaLabel: "Vezi oferta →",
             loadingText: "Căutăm mai multe oferte preaprobate pentru tine…",
           }}
