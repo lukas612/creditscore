@@ -12,7 +12,7 @@ interface Props {
   visibleQuestions: (answers: Answers) => WitmeQuestionDef[];
   phases: { key: WitmePhase; label: string }[];
   intro?: string;
-  source?: "solicitud" | "pingtree";
+  source?: string;
   onComplete: (answers: Answers) => void;
 }
 

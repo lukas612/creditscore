@@ -1,3 +1,4 @@
+import type { CreditOffer } from "../data/offers";
 import type { BreakdownItem } from "../lib/types";
 import type { LenderOffer } from "../lib/witme";
 import { CreditBuilder } from "./CreditBuilder";
@@ -16,7 +17,10 @@ interface Props {
   clickId: string | null;
   quizSessionId: string;
   applicationSubmitted: boolean;
-  offersSource?: "solicitud" | "pingtree";
+  offersSource?: string;
+  staticOffers?: CreditOffer[];
+  locale?: string;
+  currencyCode?: string;
 }
 
 const BAND_COPY: Record<string, { title: string; tip: string }> = {
@@ -38,12 +42,6 @@ const BAND_COPY: Record<string, { title: string; tip: string }> = {
   },
 };
 
-const currency = new Intl.NumberFormat("es-ES", {
-  style: "currency",
-  currency: "EUR",
-  maximumFractionDigits: 0,
-});
-
 export function SolicitudResult({
   score,
   scoreBand,
@@ -56,9 +54,17 @@ export function SolicitudResult({
   quizSessionId,
   applicationSubmitted,
   offersSource = "solicitud",
+  staticOffers,
+  locale = "es-ES",
+  currencyCode = "EUR",
 }: Props) {
   const copy = BAND_COPY[scoreBand] ?? BAND_COPY.regular;
   const pct = Math.round(((score - 300) / (850 - 300)) * 100);
+  const currency = new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: currencyCode,
+    maximumFractionDigits: 0,
+  });
 
   return (
     <div className="result-card">
@@ -81,6 +87,7 @@ export function SolicitudResult({
         clickId={clickId}
         quizSessionId={quizSessionId}
         source={offersSource}
+        staticOffers={staticOffers}
       />
 
       <ShareResult score={score} scoreBand={scoreBand} />

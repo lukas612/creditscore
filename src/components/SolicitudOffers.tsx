@@ -1,4 +1,4 @@
-import { CREDIT_OFFERS } from "../data/offers";
+import { CREDIT_OFFERS, type CreditOffer } from "../data/offers";
 import { trackFunnelEvent } from "../lib/funnel";
 import type { LenderOffer } from "../lib/witme";
 
@@ -7,10 +7,18 @@ interface Props {
   fetchingMoreOffers: boolean;
   clickId: string | null;
   quizSessionId: string;
-  source?: "solicitud" | "pingtree";
+  source?: string;
+  staticOffers?: CreditOffer[];
 }
 
-export function SolicitudOffers({ witmeOffers, fetchingMoreOffers, clickId, quizSessionId, source = "solicitud" }: Props) {
+export function SolicitudOffers({
+  witmeOffers,
+  fetchingMoreOffers,
+  clickId,
+  quizSessionId,
+  source = "solicitud",
+  staticOffers = CREDIT_OFFERS,
+}: Props) {
   return (
     <div className="offers-section">
       <p className="offers-eyebrow">Tu siguiente paso</p>
@@ -40,7 +48,7 @@ export function SolicitudOffers({ witmeOffers, fetchingMoreOffers, clickId, quiz
             </a>
           </div>
         ))}
-        {CREDIT_OFFERS.map((offer) => (
+        {staticOffers.map((offer) => (
           <div key={offer.id} className="offer-card">
             <div className="offer-card-body">
               <span className="offer-name">{offer.name}</span>

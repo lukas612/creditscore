@@ -14,6 +14,17 @@ export function isValidSpanishPhone(phone: string): boolean {
   return /^[6789]\d{8}$/.test(normalizeSpanishPhone(phone));
 }
 
+// Teléfono rumano: 9 dígitos, empieza por 2/3/7 (fijo o móvil). Se acepta y
+// descarta el prefijo +40/0040/40 o un 0 inicial (formato nacional habitual
+// tipo 07XXXXXXXX), igual que hacemos con el prefijo español.
+export function normalizeRomanianPhone(phone: string): string {
+  return phone.replace(/[\s-]/g, "").replace(/^(\+40|0040|40)/, "").replace(/^0/, "");
+}
+
+export function isValidRomanianPhone(phone: string): boolean {
+  return /^[237]\d{8}$/.test(normalizeRomanianPhone(phone));
+}
+
 // IBAN español: ES + 2 dígitos de control + 20 dígitos (24 caracteres),
 // validado con el checksum mod-97 estándar de IBAN (ISO 7064).
 export function isValidSpanishIban(iban: string): boolean {

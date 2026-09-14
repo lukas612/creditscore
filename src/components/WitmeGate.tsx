@@ -18,7 +18,11 @@ interface Props {
   zipCode: string;
   approvalProbability: number | null;
   clickId: string | null;
-  source?: "solicitud" | "pingtree";
+  source?: string;
+  phoneValidator?: (phone: string) => boolean;
+  phoneNormalizer?: (phone: string) => string;
+  phoneErrorMessage?: string;
+  phonePlaceholder?: string;
   onUnlock: (contact: GateContact) => void;
 }
 
@@ -30,6 +34,10 @@ export function WitmeGate({
   approvalProbability,
   clickId,
   source = "solicitud",
+  phoneValidator = isValidSpanishPhone,
+  phoneNormalizer = normalizeSpanishPhone,
+  phoneErrorMessage = "Revisa el teléfono: debe ser un número español de 9 dígitos.",
+  phonePlaceholder = "Teléfono (612 345 678)",
   onUnlock,
 }: Props) {
   const [name, setName] = useState("");
@@ -50,8 +58,8 @@ export function WitmeGate({
       setError("Revisa el correo electrónico, no parece válido.");
       return;
     }
-    if (!isValidSpanishPhone(phoneNumber)) {
-      setError("Revisa el teléfono: debe ser un número español de 9 dígitos.");
+    if (!phoneValidator(phoneNumber)) {
+      setError(phoneErrorMessage);
       return;
     }
     if (!consent) {
@@ -61,7 +69,7 @@ export function WitmeGate({
     setSubmitting(true);
     setError(null);
 
-    const normalizedPhone = normalizeSpanishPhone(phoneNumber);
+    const normalizedPhone = phoneNormalizer(phoneNumber);
 
     const { error: insertError } = await supabase.from("leads").insert({
       quiz_session_id: quizSessionId,
@@ -134,7 +142,7 @@ export function WitmeGate({
         />
         <input
           type="tel"
-          placeholder="Teléfono (612 345 678)"
+          placeholder={phonePlaceholder}
           autoComplete="tel-national"
           inputMode="tel"
           enterKeyHint="done"
