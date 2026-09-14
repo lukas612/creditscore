@@ -364,12 +364,12 @@ interface WitmeApplication {
   witme_response_ms: number | null;
 }
 
-async function fetchWitmeApplications(password: string, page: number, country: string | null): Promise<WitmeApplication[]> {
+async function fetchWitmeApplications(password: string, page: number, source: string | null): Promise<WitmeApplication[]> {
   const { data, error } = await supabase.rpc("admin_get_witme_applications", {
     p_password: password,
     p_limit: WITME_PAGE_SIZE,
     p_offset: page * WITME_PAGE_SIZE,
-    p_country: country,
+    p_source: source,
   });
   if (error) throw error;
   return (data ?? []) as WitmeApplication[];
@@ -471,8 +471,8 @@ interface WitmeResponseStats {
   pct_failed: number | null;
 }
 
-async function fetchWitmeResponseStats(password: string, country: string | null): Promise<WitmeResponseStats> {
-  const { data, error } = await supabase.rpc("admin_get_witme_response_stats", { p_password: password, p_country: country }).single<WitmeResponseStats>();
+async function fetchWitmeResponseStats(password: string, source: string | null): Promise<WitmeResponseStats> {
+  const { data, error } = await supabase.rpc("admin_get_witme_response_stats", { p_password: password, p_source: source }).single<WitmeResponseStats>();
   if (error || !data) throw error ?? new Error("No data");
   return data;
 }
@@ -907,10 +907,11 @@ async function renderLeadsTab(password: string) {
 
   try {
     const country = countryParam(currentSource);
+    const source = sourceParam(currentSource);
     const [leads, witmeApps, witmeResponseStats, witmeCarApps, pingtreeApps, pingtreeResponseStats] = await Promise.all([
       fetchLeads(password, period, currentSource, currentLeadsPage),
-      fetchWitmeApplications(password, currentWitmePage, country),
-      fetchWitmeResponseStats(password, country),
+      fetchWitmeApplications(password, currentWitmePage, source),
+      fetchWitmeResponseStats(password, source),
       fetchWitmeCarApplications(password, currentWitmeCarPage),
       fetchPingtreeApplications(password, currentPingtreePage, country),
       fetchPingtreeResponseStats(password, country),
