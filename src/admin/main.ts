@@ -1067,7 +1067,9 @@ async function renderLeadsTab(password: string) {
             <button class="admin-btn-ghost" id="witme-next-btn" ${currentWitmePage + 1 >= totalWitmePages ? "disabled" : ""}>Siguiente →</button>
           </div>
         </section>
+        ` : ""}
 
+        ${(currentSource === "all" || currentSource === "solicitud") ? `
         <section class="admin-card">
           <p class="admin-card-title">Solicitudes enviadas a Witme · aval coche / reunificación (${totalWitmeCarCount})</p>
           <p class="admin-card-sub">

@@ -1,4 +1,4 @@
-import{C as Ce,c as Ae}from"./validation-CYLXqsHh.js";import{q as Re}from"./questions-D4Dn-9Ya.js";import{W as ne,S as ye}from"./witmeQuestions-BaT-j2Ry.js";const ge={witme_featured:"Witme (oferta destacada)",...Object.fromEntries(Ce.map(e=>[e.id,e.name]))};function J(e){if(e in ge)return ge[e];const a=e.match(/^witme_featured_(\d+)$/);return a?`Witme (oferta destacada ${a[1]})`:e}function Se(e){const a={};for(const t of e)t.options&&(a[t.key]=Object.fromEntries(t.options.map(n=>[n.value,n.label])));return a}const Oe=Se(Re),qe=Se(ne),je={si:"Sí",no:"No"};function De(e,a,t){const n=e==="quiz"?Oe[a]:qe[a];return(n==null?void 0:n[t])??je[t]??t}const xe={ingreso_mensual:"Ingreso mensual",importe_total_de_la_deuda:"Deuda total (entre quienes tienen)",creditos_cantidad_a_solicitar:"Importe solicitado",age:"Edad",esta_en_asnef:"En ASNEF",antiguedad_laboral:"Antigüedad laboral",tienes_otros_creditos:"Tiene otras deudas",proposito_del_prestamo:"Propósito del préstamo",fuente_principal_de_ingreso:"Fuente de ingresos",tienes_vivienda_en_propiedad:"Vivienda en propiedad",en_cuantos_meses_deseas_devolverlo:"Plazo de devolución"},Me={monthlyIncome:"Ingreso mensual",totalDebtAmount:"Deuda total (entre quienes tienen)",monthlyDebtPayment:"Cuota mensual de deudas (entre quienes tienen)",requestedAmount:"Importe solicitado",numberOfdependents:"Personas a cargo",age:"Edad",incomeSource:"Fuente de ingresos",hasOwnedHouse:"Situación de vivienda",badCreditHistory:"En ASNEF",hasOtherLoans:"Tiene otras deudas",loanPurpose:"Propósito del préstamo",hasOwnVehicle:"Tiene vehículo propio",hasBankAccount:"Tiene cuenta bancaria",maritalStatus:"Estado civil",educationLevel:"Nivel de estudios",gender:"Género",countryOfBirth:"País de nacimiento",state:"Comunidad autónoma"},ze=new Set(["ingreso_mensual","importe_total_de_la_deuda","creditos_cantidad_a_solicitar","monthlyIncome","totalDebtAmount","monthlyDebtPayment","requestedAmount"]),Ne="https://pgyaigdsedkdqvhtexrz.supabase.co",Be="sb_publishable_yL99vHU_H5kGZ3SMuPS0hA_GJ_TWTMr",p=Ae(Ne,Be),O="cs_admin_pw",h=document.getElementById("admin-root");function Ee(e){return e.toISOString().slice(0,10)}const ke=new Date;let k="all",F=Ee(ke),H=Ee(ke),c="all";function Fe(e){return e==="multiping_ro"||e==="pingtree_ro"?"RO":e==="solicitud"||e==="pingtree"||e==="quiz"?"ES":null}function He(e){return e==="multiping_ro"||e==="pingtree_ro"?"LEI":"€"}const K=10;let E=0;const X=10;let T=0;const ee=10;let C=0;const te=10;let A=0,N="dashboard";const We={base:"Quiz corto + Solicitud",ingreso_mensual:"Quiz corto + Solicitud",otros_creditos:"Quiz corto + Solicitud",asnef:"Quiz corto + Solicitud",ratio_deuda_ingreso:"Quiz corto + Solicitud",edad:"Quiz corto + Solicitud",fuente_ingreso:"Quiz corto",antiguedad_laboral:"Quiz corto",vivienda_propiedad:"Quiz corto",solicitud_fuente_ingreso:"Solicitud",solicitud_antiguedad:"Solicitud",solicitud_vivienda:"Solicitud",solicitud_dependientes:"Solicitud",aprobacion_base:"Probabilidad de aprobación (quiz + solicitud)",aprobacion_ratio_importe:"Probabilidad de aprobación (quiz + solicitud)"},ae={all:"Todos",quiz:"Quiz corto",solicitud:"Solicitud completa",pingtree:"Pingtree",multiping_ro:"Multiping RO",pingtree_ro:"Pingtree RO"};function Q(e){const a=new Date;if(e==="today")return{since:new Date(a.getFullYear(),a.getMonth(),a.getDate(),0,0,0,0).toISOString(),until:a.toISOString()};if(e==="7d")return{since:new Date(a.getTime()-6048e5).toISOString(),until:a.toISOString()};if(e==="custom"){const t=new Date(`${F}T00:00:00`),n=new Date(`${H}T23:59:59.999`);return t.getTime()>n.getTime()?{since:n.toISOString(),until:t.toISOString()}:{since:t.toISOString(),until:n.toISOString()}}return{since:"2000-01-01T00:00:00.000Z",until:a.toISOString()}}const _e=new Intl.DateTimeFormat("es-ES",{day:"2-digit",month:"short",year:"numeric"});function Qe(e,a){return e==="all"?"Todo el histórico":`${_e.format(new Date(a.since))} – ${_e.format(new Date(a.until))}`}const Ue=[{key:"fecha_de_nacimiento",label:"Fecha de nacimiento"},{key:"codigo_postal",label:"Código postal"},{key:"fuente_principal_de_ingreso",label:"Fuente de ingresos"},{key:"antiguedad_laboral",label:"Antigüedad laboral",conditional:!0},{key:"tienes_vivienda_en_propiedad",label:"Vivienda en propiedad"},{key:"ingreso_mensual",label:"Ingreso mensual"},{key:"esta_en_asnef",label:"Asnef"},{key:"tienes_otros_creditos",label:"Otros créditos"},{key:"importe_total_de_la_deuda",label:"Importe de la deuda",conditional:!0},{key:"proposito_del_prestamo",label:"Propósito del préstamo"},{key:"creditos_cantidad_a_solicitar",label:"Importe a solicitar"},{key:"en_cuantos_meses_deseas_devolverlo",label:"Plazo de devolución"}],Ve=ne.filter(e=>ye.includes(e.phase)),Ge=ne.filter(e=>!ye.includes(e.phase)),he=e=>({key:e.key,label:e.label,conditional:!!e.condition}),Ze=[...Ve.map(he),{key:"gate_contact",label:"Deja sus datos de contacto (nombre, email, teléfono)"},...Ge.map(he),{key:"application_completed",label:"✅ Termina la solicitud completa"}],x=new Intl.DateTimeFormat("es-ES",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});function o(e){const a=document.createElement("div");return a.textContent=e,a.innerHTML.replace(/"/g,"&quot;").replace(/'/g,"&#39;")}function D(e){return e==="all"?null:e}async function Le(e,a,t){const{data:n,error:s}=await p.rpc("admin_get_stats",{p_password:e,p_since:a.since,p_until:a.until,p_source:D(t)}).single();if(s||!n)throw s??new Error("No data");return n}async function Ye(e,a,t){const{data:n,error:s}=await p.rpc("admin_get_funnel_overview",{p_password:e,p_since:a.since,p_until:a.until,p_source:D(t)}).single();if(s||!n)throw s??new Error("No data");return n}async function Je(e,a,t){const{data:n,error:s}=await p.rpc("admin_get_funnel_steps",{p_password:e,p_since:a.since,p_until:a.until,p_source:D(t)});if(s)throw s;return n??[]}async function Ke(e,a,t,n){const{data:s,error:r}=await p.rpc("admin_list_leads",{p_password:e,p_limit:K,p_offset:n*K,p_since:a.since,p_until:a.until,p_source:D(t)});if(r)throw r;return s??[]}async function Xe(e,a,t){const{data:n,error:s}=await p.rpc("admin_get_witme_applications",{p_password:e,p_limit:X,p_offset:a*X,p_country:t});if(s)throw s;return n??[]}async function et(e,a){const{data:t,error:n}=await p.rpc("admin_get_witme_car_applications",{p_password:e,p_limit:ee,p_offset:a*ee});if(n)throw n;return t??[]}async function tt(e,a,t){const{data:n,error:s}=await p.rpc("admin_get_pingtree_applications",{p_password:e,p_limit:te,p_offset:a*te,p_country:t});if(s)throw s;return n??[]}async function at(e,a){const{data:t,error:n}=await p.rpc("admin_get_pingtree_response_stats",{p_password:e,p_country:a}).single();if(n||!t)throw n??new Error("No data");return t}async function nt(e,a){const{data:t,error:n}=await p.rpc("admin_get_witme_response_stats",{p_password:e,p_country:a}).single();if(n||!t)throw n??new Error("No data");return t}function y(e){return e==null?"—":`${(e/1e3).toFixed(1)} s`}function Y(e){return e==null?"—":`${e}%`}async function it(e,a,t){const{data:n,error:s}=await p.rpc("admin_get_offer_clicks",{p_password:e,p_since:a.since,p_until:a.until,p_source:D(t)});if(s)throw s;return n??[]}let we=[];async function st(e){const{data:a,error:t}=await p.rpc("admin_get_scoring_rules",{p_password:e});if(t)throw t;return a??[]}async function ot(e,a,t,n,s){const{error:r}=await p.rpc("admin_update_scoring_rule",{p_password:e,p_key:a,p_config:t,p_weight:n,p_active:s});if(r)throw r}async function rt(e,a){const{error:t}=await p.rpc("admin_reset_scoring_rule",{p_password:e,p_key:a});if(t)throw t}async function dt(e){const{error:a}=await p.rpc("admin_reset_all_scoring_rules",{p_password:e});if(a)throw a}async function ct(e,a,t){const{data:n,error:s}=await p.rpc("admin_get_field_stats",{p_password:e,p_since:a.since,p_until:a.until,p_source:t});if(s)throw s;return n}function q(e){h.innerHTML=`
+import{C as Ce,c as Ae}from"./validation-CYLXqsHh.js";import{q as Re}from"./questions-D4Dn-9Ya.js";import{W as ne,S as ye}from"./witmeQuestions-BaT-j2Ry.js";const ge={witme_featured:"Witme (oferta destacada)",...Object.fromEntries(Ce.map(e=>[e.id,e.name]))};function J(e){if(e in ge)return ge[e];const a=e.match(/^witme_featured_(\d+)$/);return a?`Witme (oferta destacada ${a[1]})`:e}function Se(e){const a={};for(const t of e)t.options&&(a[t.key]=Object.fromEntries(t.options.map(n=>[n.value,n.label])));return a}const Oe=Se(Re),qe=Se(ne),je={si:"Sí",no:"No"};function De(e,a,t){const n=e==="quiz"?Oe[a]:qe[a];return(n==null?void 0:n[t])??je[t]??t}const xe={ingreso_mensual:"Ingreso mensual",importe_total_de_la_deuda:"Deuda total (entre quienes tienen)",creditos_cantidad_a_solicitar:"Importe solicitado",age:"Edad",esta_en_asnef:"En ASNEF",antiguedad_laboral:"Antigüedad laboral",tienes_otros_creditos:"Tiene otras deudas",proposito_del_prestamo:"Propósito del préstamo",fuente_principal_de_ingreso:"Fuente de ingresos",tienes_vivienda_en_propiedad:"Vivienda en propiedad",en_cuantos_meses_deseas_devolverlo:"Plazo de devolución"},Me={monthlyIncome:"Ingreso mensual",totalDebtAmount:"Deuda total (entre quienes tienen)",monthlyDebtPayment:"Cuota mensual de deudas (entre quienes tienen)",requestedAmount:"Importe solicitado",numberOfdependents:"Personas a cargo",age:"Edad",incomeSource:"Fuente de ingresos",hasOwnedHouse:"Situación de vivienda",badCreditHistory:"En ASNEF",hasOtherLoans:"Tiene otras deudas",loanPurpose:"Propósito del préstamo",hasOwnVehicle:"Tiene vehículo propio",hasBankAccount:"Tiene cuenta bancaria",maritalStatus:"Estado civil",educationLevel:"Nivel de estudios",gender:"Género",countryOfBirth:"País de nacimiento",state:"Comunidad autónoma"},ze=new Set(["ingreso_mensual","importe_total_de_la_deuda","creditos_cantidad_a_solicitar","monthlyIncome","totalDebtAmount","monthlyDebtPayment","requestedAmount"]),Ne="https://pgyaigdsedkdqvhtexrz.supabase.co",Be="sb_publishable_yL99vHU_H5kGZ3SMuPS0hA_GJ_TWTMr",p=Ae(Ne,Be),O="cs_admin_pw",h=document.getElementById("admin-root");function Ee(e){return e.toISOString().slice(0,10)}const ke=new Date;let k="all",F=Ee(ke),H=Ee(ke),d="all";function Fe(e){return e==="multiping_ro"||e==="pingtree_ro"?"RO":e==="solicitud"||e==="pingtree"||e==="quiz"?"ES":null}function He(e){return e==="multiping_ro"||e==="pingtree_ro"?"LEI":"€"}const K=10;let E=0;const X=10;let T=0;const ee=10;let C=0;const te=10;let A=0,N="dashboard";const We={base:"Quiz corto + Solicitud",ingreso_mensual:"Quiz corto + Solicitud",otros_creditos:"Quiz corto + Solicitud",asnef:"Quiz corto + Solicitud",ratio_deuda_ingreso:"Quiz corto + Solicitud",edad:"Quiz corto + Solicitud",fuente_ingreso:"Quiz corto",antiguedad_laboral:"Quiz corto",vivienda_propiedad:"Quiz corto",solicitud_fuente_ingreso:"Solicitud",solicitud_antiguedad:"Solicitud",solicitud_vivienda:"Solicitud",solicitud_dependientes:"Solicitud",aprobacion_base:"Probabilidad de aprobación (quiz + solicitud)",aprobacion_ratio_importe:"Probabilidad de aprobación (quiz + solicitud)"},ae={all:"Todos",quiz:"Quiz corto",solicitud:"Solicitud completa",pingtree:"Pingtree",multiping_ro:"Multiping RO",pingtree_ro:"Pingtree RO"};function Q(e){const a=new Date;if(e==="today")return{since:new Date(a.getFullYear(),a.getMonth(),a.getDate(),0,0,0,0).toISOString(),until:a.toISOString()};if(e==="7d")return{since:new Date(a.getTime()-6048e5).toISOString(),until:a.toISOString()};if(e==="custom"){const t=new Date(`${F}T00:00:00`),n=new Date(`${H}T23:59:59.999`);return t.getTime()>n.getTime()?{since:n.toISOString(),until:t.toISOString()}:{since:t.toISOString(),until:n.toISOString()}}return{since:"2000-01-01T00:00:00.000Z",until:a.toISOString()}}const _e=new Intl.DateTimeFormat("es-ES",{day:"2-digit",month:"short",year:"numeric"});function Qe(e,a){return e==="all"?"Todo el histórico":`${_e.format(new Date(a.since))} – ${_e.format(new Date(a.until))}`}const Ue=[{key:"fecha_de_nacimiento",label:"Fecha de nacimiento"},{key:"codigo_postal",label:"Código postal"},{key:"fuente_principal_de_ingreso",label:"Fuente de ingresos"},{key:"antiguedad_laboral",label:"Antigüedad laboral",conditional:!0},{key:"tienes_vivienda_en_propiedad",label:"Vivienda en propiedad"},{key:"ingreso_mensual",label:"Ingreso mensual"},{key:"esta_en_asnef",label:"Asnef"},{key:"tienes_otros_creditos",label:"Otros créditos"},{key:"importe_total_de_la_deuda",label:"Importe de la deuda",conditional:!0},{key:"proposito_del_prestamo",label:"Propósito del préstamo"},{key:"creditos_cantidad_a_solicitar",label:"Importe a solicitar"},{key:"en_cuantos_meses_deseas_devolverlo",label:"Plazo de devolución"}],Ve=ne.filter(e=>ye.includes(e.phase)),Ge=ne.filter(e=>!ye.includes(e.phase)),he=e=>({key:e.key,label:e.label,conditional:!!e.condition}),Ze=[...Ve.map(he),{key:"gate_contact",label:"Deja sus datos de contacto (nombre, email, teléfono)"},...Ge.map(he),{key:"application_completed",label:"✅ Termina la solicitud completa"}],x=new Intl.DateTimeFormat("es-ES",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});function o(e){const a=document.createElement("div");return a.textContent=e,a.innerHTML.replace(/"/g,"&quot;").replace(/'/g,"&#39;")}function D(e){return e==="all"?null:e}async function Le(e,a,t){const{data:n,error:s}=await p.rpc("admin_get_stats",{p_password:e,p_since:a.since,p_until:a.until,p_source:D(t)}).single();if(s||!n)throw s??new Error("No data");return n}async function Ye(e,a,t){const{data:n,error:s}=await p.rpc("admin_get_funnel_overview",{p_password:e,p_since:a.since,p_until:a.until,p_source:D(t)}).single();if(s||!n)throw s??new Error("No data");return n}async function Je(e,a,t){const{data:n,error:s}=await p.rpc("admin_get_funnel_steps",{p_password:e,p_since:a.since,p_until:a.until,p_source:D(t)});if(s)throw s;return n??[]}async function Ke(e,a,t,n){const{data:s,error:r}=await p.rpc("admin_list_leads",{p_password:e,p_limit:K,p_offset:n*K,p_since:a.since,p_until:a.until,p_source:D(t)});if(r)throw r;return s??[]}async function Xe(e,a,t){const{data:n,error:s}=await p.rpc("admin_get_witme_applications",{p_password:e,p_limit:X,p_offset:a*X,p_country:t});if(s)throw s;return n??[]}async function et(e,a){const{data:t,error:n}=await p.rpc("admin_get_witme_car_applications",{p_password:e,p_limit:ee,p_offset:a*ee});if(n)throw n;return t??[]}async function tt(e,a,t){const{data:n,error:s}=await p.rpc("admin_get_pingtree_applications",{p_password:e,p_limit:te,p_offset:a*te,p_country:t});if(s)throw s;return n??[]}async function at(e,a){const{data:t,error:n}=await p.rpc("admin_get_pingtree_response_stats",{p_password:e,p_country:a}).single();if(n||!t)throw n??new Error("No data");return t}async function nt(e,a){const{data:t,error:n}=await p.rpc("admin_get_witme_response_stats",{p_password:e,p_country:a}).single();if(n||!t)throw n??new Error("No data");return t}function y(e){return e==null?"—":`${(e/1e3).toFixed(1)} s`}function Y(e){return e==null?"—":`${e}%`}async function it(e,a,t){const{data:n,error:s}=await p.rpc("admin_get_offer_clicks",{p_password:e,p_since:a.since,p_until:a.until,p_source:D(t)});if(s)throw s;return n??[]}let we=[];async function st(e){const{data:a,error:t}=await p.rpc("admin_get_scoring_rules",{p_password:e});if(t)throw t;return a??[]}async function ot(e,a,t,n,s){const{error:r}=await p.rpc("admin_update_scoring_rule",{p_password:e,p_key:a,p_config:t,p_weight:n,p_active:s});if(r)throw r}async function rt(e,a){const{error:t}=await p.rpc("admin_reset_scoring_rule",{p_password:e,p_key:a});if(t)throw t}async function dt(e){const{error:a}=await p.rpc("admin_reset_all_scoring_rules",{p_password:e});if(a)throw a}async function ct(e,a,t){const{data:n,error:s}=await p.rpc("admin_get_field_stats",{p_password:e,p_since:a.since,p_until:a.until,p_source:t});if(s)throw s;return n}function q(e){h.innerHTML=`
     <div class="admin-login-shell">
       <form class="admin-login-card" id="login-form">
         <h1>Panel interno</h1>
@@ -8,7 +8,7 @@ import{C as Ce,c as Ae}from"./validation-CYLXqsHh.js";import{q as Re}from"./ques
         <button type="submit">Entrar</button>
       </form>
     </div>
-  `,document.getElementById("login-form").addEventListener("submit",async a=>{a.preventDefault();const t=document.getElementById("pw-input").value;try{await Le(t,Q("all"),"all"),sessionStorage.setItem(O,t),R(t)}catch{q("Contraseña incorrecta.")}})}function d(e,a){return`<div class="admin-stat"><span class="admin-stat-value">${a}</span><span class="admin-stat-label">${e}</span></div>`}function M(e,a,t,n){const s=t>0?Math.round(a/t*100):0;return`
+  `,document.getElementById("login-form").addEventListener("submit",async a=>{a.preventDefault();const t=document.getElementById("pw-input").value;try{await Le(t,Q("all"),"all"),sessionStorage.setItem(O,t),R(t)}catch{q("Contraseña incorrecta.")}})}function c(e,a){return`<div class="admin-stat"><span class="admin-stat-value">${a}</span><span class="admin-stat-label">${e}</span></div>`}function M(e,a,t,n){const s=t>0?Math.round(a/t*100):0;return`
     <div class="admin-band-row">
       <span class="admin-band-label">${e}</span>
       <div class="admin-band-track"><div class="admin-band-fill ${n}" style="width:${s}%"></div></div>
@@ -41,7 +41,7 @@ import{C as Ce,c as Ae}from"./validation-CYLXqsHh.js";import{q as Re}from"./ques
     <section class="admin-card admin-source-bar">
       <span class="admin-source-label">Embudo:</span>
       <div class="admin-period-presets">
-        ${Object.keys(ae).map(a=>`<button class="admin-period-btn ${c===a?"active":""}" data-source="${a}">${ae[a]}</button>`).join("")}
+        ${Object.keys(ae).map(a=>`<button class="admin-period-btn ${d===a?"active":""}" data-source="${a}">${ae[a]}</button>`).join("")}
       </div>
     </section>
 
@@ -59,18 +59,18 @@ import{C as Ce,c as Ae}from"./validation-CYLXqsHh.js";import{q as Re}from"./ques
       </div>
       <p class="admin-period-label">${o(Qe(k,e))}</p>
     </section>
-  `}function se(e){var a;document.querySelectorAll(".admin-period-btn[data-source]").forEach(t=>{t.addEventListener("click",()=>{c=t.dataset.source,E=0,R(e)})}),document.querySelectorAll(".admin-period-btn[data-preset]").forEach(t=>{t.addEventListener("click",()=>{k=t.dataset.preset,E=0,R(e)})}),(a=document.getElementById("period-apply-btn"))==null||a.addEventListener("click",()=>{F=document.getElementById("period-from").value||F,H=document.getElementById("period-to").value||H,k="custom",E=0,R(e)})}async function Ie(e){h.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';const a=Q(k);try{const[t,n,s,r]=await Promise.all([Le(e,a,c),Ye(e,a,c),Je(e,a,c),it(e,a,c)]),l=t.band_excelente+t.band_bueno+t.band_regular+t.band_bajo,b=c==="solicitud"||c==="pingtree"?Ze:Ue;h.innerHTML=`
+  `}function se(e){var a;document.querySelectorAll(".admin-period-btn[data-source]").forEach(t=>{t.addEventListener("click",()=>{d=t.dataset.source,E=0,R(e)})}),document.querySelectorAll(".admin-period-btn[data-preset]").forEach(t=>{t.addEventListener("click",()=>{k=t.dataset.preset,E=0,R(e)})}),(a=document.getElementById("period-apply-btn"))==null||a.addEventListener("click",()=>{F=document.getElementById("period-from").value||F,H=document.getElementById("period-to").value||H,k="custom",E=0,R(e)})}async function Ie(e){h.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';const a=Q(k);try{const[t,n,s,r]=await Promise.all([Le(e,a,d),Ye(e,a,d),Je(e,a,d),it(e,a,d)]),l=t.band_excelente+t.band_bueno+t.band_regular+t.band_bajo,b=d==="solicitud"||d==="pingtree"?Ze:Ue;h.innerHTML=`
       <div class="admin-shell">
         ${U("dashboard")}
 
         ${ie(a)}
 
         <section class="admin-stats-grid">
-          ${d("Leads totales (histórico)",String(t.total_leads))}
-          ${d("Leads en el periodo",String(t.period_leads))}
-          ${d("Sesiones en el periodo",String(t.period_sessions))}
-          ${d("Tasa de conversión",`${t.period_conversion_rate}%`)}
-          ${d("Score medio (periodo)",t.avg_score!=null?String(t.avg_score):"—")}
+          ${c("Leads totales (histórico)",String(t.total_leads))}
+          ${c("Leads en el periodo",String(t.period_leads))}
+          ${c("Sesiones en el periodo",String(t.period_sessions))}
+          ${c("Tasa de conversión",`${t.period_conversion_rate}%`)}
+          ${c("Score medio (periodo)",t.avg_score!=null?String(t.avg_score):"—")}
         </section>
 
         <section class="admin-card">
@@ -82,25 +82,25 @@ import{C as Ce,c as Ae}from"./validation-CYLXqsHh.js";import{q as Re}from"./ques
             medida más fiable de si el test/formulario en sí convierte bien.
           </p>
           <section class="admin-stats-grid admin-stats-grid-compact">
-            ${d("Visitas",String(n.total_visits))}
-            ${d("Rebote instantáneo",`${n.bounce_rate}%`)}
-            ${d("Quiz → lead",`${n.quiz_to_lead_rate}%`)}
+            ${c("Visitas",String(n.total_visits))}
+            ${c("Rebote instantáneo",`${n.bounce_rate}%`)}
+            ${c("Quiz → lead",`${n.quiz_to_lead_rate}%`)}
           </section>
           <p class="admin-card-sub admin-card-sub-tight">Sobre el total de visitas (incluye rebote)</p>
           <section class="admin-stats-grid admin-stats-grid-compact">
-            ${d("Completan el quiz",`${n.visit_to_quiz_rate}%`)}
-            ${d("Dejan sus datos (lead)",`${n.visit_to_lead_rate}%`)}
+            ${c("Completan el quiz",`${n.visit_to_quiz_rate}%`)}
+            ${c("Dejan sus datos (lead)",`${n.visit_to_lead_rate}%`)}
           </section>
           <p class="admin-card-sub admin-card-sub-tight">Sobre interesados reales (descuenta el rebote)</p>
           <section class="admin-stats-grid admin-stats-grid-compact">
-            ${d("Completan el quiz",`${n.engaged_to_quiz_rate}%`)}
-            ${d("Dejan sus datos (lead)",`${n.engaged_to_lead_rate}%`)}
+            ${c("Completan el quiz",`${n.engaged_to_quiz_rate}%`)}
+            ${c("Dejan sus datos (lead)",`${n.engaged_to_lead_rate}%`)}
           </section>
         </section>
 
         <section class="admin-card">
           <p class="admin-card-title">Dónde se cae la gente</p>
-          ${c==="all"?'<p class="admin-card-sub">Selecciona un embudo concreto arriba (Quiz corto, Solicitud completa o Pingtree) para ver la caída pregunta a pregunta — mezclarlos no tiene sentido, son formularios distintos.</p>':`<p class="admin-card-sub">
+          ${d==="all"?'<p class="admin-card-sub">Selecciona un embudo concreto arriba (Quiz corto, Solicitud completa o Pingtree) para ver la caída pregunta a pregunta — mezclarlos no tiene sentido, son formularios distintos.</p>':`<p class="admin-card-sub">
                   Ya excluye el rebote instantáneo: es la caída real entre quienes empiezan
                   a interactuar de verdad (${n.engaged_visits} sesiones). Las
                   preguntas condicionales no muestran caída propia (no todo el mundo las ve);
@@ -147,7 +147,7 @@ import{C as Ce,c as Ae}from"./validation-CYLXqsHh.js";import{q as Re}from"./ques
           <p class="admin-error">Ha ocurrido un error inesperado cargando el panel: ${o(n)}</p>
           <button class="admin-btn-ghost" id="retry-btn">Reintentar</button>
         </div>
-      `,document.getElementById("retry-btn").addEventListener("click",()=>Ie(e)))}}async function S(e){var t,n,s,r,l,b,m,L,f,v;h.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';const a=Q(k);try{const u=Fe(c),[$,w,g,G,Z,P]=await Promise.all([Ke(e,a,c,E),Xe(e,T,u),nt(e,u),et(e,C),tt(e,A,u),at(e,u)]),oe=((t=$[0])==null?void 0:t.total_count)??0,re=Math.max(1,Math.ceil(oe/K)),de=((n=w[0])==null?void 0:n.total_count)??0,ce=Math.max(1,Math.ceil(de/X)),le=((s=G[0])==null?void 0:s.total_count)??0,ue=Math.max(1,Math.ceil(le/ee)),me=((r=Z[0])==null?void 0:r.total_count)??0,pe=Math.max(1,Math.ceil(me/te));h.innerHTML=`
+      `,document.getElementById("retry-btn").addEventListener("click",()=>Ie(e)))}}async function S(e){var t,n,s,r,l,b,m,L,f,v;h.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';const a=Q(k);try{const u=Fe(d),[$,w,g,G,Z,P]=await Promise.all([Ke(e,a,d,E),Xe(e,T,u),nt(e,u),et(e,C),tt(e,A,u),at(e,u)]),oe=((t=$[0])==null?void 0:t.total_count)??0,re=Math.max(1,Math.ceil(oe/K)),de=((n=w[0])==null?void 0:n.total_count)??0,ce=Math.max(1,Math.ceil(de/X)),le=((s=G[0])==null?void 0:s.total_count)??0,ue=Math.max(1,Math.ceil(le/ee)),me=((r=Z[0])==null?void 0:r.total_count)??0,pe=Math.max(1,Math.ceil(me/te));h.innerHTML=`
       <div class="admin-shell">
         ${U("leads")}
 
@@ -192,9 +192,9 @@ import{C as Ce,c as Ae}from"./validation-CYLXqsHh.js";import{q as Re}from"./ques
           </div>
         </section>
 
-        ${c==="all"||c==="solicitud"||c==="multiping_ro"?`
+        ${d==="all"||d==="solicitud"||d==="multiping_ro"?`
         <section class="admin-card">
-          <p class="admin-card-title">Solicitudes enviadas a Witme${c==="multiping_ro"?" · Rumanía":c==="solicitud"?" · España":""} (${de})</p>
+          <p class="admin-card-title">Solicitudes enviadas a Witme${d==="multiping_ro"?" · Rumanía":d==="solicitud"?" · España":""} (${de})</p>
           <p class="admin-card-sub">
             Copia propia de cada envío a la API de Witme, con su respuesta, el score y la
             probabilidad de aprobación de ese lead, y si hizo click en la oferta que se le
@@ -202,17 +202,17 @@ import{C as Ce,c as Ae}from"./validation-CYLXqsHh.js";import{q as Re}from"./ques
             las estáticas si no).
           </p>
           <section class="admin-stats-grid admin-stats-grid-compact">
-            ${d("Tiempo medio de respuesta",y(g.avg_ms))}
-            ${d("Mediana",y(g.median_ms))}
-            ${d("P95",y(g.p95_ms))}
-            ${d("Máximo",y(g.max_ms))}
+            ${c("Tiempo medio de respuesta",y(g.avg_ms))}
+            ${c("Mediana",y(g.median_ms))}
+            ${c("P95",y(g.p95_ms))}
+            ${c("Máximo",y(g.max_ms))}
           </section>
           <p class="admin-card-sub admin-card-sub-tight">Tasa de aceptación (histórico completo)</p>
           <section class="admin-stats-grid admin-stats-grid-compact">
-            ${d("% Aceptados (con oferta)",Y(g.pct_accepted))}
-            ${d("% Rechazados por Witme",Y(g.pct_failed))}
-            ${d("Con oferta",String(g.count_accepted))}
-            ${d("Total solicitudes",String(g.total_applications))}
+            ${c("% Aceptados (con oferta)",Y(g.pct_accepted))}
+            ${c("% Rechazados por Witme",Y(g.pct_failed))}
+            ${c("Con oferta",String(g.count_accepted))}
+            ${c("Total solicitudes",String(g.total_applications))}
           </section>
           <p class="admin-card-sub admin-card-sub-tight">
             Sobre ${g.count_with_timing} intentos con tiempo registrado
@@ -237,7 +237,7 @@ import{C as Ce,c as Ae}from"./validation-CYLXqsHh.js";import{q as Re}from"./ques
                     <td>${x.format(new Date(i.created_at))}</td>
                     <td><div class="admin-table-name-cell" title="${o(i.name??"")} ${o(i.last_name??"")}">${o(i.name??"")} ${o(i.last_name??"")}</div></td>
                     <td><div class="admin-table-name-cell" title="${o(i.email??"")}">${o(i.email??"")}</div></td>
-                    <td>${i.requested_amount!=null?`${i.requested_amount} ${He(c)}`:"—"}</td>
+                    <td>${i.requested_amount!=null?`${i.requested_amount} ${He(d)}`:"—"}</td>
                     <td>${i.witme_id??"—"}</td>
                     <td><span class="admin-badge ${i.witme_status==="processed"?"band-excelente":"band-bajo"}" ${I?`title="${o(I)}"`:""}>${o(i.witme_status??"—")}</span></td>
                     <td>${y(i.witme_response_ms)}</td>
@@ -256,7 +256,9 @@ import{C as Ce,c as Ae}from"./validation-CYLXqsHh.js";import{q as Re}from"./ques
             <button class="admin-btn-ghost" id="witme-next-btn" ${T+1>=ce?"disabled":""}>Siguiente →</button>
           </div>
         </section>
+        `:""}
 
+        ${d==="all"||d==="solicitud"?`
         <section class="admin-card">
           <p class="admin-card-title">Solicitudes enviadas a Witme · aval coche / reunificación (${le})</p>
           <p class="admin-card-sub">
@@ -299,22 +301,22 @@ import{C as Ce,c as Ae}from"./validation-CYLXqsHh.js";import{q as Re}from"./ques
         </section>
         `:""}
 
-        ${c==="all"||c==="pingtree"||c==="pingtree_ro"?`
+        ${d==="all"||d==="pingtree"||d==="pingtree_ro"?`
         <section class="admin-card">
-          <p class="admin-card-title">Solicitudes enviadas a Pingtree${c==="pingtree_ro"?" · Rumanía":c==="pingtree"?" · España":""} (${me})</p>
+          <p class="admin-card-title">Solicitudes enviadas a Pingtree${d==="pingtree_ro"?" · Rumanía":d==="pingtree"?" · España":""} (${me})</p>
           <p class="admin-card-sub">
-            ${c==="pingtree_ro"?"Versión independiente de multiping (<code>/pingtree-ro.html</code>): usa solo el endpoint <code>servy-form-wait</code> con servy_id 259 (Creditio Pingtree RO), y redirige directamente a la <code>redirectUrl</code> de Witme en vez de mostrar resultados propios.":"Versión independiente de la solicitud completa (<code>/pingtree.html</code>): usa solo el endpoint <code>servy-form-wait</code> con los servy_id 151 (Creditio Pingtree), 154 (reunificación) y 171 (aval coche) juntos, y redirige directamente a la <code>redirectUrl</code> de Witme en vez de mostrar resultados propios."}
+            ${d==="pingtree_ro"?"Versión independiente de multiping (<code>/pingtree-ro.html</code>): usa solo el endpoint <code>servy-form-wait</code> con servy_id 259 (Creditio Pingtree RO), y redirige directamente a la <code>redirectUrl</code> de Witme en vez de mostrar resultados propios.":"Versión independiente de la solicitud completa (<code>/pingtree.html</code>): usa solo el endpoint <code>servy-form-wait</code> con los servy_id 151 (Creditio Pingtree), 154 (reunificación) y 171 (aval coche) juntos, y redirige directamente a la <code>redirectUrl</code> de Witme en vez de mostrar resultados propios."}
           </p>
           <section class="admin-stats-grid admin-stats-grid-compact">
-            ${d("Tiempo medio de respuesta",y(P.avg_ms))}
-            ${d("Mediana",y(P.median_ms))}
-            ${d("P95",y(P.p95_ms))}
-            ${d("Máximo",y(P.max_ms))}
+            ${c("Tiempo medio de respuesta",y(P.avg_ms))}
+            ${c("Mediana",y(P.median_ms))}
+            ${c("P95",y(P.p95_ms))}
+            ${c("Máximo",y(P.max_ms))}
           </section>
           <section class="admin-stats-grid admin-stats-grid-compact">
-            ${d("% Aceptados (con redirectUrl)",Y(P.pct_accepted))}
-            ${d("Con oferta",String(P.count_accepted))}
-            ${d("Total solicitudes",String(P.count_total))}
+            ${c("% Aceptados (con redirectUrl)",Y(P.pct_accepted))}
+            ${c("Con oferta",String(P.count_accepted))}
+            ${c("Total solicitudes",String(P.count_total))}
           </section>
           <div class="admin-table-scroll">
             <table class="admin-table">
@@ -450,7 +452,7 @@ import{C as Ce,c as Ae}from"./validation-CYLXqsHh.js";import{q as Re}from"./ques
         ${Object.entries(a.categorical).map(([s,r])=>_t(t[s]??s,r,e,s)).join("")}
       </div>
     </section>
-  `}async function Pe(e){h.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';const a=Q(k),t=c==="solicitud"||c==="quiz"||c==="pingtree"?[c]:["quiz","solicitud","pingtree"];try{const n=await Promise.all(t.map(s=>ct(e,a,s)));h.innerHTML=`
+  `}async function Pe(e){h.innerHTML='<div class="admin-shell"><p class="admin-loading">Cargando…</p></div>';const a=Q(k),t=d==="solicitud"||d==="quiz"||d==="pingtree"?[d]:["quiz","solicitud","pingtree"];try{const n=await Promise.all(t.map(s=>ct(e,a,s)));h.innerHTML=`
       <div class="admin-shell">
         ${U("fieldstats")}
 
