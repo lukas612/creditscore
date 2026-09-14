@@ -263,6 +263,17 @@ export const WITME_QUESTIONS: WitmeQuestionDef[] = [
     placeholder: "5000",
     condition: (a) => a.hasOtherLoans === "si",
   },
+  {
+    key: "monthlyDebtPayment",
+    label: "¿Cuánto pagas al mes por esas deudas?",
+    type: "number",
+    phase: "finanzas",
+    suffix: "€",
+    min: 0,
+    max: 10000,
+    placeholder: "150",
+    condition: (a) => a.hasOtherLoans === "si",
+  },
 
   // Tu solicitud (antes del gate)
   { key: "loanPurpose", label: "¿Para qué necesitas el crédito?", type: "select", phase: "solicitud", options: LOAN_PURPOSE_OPTIONS },

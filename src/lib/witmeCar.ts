@@ -111,6 +111,9 @@ export function buildCarCollateralAnswers(answers: Answers, contact: CarCollater
   if (answers.hasOtherLoans === "si" && answers.totalDebtAmount != null) {
     data["importe-total-de-la-deuda"] = Number(answers.totalDebtAmount);
   }
+  if (answers.hasOtherLoans === "si" && answers.monthlyDebtPayment != null) {
+    data["cuota-mensual-de-la-deuda"] = Number(answers.monthlyDebtPayment);
+  }
   if (answers.hasOwnVehicle === "si") {
     for (const [ourKey, servyKey] of Object.entries(VEHICLE_CONDITIONAL_FIELDS)) {
       if (answers[ourKey] != null) data[servyKey] = answers[ourKey];

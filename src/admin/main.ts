@@ -55,6 +55,7 @@ const QUIZ_FIELD_LABELS: Record<string, string> = {
 const SOLICITUD_FIELD_LABELS: Record<string, string> = {
   monthlyIncome: "Ingreso mensual",
   totalDebtAmount: "Deuda total (entre quienes tienen)",
+  monthlyDebtPayment: "Cuota mensual de deudas (entre quienes tienen)",
   requestedAmount: "Importe solicitado",
   numberOfdependents: "Personas a cargo",
   age: "Edad",
@@ -72,7 +73,7 @@ const SOLICITUD_FIELD_LABELS: Record<string, string> = {
   state: "Comunidad autónoma",
 };
 
-const EUR_FIELDS = new Set(["ingreso_mensual", "importe_total_de_la_deuda", "creditos_cantidad_a_solicitar", "monthlyIncome", "totalDebtAmount", "requestedAmount"]);
+const EUR_FIELDS = new Set(["ingreso_mensual", "importe_total_de_la_deuda", "creditos_cantidad_a_solicitar", "monthlyIncome", "totalDebtAmount", "monthlyDebtPayment", "requestedAmount"]);
 
 const url = import.meta.env.VITE_SUPABASE_URL;
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
