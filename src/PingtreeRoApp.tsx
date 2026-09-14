@@ -6,7 +6,7 @@ import { submitPingtreeLeadRo } from "./lib/pingtreeRo";
 import { supabase } from "./lib/supabase";
 import type { BreakdownItem } from "./lib/types";
 import { Header } from "./components/Header";
-import { Landing } from "./components/Landing";
+import { LandingRo } from "./components/LandingRo";
 import { PingtreeRoWidget } from "./components/PingtreeRoWidget";
 import type { GateContact } from "./components/WitmeGate";
 
@@ -125,7 +125,7 @@ export default function PingtreeRoApp() {
   return (
     <>
       <Header />
-      <Landing
+      <LandingRo
         widget={
           <PingtreeRoWidget
             stage={stage}

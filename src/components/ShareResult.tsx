@@ -4,6 +4,13 @@ import { IconLink, IconShare } from "./Icons";
 interface Props {
   score: number;
   scoreBand: string;
+  title?: string;
+  bandLabel?: Record<string, string>;
+  buildShareText?: (score: number, bandText: string) => string;
+  nativeShareTitle?: string;
+  shareButtonLabel?: string;
+  copyButtonLabel?: string;
+  copiedLabel?: string;
 }
 
 const BAND_LABEL: Record<string, string> = {
@@ -15,20 +22,31 @@ const BAND_LABEL: Record<string, string> = {
 
 const SITE_URL = "https://lukas612.github.io/creditscore/";
 
-export function ShareResult({ score, scoreBand }: Props) {
+const defaultBuildShareText = (score: number, bandText: string) =>
+  `Mi puntuación en Creditio Credit Score es ${score}/850 (${bandText}). Descubre la tuya gratis en 2 minutos:`;
+
+export function ShareResult({
+  score,
+  scoreBand,
+  title = "Comparte tu resultado",
+  bandLabel = BAND_LABEL,
+  buildShareText = defaultBuildShareText,
+  nativeShareTitle = "Mi Creditio Credit Score",
+  shareButtonLabel = "Compartir",
+  copyButtonLabel = "Copiar enlace",
+  copiedLabel = "¡Copiado!",
+}: Props) {
   const [copied, setCopied] = useState(false);
 
   const shareUrl = `${SITE_URL}?utm_source=share&utm_campaign=resultado`;
-  const shareText = `Mi puntuación en Creditio Credit Score es ${score}/850 (${
-    BAND_LABEL[scoreBand] ?? scoreBand
-  }). Descubre la tuya gratis en 2 minutos:`;
+  const shareText = buildShareText(score, bandLabel[scoreBand] ?? scoreBand);
 
   const canNativeShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
 
   const handleNativeShare = async () => {
     try {
       await navigator.share({
-        title: "Mi Creditio Credit Score",
+        title: nativeShareTitle,
         text: shareText,
         url: shareUrl,
       });
@@ -54,11 +72,11 @@ export function ShareResult({ score, scoreBand }: Props) {
 
   return (
     <div className="share-section">
-      <p className="breakdown-title">Comparte tu resultado</p>
+      <p className="breakdown-title">{title}</p>
       <div className="share-buttons">
         {canNativeShare && (
           <button className="share-btn share-btn-primary" onClick={handleNativeShare}>
-            <IconShare className="share-icon" /> Compartir
+            <IconShare className="share-icon" /> {shareButtonLabel}
           </button>
         )}
         <a className="share-btn" href={whatsappHref} target="_blank" rel="noreferrer">
@@ -68,7 +86,7 @@ export function ShareResult({ score, scoreBand }: Props) {
           X / Twitter
         </a>
         <button className="share-btn" onClick={handleCopy}>
-          <IconLink className="share-icon" /> {copied ? "¡Copiado!" : "Copiar enlace"}
+          <IconLink className="share-icon" /> {copied ? copiedLabel : copyButtonLabel}
         </button>
       </div>
     </div>

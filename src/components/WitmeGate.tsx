@@ -23,6 +23,18 @@ interface Props {
   phoneNormalizer?: (phone: string) => string;
   phoneErrorMessage?: string;
   phonePlaceholder?: string;
+  title?: string;
+  subText?: string;
+  namePlaceholder?: string;
+  lastNamePlaceholder?: string;
+  emailPlaceholder?: string;
+  emailErrorMessage?: string;
+  consentText?: string;
+  consentErrorMessage?: string;
+  saveErrorMessage?: string;
+  submitLabel?: string;
+  submittingLabel?: string;
+  reassuranceLine?: string;
   onUnlock: (contact: GateContact) => void;
 }
 
@@ -38,6 +50,18 @@ export function WitmeGate({
   phoneNormalizer = normalizeSpanishPhone,
   phoneErrorMessage = "Revisa el teléfono: debe ser un número español de 9 dígitos.",
   phonePlaceholder = "Teléfono (612 345 678)",
+  title = "Tu puntuación ya está calculada",
+  subText = "Déjanos tus datos para desbloquear tu informe completo y ver qué opciones de financiación encajan con tu perfil.",
+  namePlaceholder = "Nombre",
+  lastNamePlaceholder = "Apellidos",
+  emailPlaceholder = "Correo electrónico",
+  emailErrorMessage = "Revisa el correo electrónico, no parece válido.",
+  consentText = "Acepto la política de privacidad y que me contacten con ofertas de financiación adaptadas a mi perfil.",
+  consentErrorMessage = "Debes aceptar la política de privacidad para continuar.",
+  saveErrorMessage = "No hemos podido guardar tus datos. Inténtalo de nuevo.",
+  submitLabel = "Ver mi informe completo",
+  submittingLabel = "Enviando…",
+  reassuranceLine = "🔒 Conexión cifrada · Tus datos nunca se venden a terceros",
   onUnlock,
 }: Props) {
   const [name, setName] = useState("");
@@ -55,7 +79,7 @@ export function WitmeGate({
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!isValidEmail(email)) {
-      setError("Revisa el correo electrónico, no parece válido.");
+      setError(emailErrorMessage);
       return;
     }
     if (!phoneValidator(phoneNumber)) {
@@ -63,7 +87,7 @@ export function WitmeGate({
       return;
     }
     if (!consent) {
-      setError("Debes aceptar la política de privacidad para continuar.");
+      setError(consentErrorMessage);
       return;
     }
     setSubmitting(true);
@@ -88,7 +112,7 @@ export function WitmeGate({
     setSubmitting(false);
 
     if (insertError) {
-      setError("No hemos podido guardar tus datos. Inténtalo de nuevo.");
+      setError(saveErrorMessage);
       return;
     }
 
@@ -105,16 +129,13 @@ export function WitmeGate({
         <span className="score-teaser-value">{score}</span>
         <span className="score-teaser-blur">/ 850</span>
       </div>
-      <h2>Tu puntuación ya está calculada</h2>
-      <p className="result-sub">
-        Déjanos tus datos para desbloquear tu informe completo y ver qué opciones de
-        financiación encajan con tu perfil.
-      </p>
+      <h2>{title}</h2>
+      <p className="result-sub">{subText}</p>
       <form className="lead-form" onSubmit={handleSubmit}>
         <div className="lead-form-row">
           <input
             type="text"
-            placeholder="Nombre"
+            placeholder={namePlaceholder}
             autoComplete="given-name"
             enterKeyHint="next"
             value={name}
@@ -123,7 +144,7 @@ export function WitmeGate({
           />
           <input
             type="text"
-            placeholder="Apellidos"
+            placeholder={lastNamePlaceholder}
             autoComplete="family-name"
             enterKeyHint="next"
             value={lastName}
@@ -132,7 +153,7 @@ export function WitmeGate({
         </div>
         <input
           type="email"
-          placeholder="Correo electrónico"
+          placeholder={emailPlaceholder}
           autoComplete="email"
           inputMode="email"
           enterKeyHint="next"
@@ -156,18 +177,13 @@ export function WitmeGate({
             checked={consent}
             onChange={(e) => setConsent(e.target.checked)}
           />
-          <span>
-            Acepto la política de privacidad y que me contacten con ofertas de financiación
-            adaptadas a mi perfil.
-          </span>
+          <span>{consentText}</span>
         </label>
         {error && <p className="form-error">{error}</p>}
         <button className="btn-primary btn-large" type="submit" disabled={submitting}>
-          {submitting ? "Enviando…" : "Ver mi informe completo"}
+          {submitting ? submittingLabel : submitLabel}
         </button>
-        <p className="reassurance-line">
-          🔒 Conexión cifrada · Tus datos nunca se venden a terceros
-        </p>
+        <p className="reassurance-line">{reassuranceLine}</p>
       </form>
     </div>
   );

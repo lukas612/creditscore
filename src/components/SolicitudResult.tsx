@@ -1,3 +1,4 @@
+import type { BuilderEffort, BuilderTip } from "../data/creditBuilder";
 import type { CreditOffer } from "../data/offers";
 import type { BreakdownItem } from "../lib/types";
 import type { LenderOffer } from "../lib/witme";
@@ -21,6 +22,39 @@ interface Props {
   staticOffers?: CreditOffer[];
   locale?: string;
   currencyCode?: string;
+  bandCopy?: Record<string, { title: string; tip: string }>;
+  submittedText?: string;
+  notSubmittedText?: string;
+  capacityTitle?: string;
+  monthlyLabel?: string;
+  maxAmountLabel?: string;
+  capacityDisclaimer?: string;
+  breakdownTitle?: string;
+  offersCopy?: {
+    eyebrow?: string;
+    title?: string;
+    subText?: string;
+    preapprovedBadge?: string;
+    ctaLabel?: string;
+    loadingText?: string;
+  };
+  shareCopy?: {
+    title?: string;
+    bandLabel?: Record<string, string>;
+    buildShareText?: (score: number, bandText: string) => string;
+    nativeShareTitle?: string;
+    shareButtonLabel?: string;
+    copyButtonLabel?: string;
+    copiedLabel?: string;
+  };
+  builderCopy?: {
+    title?: string;
+    emptyText?: string;
+    subText?: string;
+    tips?: Record<string, BuilderTip>;
+    effortLabel?: Record<BuilderEffort, string>;
+    genericTip?: BuilderTip;
+  };
 }
 
 const BAND_COPY: Record<string, { title: string; tip: string }> = {
@@ -57,8 +91,19 @@ export function SolicitudResult({
   staticOffers,
   locale = "es-ES",
   currencyCode = "EUR",
+  bandCopy = BAND_COPY,
+  submittedText = "✅ Hemos recibido tu solicitud completa. Nuestro equipo la revisará y te contactará en breve.",
+  notSubmittedText = "⚠️ Calculamos tu puntuación, pero hubo un problema enviando tu solicitud completa. Nos pondremos en contacto contigo igualmente.",
+  capacityTitle = "Capacidad de crédito estimada",
+  monthlyLabel = "Cuota mensual máxima recomendada",
+  maxAmountLabel = "Importe estimado al que podrías optar",
+  capacityDisclaimer = "Estimación orientativa a partir de tus ingresos y deudas declaradas, sin intereses aplicados. No es una oferta de crédito ni una aprobación garantizada.",
+  breakdownTitle = "Desglose de tu puntuación",
+  offersCopy,
+  shareCopy,
+  builderCopy,
 }: Props) {
-  const copy = BAND_COPY[scoreBand] ?? BAND_COPY.regular;
+  const copy = bandCopy[scoreBand] ?? bandCopy.regular;
   const pct = Math.round(((score - 300) / (850 - 300)) * 100);
   const currency = new Intl.NumberFormat(locale, {
     style: "currency",
@@ -69,9 +114,7 @@ export function SolicitudResult({
   return (
     <div className="result-card">
       <div className={`application-status ${applicationSubmitted ? "ok" : "warn"}`}>
-        {applicationSubmitted
-          ? "✅ Hemos recibido tu solicitud completa. Nuestro equipo la revisará y te contactará en breve."
-          : "⚠️ Calculamos tu puntuación, pero hubo un problema enviando tu solicitud completa. Nos pondremos en contacto contigo igualmente."}
+        {applicationSubmitted ? submittedText : notSubmittedText}
       </div>
 
       <div className="score-gauge">
@@ -88,34 +131,32 @@ export function SolicitudResult({
         quizSessionId={quizSessionId}
         source={offersSource}
         staticOffers={staticOffers}
+        {...offersCopy}
       />
 
-      <ShareResult score={score} scoreBand={scoreBand} />
+      <ShareResult score={score} scoreBand={scoreBand} {...shareCopy} />
 
       <div className="capacity-section">
-        <p className="breakdown-title">Capacidad de crédito estimada</p>
+        <p className="breakdown-title">{capacityTitle}</p>
         <div className="capacity-grid">
           <div className="capacity-stat">
             <span className="capacity-value">{currency.format(capacidadMensual)}</span>
-            <span className="capacity-label">Cuota mensual máxima recomendada</span>
+            <span className="capacity-label">{monthlyLabel}</span>
           </div>
           <div className="capacity-stat">
             <span className="capacity-value">{currency.format(capacidadMaxima)}</span>
-            <span className="capacity-label">Importe estimado al que podrías optar</span>
+            <span className="capacity-label">{maxAmountLabel}</span>
           </div>
         </div>
-        <p className="capacity-disclaimer">
-          Estimación orientativa a partir de tus ingresos y deudas declaradas, sin
-          intereses aplicados. No es una oferta de crédito ni una aprobación garantizada.
-        </p>
+        <p className="capacity-disclaimer">{capacityDisclaimer}</p>
       </div>
 
       <div className="breakdown-section">
-        <p className="breakdown-title">Desglose de tu puntuación</p>
+        <p className="breakdown-title">{breakdownTitle}</p>
         <ScoreBreakdownChart breakdown={breakdown} />
       </div>
 
-      <CreditBuilder breakdown={breakdown} />
+      <CreditBuilder breakdown={breakdown} {...builderCopy} />
     </div>
   );
 }

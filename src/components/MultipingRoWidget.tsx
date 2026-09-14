@@ -1,5 +1,6 @@
 import { RO_SCORE_PHASES, RO_EXTRA_PHASES, visibleScoreQuestionsRo, visibleExtraQuestionsRo, type Answers } from "../data/witmeQuestionsRo";
 import { CREDIT_OFFERS_RO } from "../data/offersRo";
+import { CREDIT_BUILDER_TIPS_RO, EFFORT_LABEL_RO, GENERIC_BUILDER_TIP_RO } from "../data/creditBuilderRo";
 import type { BreakdownItem } from "../lib/types";
 import type { LenderOffer } from "../lib/witmeRo";
 import { isValidRomanianPhone, normalizeRomanianPhone } from "../lib/validation";
@@ -7,6 +8,32 @@ import { LoadingSpinner } from "./LoadingSpinner";
 import { SolicitudResult } from "./SolicitudResult";
 import { WitmeForm } from "./WitmeForm";
 import { WitmeGate, type GateContact } from "./WitmeGate";
+
+const BAND_COPY_RO: Record<string, { title: string; tip: string }> = {
+  excelente: {
+    title: "Excelent!",
+    tip: "Profilul tău se potrivește cu cele mai bune condiții de pe piață: dobânzi mici și aprobare rapidă.",
+  },
+  bueno: {
+    title: "Bun",
+    tip: "Ai un profil de credit bun. Poți accesa majoritatea împrumuturilor personale fără probleme.",
+  },
+  regular: {
+    title: "Mediu",
+    tip: "Există loc de îmbunătățire. Reducerea datoriilor actuale sau creșterea veniturilor declarate ți-ar îmbunătăți punctajul.",
+  },
+  bajo: {
+    title: "Scăzut",
+    tip: "S-ar putea să-ți fie mai greu să accesezi finanțare standard, dar avem opțiuni gândite pentru situația ta.",
+  },
+};
+
+const SHARE_BAND_LABEL_RO: Record<string, string> = {
+  excelente: "Excelent",
+  bueno: "Bun",
+  regular: "Mediu",
+  bajo: "Scăzut",
+};
 
 type Stage = "quiz" | "loading" | "gate" | "extra" | "submitting" | "result" | "error";
 
@@ -72,6 +99,18 @@ export function MultipingRoWidget({
           phoneNormalizer={normalizeRomanianPhone}
           phoneErrorMessage="Verifică numărul de telefon: trebuie să aibă 9 cifre și să înceapă cu 2, 3 sau 7."
           phonePlaceholder="Telefon (7XX XXX XXX)"
+          title="Punctajul tău a fost deja calculat"
+          subText="Lasă-ne datele tale pentru a debloca raportul tău complet și a vedea ce opțiuni de finanțare se potrivesc profilului tău."
+          namePlaceholder="Prenume"
+          lastNamePlaceholder="Nume"
+          emailPlaceholder="Adresă de email"
+          emailErrorMessage="Verifică adresa de email, nu pare validă."
+          consentText="Accept politica de confidențialitate și să fiu contactat cu oferte de finanțare adaptate profilului meu."
+          consentErrorMessage="Trebuie să accepți politica de confidențialitate pentru a continua."
+          saveErrorMessage="Nu am putut salva datele tale. Încearcă din nou."
+          submitLabel="Vezi raportul meu complet"
+          submittingLabel="Se trimite…"
+          reassuranceLine="🔒 Conexiune criptată · Datele tale nu se vând niciodată către terți"
           onUnlock={onGateUnlock}
         />
       )}
@@ -109,6 +148,40 @@ export function MultipingRoWidget({
           staticOffers={CREDIT_OFFERS_RO}
           locale="ro-RO"
           currencyCode="RON"
+          bandCopy={BAND_COPY_RO}
+          submittedText="✅ Am primit cererea ta completă. Echipa noastră o va analiza și te va contacta în curând."
+          notSubmittedText="⚠️ Ți-am calculat punctajul, dar a apărut o problemă la trimiterea cererii tale complete. Te vom contacta oricum."
+          capacityTitle="Capacitatea de credit estimată"
+          monthlyLabel="Rata lunară maximă recomandată"
+          maxAmountLabel="Suma estimată pe care ai putea-o obține"
+          capacityDisclaimer="Estimare orientativă pe baza veniturilor și datoriilor declarate, fără dobânzi aplicate. Nu este o ofertă de credit și nici o aprobare garantată."
+          breakdownTitle="Defalcarea punctajului tău"
+          offersCopy={{
+            eyebrow: "Următorul tău pas",
+            title: "Oferte pentru tine",
+            subText: "Aceste instituții s-ar putea potrivi profilului tău. Fiecare are propriile condiții și proces de solicitare independent.",
+            preapprovedBadge: "✓ Preaprobat pentru tine",
+            ctaLabel: "Vezi oferta →",
+            loadingText: "Căutăm mai multe oferte preaprobate pentru tine…",
+          }}
+          shareCopy={{
+            title: "Distribuie rezultatul tău",
+            bandLabel: SHARE_BAND_LABEL_RO,
+            buildShareText: (score, bandText) =>
+              `Punctajul meu în Creditio Credit Score este ${score}/850 (${bandText}). Descoperă-l gratuit pe al tău în 2 minute:`,
+            nativeShareTitle: "Punctajul meu Creditio Credit Score",
+            shareButtonLabel: "Distribuie",
+            copyButtonLabel: "Copiază linkul",
+            copiedLabel: "Copiat!",
+          }}
+          builderCopy={{
+            title: "Planul tău de îmbunătățire a punctajului",
+            emptyText: "🎉 Nu ai niciun factor care să scadă puncte în acest moment. Reia testul dacă se schimbă veniturile, datoriile sau situația ta profesională, ca să-ți menții punctajul la zi.",
+            subText: "Ordonat după impact: începe cu primul, este cel care ți-ar aduce înapoi cele mai multe puncte.",
+            tips: CREDIT_BUILDER_TIPS_RO,
+            effortLabel: EFFORT_LABEL_RO,
+            genericTip: GENERIC_BUILDER_TIP_RO,
+          }}
         />
       )}
 

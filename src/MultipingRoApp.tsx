@@ -6,7 +6,7 @@ import { supabase } from "./lib/supabase";
 import type { BreakdownItem } from "./lib/types";
 import { requestWitmeLenderOfferRo, witmeOfferIdRo, MAX_WITME_ATTEMPTS_RO, type LenderOffer } from "./lib/witmeRo";
 import { Header } from "./components/Header";
-import { Landing } from "./components/Landing";
+import { LandingRo } from "./components/LandingRo";
 import { MultipingRoWidget } from "./components/MultipingRoWidget";
 import type { GateContact } from "./components/WitmeGate";
 
@@ -164,7 +164,7 @@ export default function MultipingRoApp() {
   return (
     <>
       <Header />
-      <Landing
+      <LandingRo
         widget={
           <MultipingRoWidget
             stage={stage}
@@ -183,3 +183,4 @@ export default function MultipingRoApp() {
     </>
   );
 }
+
