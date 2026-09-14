@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { trackFunnelEvent } from "../lib/funnel";
 import { fireServyPostback } from "../lib/postback";
 import { supabase } from "../lib/supabase";
@@ -21,6 +21,7 @@ interface Props {
   source?: string;
   postbackParam1?: string;
   showScoreTeaser?: boolean;
+  beforeContent?: ReactNode;
   phoneValidator?: (phone: string) => boolean;
   phoneNormalizer?: (phone: string) => string;
   phoneErrorMessage?: string;
@@ -50,6 +51,7 @@ export function WitmeGate({
   source = "solicitud",
   postbackParam1 = "Creditio_score",
   showScoreTeaser = true,
+  beforeContent,
   phoneValidator = isValidSpanishPhone,
   phoneNormalizer = normalizeSpanishPhone,
   phoneErrorMessage = "Revisa el teléfono: debe ser un número español de 9 dígitos.",
@@ -129,6 +131,7 @@ export function WitmeGate({
 
   return (
     <div className="result-card">
+      {beforeContent}
       {showScoreTeaser && (
         <div className="score-teaser">
           <span className="score-teaser-value">{score}</span>

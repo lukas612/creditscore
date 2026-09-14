@@ -1,41 +1,13 @@
-import { CREDIT_RO_PRE_GATE_PHASES, CREDIT_RO_POST_GATE_PHASES, visiblePreGateQuestions, visiblePostGateQuestions, type Answers } from "../data/witmeQuestionsRoCredit";
+import type { Answers } from "../data/witmeQuestionsRoCredit";
 import { CREDIT_OFFERS_RO } from "../data/offersRo";
 import type { LenderOffer } from "../lib/witmeRo";
 import { isValidRomanianPhone, normalizeRomanianPhone } from "../lib/validation";
+import { CreditRoDetailsForm } from "./CreditRoDetailsForm";
+import { CreditRoLoanStep } from "./CreditRoLoanStep";
 import { CreditRoResult } from "./CreditRoResult";
+import { CreditStepHeader } from "./CreditStepHeader";
 import { LoadingSpinner } from "./LoadingSpinner";
-import { WitmeForm, type WitmeFormCopy } from "./WitmeForm";
 import { WitmeGate, type GateContact } from "./WitmeGate";
-
-const WITME_FORM_COPY_RO: WitmeFormCopy = {
-  questionCountText: (current, total) => `Întrebarea ${current} din ${total}`,
-  lastQuestionLabel: "Ultima întrebare 🎉",
-  almostDoneLabel: "Aproape ai terminat 💪",
-  reassuranceLine: "🔒 Răspunsurile tale sunt criptate și protejate.",
-  backLabel: "← Înapoi",
-  tooltipLabel: "De ce întrebăm asta",
-  continueLabel: "Continuă",
-  selectPlaceholder: "Selectează…",
-  yesLabel: "Da",
-  noLabel: "Nu",
-  dayLabel: "Zi",
-  monthLabel: "Lună",
-  yearLabel: "An",
-  months: [
-    { value: "01", label: "Ianuarie" },
-    { value: "02", label: "Februarie" },
-    { value: "03", label: "Martie" },
-    { value: "04", label: "Aprilie" },
-    { value: "05", label: "Mai" },
-    { value: "06", label: "Iunie" },
-    { value: "07", label: "Iulie" },
-    { value: "08", label: "August" },
-    { value: "09", label: "Septembrie" },
-    { value: "10", label: "Octombrie" },
-    { value: "11", label: "Noiembrie" },
-    { value: "12", label: "Decembrie" },
-  ],
-};
 
 type Stage = "quiz" | "loading" | "gate" | "extra" | "submitting" | "result" | "error";
 
@@ -52,6 +24,8 @@ interface Props {
   onExtraComplete: (answers: Answers) => void;
 }
 
+const amountFmt = new Intl.NumberFormat("ro-RO");
+
 export function CreditRoWidget({
   stage,
   answers,
@@ -66,15 +40,7 @@ export function CreditRoWidget({
 }: Props) {
   return (
     <div className="widget" id="widget">
-      {stage === "quiz" && (
-        <WitmeForm
-          visibleQuestions={visiblePreGateQuestions}
-          phases={CREDIT_RO_PRE_GATE_PHASES}
-          source="credit_ro"
-          copy={WITME_FORM_COPY_RO}
-          onComplete={onQuizComplete}
-        />
-      )}
+      {stage === "quiz" && <CreditRoLoanStep onComplete={onQuizComplete} />}
 
       {stage === "loading" && (
         <div className="quiz-card">
@@ -92,13 +58,14 @@ export function CreditRoWidget({
           clickId={clickId}
           source="credit_ro"
           showScoreTeaser={false}
+          beforeContent={<CreditStepHeader current={2} />}
           postbackParam1="RO_Creditio_score"
           phoneValidator={isValidRomanianPhone}
           phoneNormalizer={normalizeRomanianPhone}
           phoneErrorMessage="Verifică numărul de telefon: trebuie să aibă 9 cifre și să înceapă cu 2, 3 sau 7."
           phonePlaceholder="Telefon (7XX XXX XXX)"
           title="Am găsit oferte pentru tine"
-          subText="Lasă-ne datele tale de contact ca să continuăm cererea și să-ți arătăm oferta care se potrivește profilului tău."
+          subText={`Am găsit opțiuni pentru ${amountFmt.format(Number(answers.requestedAmount ?? 0))} LEI — lasă-ne datele tale de contact ca să continuăm cererea.`}
           namePlaceholder="Prenume"
           lastNamePlaceholder="Nume"
           emailPlaceholder="Adresă de email"
@@ -113,17 +80,7 @@ export function CreditRoWidget({
         />
       )}
 
-      {stage === "extra" && (
-        <WitmeForm
-          initialAnswers={answers}
-          visibleQuestions={visiblePostGateQuestions}
-          phases={CREDIT_RO_POST_GATE_PHASES}
-          intro="Mai avem nevoie de câteva date pentru a procesa cererea ta."
-          source="credit_ro"
-          copy={WITME_FORM_COPY_RO}
-          onComplete={onExtraComplete}
-        />
-      )}
+      {stage === "extra" && <CreditRoDetailsForm initialAnswers={answers} onComplete={onExtraComplete} />}
 
       {stage === "submitting" && (
         <div className="quiz-card">

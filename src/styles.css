@@ -999,6 +999,239 @@ h3,
   margin: 0;
 }
 
+/* Credit RO: formulario con varios campos agrupados por paso (en vez de
+   una pregunta por pantalla), con progreso compartido entre los 4 pasos
+   (importe+propósito / contacto / financiero / últimos datos). */
+
+.credit-step-header {
+  margin-bottom: 18px;
+}
+
+.credit-step-dots {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.credit-step-dot {
+  flex: 1;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--border);
+  transition: background-color 0.3s ease;
+}
+
+.credit-step-dot.done,
+.credit-step-dot.active {
+  background: var(--primary);
+}
+
+.credit-step-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.credit-step-count {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.credit-step-count b {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.credit-step-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--success);
+  background: rgba(31, 169, 107, 0.12);
+  border-radius: 999px;
+  padding: 3px 9px;
+  white-space: nowrap;
+}
+
+.credit-field-group,
+.credit-field-group h2 {
+  text-align: left;
+}
+
+.credit-field-group .btn-primary {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+
+.credit-field {
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.credit-field label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+}
+
+.credit-field select,
+.credit-field input[type="text"],
+.credit-field input[type="number"] {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  font-size: 16px;
+  font-family: inherit;
+  background: var(--card);
+  color: var(--text);
+}
+
+.credit-field select:focus,
+.credit-field input:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.credit-field-row {
+  display: flex;
+  gap: 10px;
+}
+
+.credit-field-row .credit-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.credit-date-row {
+  display: grid;
+  grid-template-columns: 0.8fr 1.3fr 0.9fr;
+  gap: 8px;
+}
+
+@media (max-width: 420px) {
+  .credit-date-row {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+/* Paso 1: importe (slider) + propósito (botones) */
+
+.credit-amount-value {
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--primary-dark);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 10px;
+  display: inline-block;
+  transition: transform 0.18s ease;
+}
+
+.credit-amount-value.pulse {
+  transform: scale(1.06);
+}
+
+.credit-amount-value span {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.credit-amount-slider {
+  width: 100%;
+  accent-color: var(--primary);
+  margin: 4px 0 6px;
+}
+
+.credit-amount-scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 22px;
+}
+
+.credit-purpose-label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.credit-purpose-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 420px) {
+  .credit-purpose-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.credit-purpose-btn {
+  text-align: left;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  padding: 11px 13px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.credit-purpose-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--primary);
+}
+
+.credit-purpose-btn.selected {
+  border-color: var(--primary);
+  background: rgba(163, 28, 130, 0.08);
+  color: var(--primary-dark);
+}
+
+/* Transición entre pasos y al mostrar el resultado */
+
+.credit-step-enter {
+  animation: credit-step-enter 0.32s ease both;
+}
+
+@keyframes credit-step-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .credit-step-enter,
+  .credit-amount-value,
+  .credit-purpose-btn,
+  .credit-step-dot {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 /* Marketing sections */
 
 .trust-row {

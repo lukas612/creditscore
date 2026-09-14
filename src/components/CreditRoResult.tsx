@@ -20,7 +20,7 @@ export function CreditRoResult({
   staticOffers,
 }: Props) {
   return (
-    <div className="result-card">
+    <div className="result-card credit-step-enter">
       <div className={`application-status ${applicationSubmitted ? "ok" : "warn"}`}>
         {applicationSubmitted
           ? "✅ Am primit cererea ta. Echipa noastră o va analiza și te va contacta în curând."
