@@ -111,19 +111,19 @@ let currentPreset: PresetKey = "all";
 let customFrom = toDateInputValue(today);
 let customTo = toDateInputValue(today);
 
-type SourceKey = "all" | "quiz" | "solicitud" | "pingtree" | "multiping_ro" | "pingtree_ro";
+type SourceKey = "all" | "quiz" | "solicitud" | "pingtree" | "multiping_ro" | "pingtree_ro" | "credit_ro";
 let currentSource: SourceKey = "all";
 
-// Solicitud/pingtree = España; multiping_ro/pingtree_ro = Rumanía. "all" no
-// filtra por país (vista combinada, como siempre se ha comportado "all").
+// Solicitud/pingtree = España; multiping_ro/pingtree_ro/credit_ro = Rumanía.
+// "all" no filtra por país (vista combinada, como siempre se ha comportado "all").
 function countryParam(source: SourceKey): string | null {
-  if (source === "multiping_ro" || source === "pingtree_ro") return "RO";
+  if (source === "multiping_ro" || source === "pingtree_ro" || source === "credit_ro") return "RO";
   if (source === "solicitud" || source === "pingtree" || source === "quiz") return "ES";
   return null;
 }
 
 function currencyLabelFor(source: SourceKey): string {
-  return source === "multiping_ro" || source === "pingtree_ro" ? "LEI" : "€";
+  return source === "multiping_ro" || source === "pingtree_ro" || source === "credit_ro" ? "LEI" : "€";
 }
 
 const LEADS_PAGE_SIZE = 10;
@@ -169,6 +169,7 @@ const SOURCE_LABELS: Record<SourceKey, string> = {
   pingtree: "Pingtree",
   multiping_ro: "Multiping RO",
   pingtree_ro: "Pingtree RO",
+  credit_ro: "Credit RO",
 };
 
 function periodFor(preset: PresetKey): Period {
@@ -962,7 +963,7 @@ async function renderLeadsTab(password: string) {
                     <td>${
                       l.source === "pingtree" || l.source === "pingtree_ro"
                         ? `<span title="Este flujo usa solo la API pingtree - ver sección 'Solicitudes enviadas a Pingtree'">Ver Pingtree</span>`
-                        : l.source !== "solicitud" && l.source !== "multiping_ro"
+                        : l.source !== "solicitud" && l.source !== "multiping_ro" && l.source !== "credit_ro"
                           ? `<span title="El quiz corto no envía a Witme">n/a</span>`
                           : l.witme_submitted
                             ? `<span class="admin-badge band-excelente">✅ Sí</span>`
@@ -988,9 +989,9 @@ async function renderLeadsTab(password: string) {
           </div>
         </section>
 
-        ${(currentSource === "all" || currentSource === "solicitud" || currentSource === "multiping_ro") ? `
+        ${(currentSource === "all" || currentSource === "solicitud" || currentSource === "multiping_ro" || currentSource === "credit_ro") ? `
         <section class="admin-card">
-          <p class="admin-card-title">Solicitudes enviadas a Witme${currentSource === "multiping_ro" ? " · Rumanía" : currentSource === "solicitud" ? " · España" : ""} (${totalWitmeCount})</p>
+          <p class="admin-card-title">Solicitudes enviadas a Witme${currentSource === "multiping_ro" || currentSource === "credit_ro" ? " · Rumanía" : currentSource === "solicitud" ? " · España" : ""} (${totalWitmeCount})</p>
           <p class="admin-card-sub">
             Copia propia de cada envío a la API de Witme, con su respuesta, el score y la
             probabilidad de aprobación de ese lead, y si hizo click en la oferta que se le

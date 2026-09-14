@@ -13,13 +13,14 @@ export interface GateContact {
 
 interface Props {
   quizSessionId: string;
-  score: number;
-  scoreBand: string;
+  score: number | null;
+  scoreBand: string | null;
   zipCode: string;
   approvalProbability: number | null;
   clickId: string | null;
   source?: string;
   postbackParam1?: string;
+  showScoreTeaser?: boolean;
   phoneValidator?: (phone: string) => boolean;
   phoneNormalizer?: (phone: string) => string;
   phoneErrorMessage?: string;
@@ -48,6 +49,7 @@ export function WitmeGate({
   clickId,
   source = "solicitud",
   postbackParam1 = "Creditio_score",
+  showScoreTeaser = true,
   phoneValidator = isValidSpanishPhone,
   phoneNormalizer = normalizeSpanishPhone,
   phoneErrorMessage = "Revisa el teléfono: debe ser un número español de 9 dígitos.",
@@ -127,10 +129,12 @@ export function WitmeGate({
 
   return (
     <div className="result-card">
-      <div className="score-teaser">
-        <span className="score-teaser-value">{score}</span>
-        <span className="score-teaser-blur">/ 850</span>
-      </div>
+      {showScoreTeaser && (
+        <div className="score-teaser">
+          <span className="score-teaser-value">{score}</span>
+          <span className="score-teaser-blur">/ 850</span>
+        </div>
+      )}
       <h2>{title}</h2>
       <p className="result-sub">{subText}</p>
       <form className="lead-form" onSubmit={handleSubmit}>
