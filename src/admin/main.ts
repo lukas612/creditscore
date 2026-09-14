@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { questions as QUIZ_QUESTIONS } from "../data/questions";
 import { CREDIT_OFFERS } from "../data/offers";
 import { WITME_QUESTIONS, SCORE_PHASE_KEYS } from "../data/witmeQuestions";
+import { WITME_QUESTIONS_RO, RO_SCORE_PHASE_KEYS } from "../data/witmeQuestionsRo";
 import "./admin.css";
 
 const OFFER_LABELS: Record<string, string> = {
@@ -255,6 +256,31 @@ const STEP_DEFS_SOLICITUD: StepDef[] = [
   { key: "gate_contact", label: "Deja sus datos de contacto (nombre, email, teléfono)" },
   ...extraQuestions.map(toStepDef),
   { key: "application_completed", label: "✅ Termina la solicitud completa" },
+];
+
+// Igual que STEP_DEFS_SOLICITUD pero derivado de witmeQuestionsRo.ts.
+// Pingtree RO reutiliza exactamente las mismas preguntas que Multiping RO
+// (mismo WITME_QUESTIONS_RO), solo cambia qué API recibe el envío final -
+// comparten este mismo listado de pasos del embudo.
+const scoreQuestionsRo = WITME_QUESTIONS_RO.filter((q) => RO_SCORE_PHASE_KEYS.includes(q.phase));
+const extraQuestionsRo = WITME_QUESTIONS_RO.filter((q) => !RO_SCORE_PHASE_KEYS.includes(q.phase));
+const STEP_DEFS_MULTIPING_RO: StepDef[] = [
+  ...scoreQuestionsRo.map(toStepDef),
+  { key: "gate_contact", label: "Deja sus datos de contacto (nombre, email, teléfono)" },
+  ...extraQuestionsRo.map(toStepDef),
+  { key: "application_completed", label: "✅ Termina la solicitud completa" },
+];
+
+// Credit RO no pregunta una a una (CreditRoLoanStep/CreditRoDetailsForm
+// agrupan varios campos por pantalla), así que el embudo trackea pantallas
+// completas en vez de preguntas sueltas - ver trackFunnelEvent en esos
+// componentes.
+const STEP_DEFS_CREDIT_RO: StepDef[] = [
+  { key: "requestedAmount_loanPurpose", label: "Importe y propósito del préstamo" },
+  { key: "gate_contact", label: "Deja sus datos de contacto (nombre, email, teléfono)" },
+  { key: "financial_details", label: "Detalles financieros (nacimiento, ingresos, estado civil)" },
+  { key: "final_details", label: "Últimos datos (CNP, ciudad, dirección)" },
+  { key: "application_completed", label: "✅ Termina la solicitud" },
 ];
 
 interface Lead {
@@ -783,7 +809,14 @@ async function renderDashboard(password: string) {
     // Pingtree reutiliza exactamente las mismas preguntas que la solicitud
     // completa (mismo WITME_QUESTIONS), solo cambia qué API recibe el envío
     // final - así que comparte el mismo listado de pasos del embudo.
-    const stepDefs = currentSource === "solicitud" || currentSource === "pingtree" ? STEP_DEFS_SOLICITUD : STEP_DEFS;
+    const stepDefs =
+      currentSource === "solicitud" || currentSource === "pingtree"
+        ? STEP_DEFS_SOLICITUD
+        : currentSource === "multiping_ro" || currentSource === "pingtree_ro"
+          ? STEP_DEFS_MULTIPING_RO
+          : currentSource === "credit_ro"
+            ? STEP_DEFS_CREDIT_RO
+            : STEP_DEFS;
 
     root.innerHTML = `
       <div class="admin-shell">
