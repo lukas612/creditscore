@@ -149,10 +149,10 @@ export default function SolicitudApp() {
     // Cada llamada aceptada consume una posición de la cascada de
     // prestamistas de Witme para esta misma solicitud; en cuanto una
     // responde sin oferta (rechazo o fallo) asumimos que no quedan más y
-    // dejamos de lanzar nuevas. Witme puede tardar bastante en responder
-    // (mediana ~10s, P90 ~34s, hasta 55s): en vez de esperar cada respuesta
-    // antes de pedir la siguiente, si una no ha respondido a los 8s ya
-    // lanzamos la siguiente en paralelo (sin esperar más); si responde
+    // dejamos de lanzar nuevas. El primer intento SIEMPRE se espera entero
+    // antes de lanzar el segundo (nunca en paralelo) - a partir del segundo
+    // intento sí se aplica la carrera: si uno no ha respondido a los 8s ya
+    // lanzamos el siguiente en paralelo (sin esperar más); si responde
     // antes, no se espera ese margen y se actúa al momento. 8s es un punto
     // medio medido sobre datos reales (servy_id 375): a 3s solo el 19% de
     // las llamadas ya habían respondido (mucho solapamiento/duplicado
@@ -183,7 +183,9 @@ export default function SolicitudApp() {
           launch(attempt + 1);
         }
       };
-      const raceTimer = setTimeout(launchNext, RACE_TIMEOUT_MS);
+      // Sin timer de carrera para el primer intento: el segundo no se lanza
+      // hasta tener respuesta del primero, pase lo que pase.
+      const raceTimer = attempt > 1 ? setTimeout(launchNext, RACE_TIMEOUT_MS) : undefined;
 
       requestWitmeLenderOffer(fullAnswers, clickId, utmSource, sessionId, witmeOfferId(attempt)).then((result) => {
         clearTimeout(raceTimer);
