@@ -2,9 +2,10 @@ import { useState } from "react";
 
 interface Props {
   text: string;
+  label?: string;
 }
 
-export function Tooltip({ text }: Props) {
+export function Tooltip({ text, label = "Por qué preguntamos esto" }: Props) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -12,7 +13,7 @@ export function Tooltip({ text }: Props) {
       <button
         type="button"
         className="tooltip-trigger"
-        aria-label="Por qué preguntamos esto"
+        aria-label={label}
         onClick={() => setOpen((o) => !o)}
         onBlur={() => setOpen(false)}
       >

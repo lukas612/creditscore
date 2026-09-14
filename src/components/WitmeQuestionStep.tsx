@@ -5,9 +5,17 @@ interface Props {
   question: WitmeQuestionDef;
   value: string | number | boolean | undefined;
   onAnswer: (value: string | number | boolean) => void;
+  continueLabel?: string;
+  selectPlaceholder?: string;
+  yesLabel?: string;
+  noLabel?: string;
+  dayLabel?: string;
+  monthLabel?: string;
+  yearLabel?: string;
+  months?: { value: string; label: string }[];
 }
 
-const MONTHS = [
+export const MONTHS_ES = [
   { value: "01", label: "Enero" },
   { value: "02", label: "Febrero" },
   { value: "03", label: "Marzo" },
@@ -34,7 +42,19 @@ const initialDateParts = (value: string | number | boolean | undefined): [string
   return [y, m, d];
 };
 
-export function WitmeQuestionStep({ question, value, onAnswer }: Props) {
+export function WitmeQuestionStep({
+  question,
+  value,
+  onAnswer,
+  continueLabel = "Continuar",
+  selectPlaceholder = "Selecciona…",
+  yesLabel = "Sí",
+  noLabel = "No",
+  dayLabel = "Día",
+  monthLabel = "Mes",
+  yearLabel = "Año",
+  months = MONTHS_ES,
+}: Props) {
   const [draft, setDraft] = useState<string>(value?.toString() ?? "");
   const [initialYear, initialMonth, initialDay] = initialDateParts(value);
   const [year, setYear] = useState(initialYear);
@@ -86,7 +106,7 @@ export function WitmeQuestionStep({ question, value, onAnswer }: Props) {
             onChange={(e) => onAnswer(e.target.value)}
             autoFocus
           >
-            <option value="">Selecciona…</option>
+            <option value="">{selectPlaceholder}</option>
             {question.options?.map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
@@ -105,13 +125,13 @@ export function WitmeQuestionStep({ question, value, onAnswer }: Props) {
           className={`option-btn ${value === "si" ? "selected" : ""}`}
           onClick={() => onAnswer("si")}
         >
-          Sí
+          {yesLabel}
         </button>
         <button
           className={`option-btn ${value === "no" ? "selected" : ""}`}
           onClick={() => onAnswer("no")}
         >
-          No
+          {noLabel}
         </button>
       </div>
     );
@@ -122,24 +142,24 @@ export function WitmeQuestionStep({ question, value, onAnswer }: Props) {
     return (
       <div className="question-input-row">
         <div className="question-date-row">
-          <select aria-label="Día" value={day} onChange={(e) => setDay(e.target.value)}>
-            <option value="">Día</option>
+          <select aria-label={dayLabel} value={day} onChange={(e) => setDay(e.target.value)}>
+            <option value="">{dayLabel}</option>
             {DAYS.map((d) => (
               <option key={d} value={d}>
                 {d}
               </option>
             ))}
           </select>
-          <select aria-label="Mes" value={month} onChange={(e) => setMonth(e.target.value)}>
-            <option value="">Mes</option>
-            {MONTHS.map((m) => (
+          <select aria-label={monthLabel} value={month} onChange={(e) => setMonth(e.target.value)}>
+            <option value="">{monthLabel}</option>
+            {months.map((m) => (
               <option key={m.value} value={m.value}>
                 {m.label}
               </option>
             ))}
           </select>
-          <select aria-label="Año" value={year} onChange={(e) => setYear(e.target.value)}>
-            <option value="">Año</option>
+          <select aria-label={yearLabel} value={year} onChange={(e) => setYear(e.target.value)}>
+            <option value="">{yearLabel}</option>
             {years.map((y) => (
               <option key={y} value={y}>
                 {y}
@@ -148,7 +168,7 @@ export function WitmeQuestionStep({ question, value, onAnswer }: Props) {
           </select>
         </div>
         <button className="btn-primary" onClick={submitDraft}>
-          Continuar
+          {continueLabel}
         </button>
       </div>
     );
@@ -176,7 +196,7 @@ export function WitmeQuestionStep({ question, value, onAnswer }: Props) {
       </div>
       {error && <p className="form-error">{error}</p>}
       <button className="btn-primary" onClick={submitDraft}>
-        Continuar
+        {continueLabel}
       </button>
     </div>
   );

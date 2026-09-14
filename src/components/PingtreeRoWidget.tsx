@@ -5,8 +5,38 @@ import type { BreakdownItem } from "../lib/types";
 import { isValidRomanianPhone, normalizeRomanianPhone } from "../lib/validation";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { SolicitudResult } from "./SolicitudResult";
-import { WitmeForm } from "./WitmeForm";
+import { WitmeForm, type WitmeFormCopy } from "./WitmeForm";
 import { WitmeGate, type GateContact } from "./WitmeGate";
+
+const WITME_FORM_COPY_RO: WitmeFormCopy = {
+  questionCountText: (current, total) => `Întrebarea ${current} din ${total}`,
+  lastQuestionLabel: "Ultima întrebare 🎉",
+  almostDoneLabel: "Aproape ai terminat 💪",
+  reassuranceLine: "🔒 Răspunsurile tale sunt criptate și protejate.",
+  backLabel: "← Înapoi",
+  tooltipLabel: "De ce întrebăm asta",
+  continueLabel: "Continuă",
+  selectPlaceholder: "Selectează…",
+  yesLabel: "Da",
+  noLabel: "Nu",
+  dayLabel: "Zi",
+  monthLabel: "Lună",
+  yearLabel: "An",
+  months: [
+    { value: "01", label: "Ianuarie" },
+    { value: "02", label: "Februarie" },
+    { value: "03", label: "Martie" },
+    { value: "04", label: "Aprilie" },
+    { value: "05", label: "Mai" },
+    { value: "06", label: "Iunie" },
+    { value: "07", label: "Iulie" },
+    { value: "08", label: "August" },
+    { value: "09", label: "Septembrie" },
+    { value: "10", label: "Octombrie" },
+    { value: "11", label: "Noiembrie" },
+    { value: "12", label: "Decembrie" },
+  ],
+};
 
 const BAND_COPY_RO: Record<string, { title: string; tip: string }> = {
   excelente: {
@@ -79,7 +109,7 @@ export function PingtreeRoWidget({
   return (
     <div className="widget" id="widget">
       {stage === "quiz" && (
-        <WitmeForm visibleQuestions={visibleScoreQuestionsRo} phases={RO_SCORE_PHASES} source="pingtree_ro" onComplete={onQuizComplete} />
+        <WitmeForm visibleQuestions={visibleScoreQuestionsRo} phases={RO_SCORE_PHASES} source="pingtree_ro" copy={WITME_FORM_COPY_RO} onComplete={onQuizComplete} />
       )}
 
       {stage === "loading" && (
@@ -125,6 +155,7 @@ export function PingtreeRoWidget({
           phases={RO_EXTRA_PHASES}
           intro="Avem deja scorul tău. Doar câteva date finale pentru a procesa cererea ta."
           source="pingtree_ro"
+          copy={WITME_FORM_COPY_RO}
           onComplete={onExtraComplete}
         />
       )}
