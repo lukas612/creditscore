@@ -111,8 +111,20 @@ let currentPreset: PresetKey = "all";
 let customFrom = toDateInputValue(today);
 let customTo = toDateInputValue(today);
 
-type SourceKey = "all" | "quiz" | "solicitud" | "pingtree";
+type SourceKey = "all" | "quiz" | "solicitud" | "pingtree" | "multiping_ro" | "pingtree_ro";
 let currentSource: SourceKey = "all";
+
+// Solicitud/pingtree = España; multiping_ro/pingtree_ro = Rumanía. "all" no
+// filtra por país (vista combinada, como siempre se ha comportado "all").
+function countryParam(source: SourceKey): string | null {
+  if (source === "multiping_ro" || source === "pingtree_ro") return "RO";
+  if (source === "solicitud" || source === "pingtree" || source === "quiz") return "ES";
+  return null;
+}
+
+function currencyLabelFor(source: SourceKey): string {
+  return source === "multiping_ro" || source === "pingtree_ro" ? "LEI" : "€";
+}
 
 const LEADS_PAGE_SIZE = 10;
 let currentLeadsPage = 0;
@@ -155,6 +167,8 @@ const SOURCE_LABELS: Record<SourceKey, string> = {
   quiz: "Quiz corto",
   solicitud: "Solicitud completa",
   pingtree: "Pingtree",
+  multiping_ro: "Multiping RO",
+  pingtree_ro: "Pingtree RO",
 };
 
 function periodFor(preset: PresetKey): Period {
@@ -349,11 +363,12 @@ interface WitmeApplication {
   witme_response_ms: number | null;
 }
 
-async function fetchWitmeApplications(password: string, page: number): Promise<WitmeApplication[]> {
+async function fetchWitmeApplications(password: string, page: number, country: string | null): Promise<WitmeApplication[]> {
   const { data, error } = await supabase.rpc("admin_get_witme_applications", {
     p_password: password,
     p_limit: WITME_PAGE_SIZE,
     p_offset: page * WITME_PAGE_SIZE,
+    p_country: country,
   });
   if (error) throw error;
   return (data ?? []) as WitmeApplication[];
@@ -410,11 +425,12 @@ interface PingtreeApplication {
   total_count: number;
 }
 
-async function fetchPingtreeApplications(password: string, page: number): Promise<PingtreeApplication[]> {
+async function fetchPingtreeApplications(password: string, page: number, country: string | null): Promise<PingtreeApplication[]> {
   const { data, error } = await supabase.rpc("admin_get_pingtree_applications", {
     p_password: password,
     p_limit: PINGTREE_PAGE_SIZE,
     p_offset: page * PINGTREE_PAGE_SIZE,
+    p_country: country,
   });
   if (error) throw error;
   return (data ?? []) as PingtreeApplication[];
@@ -889,12 +905,13 @@ async function renderLeadsTab(password: string) {
   const period = periodFor(currentPreset);
 
   try {
+    const country = countryParam(currentSource);
     const [leads, witmeApps, witmeResponseStats, witmeCarApps, pingtreeApps, pingtreeResponseStats] = await Promise.all([
       fetchLeads(password, period, currentSource, currentLeadsPage),
-      fetchWitmeApplications(password, currentWitmePage),
+      fetchWitmeApplications(password, currentWitmePage, country),
       fetchWitmeResponseStats(password),
       fetchWitmeCarApplications(password, currentWitmeCarPage),
-      fetchPingtreeApplications(password, currentPingtreePage),
+      fetchPingtreeApplications(password, currentPingtreePage, country),
       fetchPingtreeResponseStats(password),
     ]);
     const totalLeadsCount = leads[0]?.total_count ?? 0;
@@ -943,9 +960,9 @@ async function renderLeadsTab(password: string) {
                     <td>${escapeHtml(l.status)}</td>
                     <td>${escapeHtml(l.source === "pingtree" ? "Pingtree" : (SOURCE_LABELS[l.source as SourceKey] ?? l.source))}</td>
                     <td>${
-                      l.source === "pingtree"
+                      l.source === "pingtree" || l.source === "pingtree_ro"
                         ? `<span title="Este flujo usa solo la API pingtree - ver sección 'Solicitudes enviadas a Pingtree'">Ver Pingtree</span>`
-                        : l.source !== "solicitud"
+                        : l.source !== "solicitud" && l.source !== "multiping_ro"
                           ? `<span title="El quiz corto no envía a Witme">n/a</span>`
                           : l.witme_submitted
                             ? `<span class="admin-badge band-excelente">✅ Sí</span>`
@@ -971,9 +988,9 @@ async function renderLeadsTab(password: string) {
           </div>
         </section>
 
-        ${(currentSource === "all" || currentSource === "solicitud") ? `
+        ${(currentSource === "all" || currentSource === "solicitud" || currentSource === "multiping_ro") ? `
         <section class="admin-card">
-          <p class="admin-card-title">Solicitudes enviadas a Witme (${totalWitmeCount})</p>
+          <p class="admin-card-title">Solicitudes enviadas a Witme${currentSource === "multiping_ro" ? " · Rumanía" : currentSource === "solicitud" ? " · España" : ""} (${totalWitmeCount})</p>
           <p class="admin-card-sub">
             Copia propia de cada envío a la API de Witme, con su respuesta, el score y la
             probabilidad de aprobación de ese lead, y si hizo click en la oferta que se le
@@ -1021,7 +1038,7 @@ async function renderLeadsTab(password: string) {
                     <td>${dateFmt.format(new Date(w.created_at))}</td>
                     <td><div class="admin-table-name-cell" title="${escapeHtml(w.name ?? "")} ${escapeHtml(w.last_name ?? "")}">${escapeHtml(w.name ?? "")} ${escapeHtml(w.last_name ?? "")}</div></td>
                     <td><div class="admin-table-name-cell" title="${escapeHtml(w.email ?? "")}">${escapeHtml(w.email ?? "")}</div></td>
-                    <td>${w.requested_amount != null ? `${w.requested_amount} €` : "—"}</td>
+                    <td>${w.requested_amount != null ? `${w.requested_amount} ${currencyLabelFor(currentSource)}` : "—"}</td>
                     <td>${w.witme_id ?? "—"}</td>
                     <td><span class="admin-badge ${w.witme_status === "processed" ? "band-excelente" : "band-bajo"}" ${statusTooltip ? `title="${escapeHtml(statusTooltip)}"` : ""}>${escapeHtml(w.witme_status ?? "—")}</span></td>
                     <td>${fmtMs(w.witme_response_ms)}</td>
@@ -1111,15 +1128,13 @@ async function renderLeadsTab(password: string) {
         </section>
         ` : ""}
 
-        ${(currentSource === "all" || currentSource === "pingtree") ? `
+        ${(currentSource === "all" || currentSource === "pingtree" || currentSource === "pingtree_ro") ? `
         <section class="admin-card">
-          <p class="admin-card-title">Solicitudes enviadas a Pingtree (${totalPingtreeCount})</p>
+          <p class="admin-card-title">Solicitudes enviadas a Pingtree${currentSource === "pingtree_ro" ? " · Rumanía" : currentSource === "pingtree" ? " · España" : ""} (${totalPingtreeCount})</p>
           <p class="admin-card-sub">
-            Versión independiente de la solicitud completa (<code>/pingtree.html</code>):
-            usa solo el endpoint <code>servy-form-wait</code> con los servy_id 151
-            (Creditio Pingtree), 154 (reunificación) y 171 (aval coche) juntos, y
-            redirige directamente a la <code>redirectUrl</code> de Witme en vez de
-            mostrar resultados propios.
+            ${currentSource === "pingtree_ro"
+              ? `Versión independiente de multiping (<code>/pingtree-ro.html</code>): usa solo el endpoint <code>servy-form-wait</code> con servy_id 259 (Creditio Pingtree RO), y redirige directamente a la <code>redirectUrl</code> de Witme en vez de mostrar resultados propios.`
+              : `Versión independiente de la solicitud completa (<code>/pingtree.html</code>): usa solo el endpoint <code>servy-form-wait</code> con los servy_id 151 (Creditio Pingtree), 154 (reunificación) y 171 (aval coche) juntos, y redirige directamente a la <code>redirectUrl</code> de Witme en vez de mostrar resultados propios.`}
           </p>
           <section class="admin-stats-grid admin-stats-grid-compact">
             ${statCard("Tiempo medio de respuesta", fmtMs(pingtreeResponseStats.avg_ms))}
