@@ -447,8 +447,8 @@ interface PingtreeResponseStats {
   pct_accepted: number | null;
 }
 
-async function fetchPingtreeResponseStats(password: string): Promise<PingtreeResponseStats> {
-  const { data, error } = await supabase.rpc("admin_get_pingtree_response_stats", { p_password: password }).single<PingtreeResponseStats>();
+async function fetchPingtreeResponseStats(password: string, country: string | null): Promise<PingtreeResponseStats> {
+  const { data, error } = await supabase.rpc("admin_get_pingtree_response_stats", { p_password: password, p_country: country }).single<PingtreeResponseStats>();
   if (error || !data) throw error ?? new Error("No data");
   return data;
 }
@@ -470,8 +470,8 @@ interface WitmeResponseStats {
   pct_failed: number | null;
 }
 
-async function fetchWitmeResponseStats(password: string): Promise<WitmeResponseStats> {
-  const { data, error } = await supabase.rpc("admin_get_witme_response_stats", { p_password: password }).single<WitmeResponseStats>();
+async function fetchWitmeResponseStats(password: string, country: string | null): Promise<WitmeResponseStats> {
+  const { data, error } = await supabase.rpc("admin_get_witme_response_stats", { p_password: password, p_country: country }).single<WitmeResponseStats>();
   if (error || !data) throw error ?? new Error("No data");
   return data;
 }
@@ -909,10 +909,10 @@ async function renderLeadsTab(password: string) {
     const [leads, witmeApps, witmeResponseStats, witmeCarApps, pingtreeApps, pingtreeResponseStats] = await Promise.all([
       fetchLeads(password, period, currentSource, currentLeadsPage),
       fetchWitmeApplications(password, currentWitmePage, country),
-      fetchWitmeResponseStats(password),
+      fetchWitmeResponseStats(password, country),
       fetchWitmeCarApplications(password, currentWitmeCarPage),
       fetchPingtreeApplications(password, currentPingtreePage, country),
-      fetchPingtreeResponseStats(password),
+      fetchPingtreeResponseStats(password, country),
     ]);
     const totalLeadsCount = leads[0]?.total_count ?? 0;
     const totalLeadsPages = Math.max(1, Math.ceil(totalLeadsCount / LEADS_PAGE_SIZE));
