@@ -95,6 +95,7 @@ export function MultipingRoWidget({
           approvalProbability={scoreData.approvalProbability}
           clickId={clickId}
           source="multiping_ro"
+          postbackParam1="RO_Creditio_score"
           phoneValidator={isValidRomanianPhone}
           phoneNormalizer={normalizeRomanianPhone}
           phoneErrorMessage="Verifică numărul de telefon: trebuie să aibă 9 cifre și să înceapă cu 2, 3 sau 7."

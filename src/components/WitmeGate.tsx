@@ -19,6 +19,7 @@ interface Props {
   approvalProbability: number | null;
   clickId: string | null;
   source?: string;
+  postbackParam1?: string;
   phoneValidator?: (phone: string) => boolean;
   phoneNormalizer?: (phone: string) => string;
   phoneErrorMessage?: string;
@@ -46,6 +47,7 @@ export function WitmeGate({
   approvalProbability,
   clickId,
   source = "solicitud",
+  postbackParam1 = "Creditio_score",
   phoneValidator = isValidSpanishPhone,
   phoneNormalizer = normalizeSpanishPhone,
   phoneErrorMessage = "Revisa el teléfono: debe ser un número español de 9 dígitos.",
@@ -117,7 +119,7 @@ export function WitmeGate({
     }
 
     if (clickId) {
-      fireServyPostback(clickId);
+      fireServyPostback(clickId, postbackParam1);
     }
 
     onUnlock({ name, lastName, email, phoneNumber: normalizedPhone });
