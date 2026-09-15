@@ -3,9 +3,7 @@ export function getClickId(): string | null {
   return params.get("servy_click") ?? params.get("click_id") ?? params.get("clickid");
 }
 
-// Desactivado a petición: no disparar postbacks de ES ni RO hasta que se
-// reactive explícitamente (poner de nuevo en true).
-const POSTBACKS_ENABLED = false;
+const POSTBACKS_ENABLED = true;
 
 export function fireServyPostback(clickId: string, param1: string = "Creditio_score") {
   if (!POSTBACKS_ENABLED) return;
