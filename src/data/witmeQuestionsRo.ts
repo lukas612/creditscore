@@ -69,13 +69,6 @@ const LOAN_PURPOSE_OPTIONS_RO: Option[] = [
   { value: "Altele", label: "Altele" },
 ];
 
-const HAS_OWNED_HOUSE_OPTIONS_RO: Option[] = [
-  { value: "Propietario sin hipoteca", label: "Proprietar, fără ipotecă" },
-  { value: "Propietario con hipoteca", label: "Proprietar, cu ipotecă" },
-  { value: "Alquiler", label: "Chiriaș" },
-  { value: "Otro", label: "Altă situație" },
-];
-
 // Lista cerrada real de ciudades que acepta la plantilla de Witme
 // (creditio-pingtree-ro-v5, campo "ciudad") - no es traducción, son los
 // valores tal cual los valida Witme.
@@ -133,7 +126,9 @@ export const WITME_QUESTIONS_RO: WitmeQuestionDef[] = [
     placeholder: "3700",
     condition: (a) => !NO_INCOME_SOURCES.includes(String(a.incomeSource ?? "")),
   },
-  { key: "hasOwnedHouse", label: "Care este situația ta locativă?", type: "select", phase: "finanzas", options: HAS_OWNED_HOUSE_OPTIONS_RO },
+  // Simplificada a Da/Nu: como select de 4 opciones tenía ~15% de caída,
+  // muy por encima de las preguntas vecinas (2-7%) - ver funnel_events.
+  { key: "hasOwnedHouse", label: "Deții o locuință în proprietate?", type: "yesno", phase: "finanzas" },
   {
     key: "numberOfdependents",
     label: "Câte persoane depind financiar de tine?",
