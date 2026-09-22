@@ -68,6 +68,24 @@ export async function submitWitmeApplication(
 export interface LenderOffer {
   id: string;
   url: string;
+  lenderName: string | null;
+  lenderLogo: string | null;
+}
+
+// Witme añade el prestamista que ha aceptado la solicitud como parámetros
+// en la propia redirectUrl (lender_name/lender_logo) - se parsean aquí en
+// vez de pedirle a Witme un campo nuevo aparte.
+export function parseLenderInfo(redirectUrl: string | null): { lenderName: string | null; lenderLogo: string | null } {
+  if (!redirectUrl) return { lenderName: null, lenderLogo: null };
+  try {
+    const url = new URL(redirectUrl);
+    return {
+      lenderName: url.searchParams.get("lender_name"),
+      lenderLogo: url.searchParams.get("lender_logo"),
+    };
+  } catch {
+    return { lenderName: null, lenderLogo: null };
+  }
 }
 
 export interface WitmeOfferResult {
@@ -97,7 +115,9 @@ export async function requestWitmeLenderOffer(
 ): Promise<WitmeOfferResult> {
   try {
     const result = await submitWitmeApplication(answers, clickId, utmSource, externalId);
-    return { offer: result.redirectUrl ? { id: offerId, url: result.redirectUrl } : null, succeeded: true };
+    if (!result.redirectUrl) return { offer: null, succeeded: true };
+    const { lenderName, lenderLogo } = parseLenderInfo(result.redirectUrl);
+    return { offer: { id: offerId, url: result.redirectUrl, lenderName, lenderLogo }, succeeded: true };
   } catch {
     return { offer: null, succeeded: false };
   }

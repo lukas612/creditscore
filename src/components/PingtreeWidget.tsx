@@ -23,6 +23,7 @@ interface Props {
   scoreData: ScoreData | null;
   clickId: string | null;
   applicationSubmitted: boolean;
+  acceptedLender?: { name: string | null; logo: string | null } | null;
   onQuizComplete: (answers: Answers) => void;
   onGateUnlock: (contact: GateContact) => void;
   onExtraComplete: (answers: Answers) => void;
@@ -45,6 +46,7 @@ export function PingtreeWidget({
   scoreData,
   clickId,
   applicationSubmitted,
+  acceptedLender,
   onQuizComplete,
   onGateUnlock,
   onExtraComplete,
@@ -104,6 +106,14 @@ export function PingtreeWidget({
 
       {stage === "redirecting" && (
         <div className="quiz-card">
+          {acceptedLender?.name && (
+            <div className="redirect-lender">
+              {acceptedLender.logo && (
+                <img className="redirect-lender-logo" src={acceptedLender.logo} alt={acceptedLender.name} />
+              )}
+              <p className="redirect-lender-name">¡{acceptedLender.name} te ha aceptado!</p>
+            </div>
+          )}
           <LoadingSpinner text="Te estamos redirigiendo a tu oferta…" />
         </div>
       )}

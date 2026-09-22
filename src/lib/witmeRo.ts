@@ -65,9 +65,15 @@ export async function submitWitmeApplicationRo(
   return data as WitmeSubmitResult;
 }
 
+// Witme ya manda lender_name/lender_logo en la redirectUrl para España (ver
+// parseLenderInfo en witme.ts), pero de momento solo los mostramos ahí - en
+// RO se dejan a null para no cambiar el comportamiento actual mientras no
+// se confirme el mismo formato aquí.
 export interface LenderOffer {
   id: string;
   url: string;
+  lenderName: string | null;
+  lenderLogo: string | null;
 }
 
 export interface WitmeOfferResult {
@@ -91,7 +97,10 @@ export async function requestWitmeLenderOfferRo(
 ): Promise<WitmeOfferResult> {
   try {
     const result = await submitWitmeApplicationRo(answers, clickId, utmSource, formId, externalId);
-    return { offer: result.redirectUrl ? { id: offerId, url: result.redirectUrl } : null, succeeded: true };
+    return {
+      offer: result.redirectUrl ? { id: offerId, url: result.redirectUrl, lenderName: null, lenderLogo: null } : null,
+      succeeded: true,
+    };
   } catch {
     return { offer: null, succeeded: false };
   }

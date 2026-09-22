@@ -1,5 +1,6 @@
 import type { Answers } from "../data/witmeQuestions";
 import { buildCarCollateralAnswers, type CarCollateralContact } from "./witmeCar";
+import { parseLenderInfo } from "./witme";
 import { supabase } from "./supabase";
 
 // Flujo independiente "completo - pingtree": mismo endpoint servy-form-wait
@@ -18,6 +19,8 @@ const FORM_ID = "creditio-pingtree-es-v1";
 
 export interface PingtreeResult {
   redirectUrl: string | null;
+  lenderName: string | null;
+  lenderLogo: string | null;
   succeeded: boolean;
 }
 
@@ -55,8 +58,9 @@ export async function submitPingtreeLead(
     });
     if (error) throw error;
     const redirectUrl = typeof data?.redirectUrl === "string" ? data.redirectUrl : null;
-    return { redirectUrl, succeeded: true };
+    const { lenderName, lenderLogo } = parseLenderInfo(redirectUrl);
+    return { redirectUrl, lenderName, lenderLogo, succeeded: true };
   } catch {
-    return { redirectUrl: null, succeeded: false };
+    return { redirectUrl: null, lenderName: null, lenderLogo: null, succeeded: false };
   }
 }

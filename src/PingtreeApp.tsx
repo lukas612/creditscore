@@ -34,6 +34,7 @@ export default function PingtreeApp() {
   const [answers, setAnswers] = useState<Answers>({});
   const [scoreData, setScoreData] = useState<ScoreData | null>(null);
   const [applicationSubmitted, setApplicationSubmitted] = useState(false);
+  const [acceptedLender, setAcceptedLender] = useState<{ name: string | null; logo: string | null } | null>(null);
   const [clickId] = useState<string | null>(() => getClickId());
 
   const params = new URLSearchParams(window.location.search);
@@ -117,8 +118,14 @@ export default function PingtreeApp() {
     const result = await submitPingtreeLead(fullAnswers, contact, clickId, utmSource, scoreData.quizSessionId);
 
     if (result.redirectUrl) {
+      setAcceptedLender({ name: result.lenderName, logo: result.lenderLogo });
       setStage("redirecting");
-      window.location.href = result.redirectUrl;
+      // Pequeña pausa para que el usuario llegue a ver quién le ha
+      // aceptado antes de salir de la página.
+      const redirectUrl = result.redirectUrl;
+      setTimeout(() => {
+        window.location.href = redirectUrl;
+      }, 1500);
       return;
     }
 
@@ -140,6 +147,7 @@ export default function PingtreeApp() {
             scoreData={scoreData}
             clickId={clickId}
             applicationSubmitted={applicationSubmitted}
+            acceptedLender={acceptedLender}
             onQuizComplete={handleQuizComplete}
             onGateUnlock={handleGateUnlock}
             onExtraComplete={handleExtraComplete}

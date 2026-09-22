@@ -52,8 +52,16 @@ export function SolicitudOffers({
           <div key={witmeOffer.id} className="offer-card offer-card-featured offer-card-enter">
             <div className="offer-card-body">
               <span className="offer-featured-badge">{preapprovedBadge}</span>
+              {witmeOffer.lenderLogo && (
+                <img
+                  className="offer-lender-logo"
+                  src={witmeOffer.lenderLogo}
+                  alt={witmeOffer.lenderName ?? ""}
+                  loading="lazy"
+                />
+              )}
               <span className="offer-name">
-                {index === 0 ? firstOfferName : otherOfferName}
+                {witmeOffer.lenderName ?? (index === 0 ? firstOfferName : otherOfferName)}
               </span>
               <span className="offer-desc">{offerDesc}</span>
             </div>
