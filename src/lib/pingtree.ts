@@ -12,6 +12,10 @@ const SERVY_ID_PINGTREE = 151; // Creditio Pingtree
 const SERVY_ID_DEBT_CONSOLIDATION = 154; // Créditos a deudas
 const SERVY_ID_CAR_COLLATERAL = 171; // Aval coche
 
+// Identifica el formulario que envía cada petición a Witme (meta.formId).
+// Súbele la versión (v1 -> v2...) cuando cambien las preguntas de este flujo.
+const FORM_ID = "creditio-pingtree-es-v1";
+
 export interface PingtreeResult {
   redirectUrl: string | null;
   succeeded: boolean;
@@ -28,6 +32,7 @@ export async function submitPingtreeLead(
     const { data, error } = await supabase.functions.invoke("witme-proxy", {
       body: {
         action: "submit_pingtree",
+        formId: FORM_ID,
         externalId,
         sentFrom: window.location.href,
         vars: {

@@ -16,6 +16,10 @@ export interface WitmeSubmitResult {
 // mapeo de campos reutilizado (buildCarCollateralAnswers).
 const SERVY_ID_LENDER = 151;
 
+// Identifica el formulario que envía cada petición a Witme (meta.formId).
+// Súbele la versión (v1 -> v2...) cuando cambien las preguntas de este flujo.
+const FORM_ID = "creditio-solicitud-es-v1";
+
 function contactFromAnswers(answers: Answers): CarCollateralContact {
   return {
     name: String(answers.name ?? ""),
@@ -34,6 +38,7 @@ export async function submitWitmeApplication(
   const { data, error } = await supabase.functions.invoke("witme-proxy", {
     body: {
       action: "submit_lender",
+      formId: FORM_ID,
       clickId,
       utmSource,
       externalId,

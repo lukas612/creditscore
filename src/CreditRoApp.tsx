@@ -100,7 +100,7 @@ export default function CreditRoApp() {
       };
       const raceTimer = attempt > 1 ? setTimeout(launchNext, RACE_TIMEOUT_MS) : undefined;
 
-      requestWitmeLenderOfferRo(fullAnswers, clickId, utmSource, sessionId, witmeOfferIdRo(attempt)).then((result) => {
+      requestWitmeLenderOfferRo(fullAnswers, clickId, utmSource, "creditio-credit-ro-v1", sessionId, witmeOfferIdRo(attempt)).then((result) => {
         clearTimeout(raceTimer);
         active--;
         if (result.offer) {

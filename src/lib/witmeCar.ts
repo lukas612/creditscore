@@ -30,6 +30,10 @@ export interface CarCollateralContact {
 const SERVY_ID_CAR_COLLATERAL = 171;
 const SERVY_ID_DEBT_CONSOLIDATION = 154;
 
+// Identifica el formulario que envía cada petición a Witme (meta.formId).
+// Súbele la versión (v1 -> v2...) cuando cambien las preguntas de este flujo.
+const FORM_ID = "creditio-avalcoche-es-v1";
+
 const TEXT_FIELDS: Record<string, string> = {
   dateOfBirth: "fecha-de-nacimiento",
   zipCode: "codigo-postal",
@@ -140,6 +144,7 @@ export async function submitCarCollateralAndDebtConsolidationLead(
     await supabase.functions.invoke("witme-proxy", {
       body: {
         action: "submit_car",
+        formId: FORM_ID,
         product: "car_collateral+debt_consolidation",
         externalId,
         sentFrom: window.location.href,

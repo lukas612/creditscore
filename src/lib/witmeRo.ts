@@ -30,11 +30,13 @@ export async function submitWitmeApplicationRo(
   answers: Answers,
   clickId: string | null,
   utmSource: string | null,
+  formId: string,
   externalId?: string,
 ): Promise<WitmeSubmitResult> {
   const { data, error } = await supabase.functions.invoke("witme-proxy", {
     body: {
       action: "submit_lender",
+      formId,
       clickId,
       utmSource,
       externalId,
@@ -83,11 +85,12 @@ export async function requestWitmeLenderOfferRo(
   answers: Answers,
   clickId: string | null,
   utmSource: string | null,
+  formId: string,
   externalId: string,
   offerId: string,
 ): Promise<WitmeOfferResult> {
   try {
-    const result = await submitWitmeApplicationRo(answers, clickId, utmSource, externalId);
+    const result = await submitWitmeApplicationRo(answers, clickId, utmSource, formId, externalId);
     return { offer: result.redirectUrl ? { id: offerId, url: result.redirectUrl } : null, succeeded: true };
   } catch {
     return { offer: null, succeeded: false };

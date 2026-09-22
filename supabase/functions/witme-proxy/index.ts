@@ -61,6 +61,7 @@ Deno.serve(async (req: Request) => {
     const sentFrom = typeof body.sentFrom === "string" ? body.sentFrom : "unknown";
     const externalId = typeof body.externalId === "string" ? body.externalId : null;
     const product = typeof body.product === "string" ? body.product : null;
+    const formId = typeof body.formId === "string" ? body.formId : "unknown";
 
     const payload = {
       formSchema: [],
@@ -72,6 +73,7 @@ Deno.serve(async (req: Request) => {
         ipFrom,
         sessionId: externalId ?? crypto.randomUUID(),
         containerHref: sentFrom,
+        formId,
       },
       data: { vars, hidden, answers },
     };
@@ -159,6 +161,7 @@ Deno.serve(async (req: Request) => {
     const nowMs = Date.now();
     const sentFrom = typeof body.sentFrom === "string" ? body.sentFrom : "unknown";
     const externalId = typeof body.externalId === "string" ? body.externalId : null;
+    const formId = typeof body.formId === "string" ? body.formId : "unknown";
 
     const payload = {
       formSchema: [],
@@ -170,6 +173,7 @@ Deno.serve(async (req: Request) => {
         ipFrom,
         sessionId: externalId ?? crypto.randomUUID(),
         containerHref: sentFrom,
+        formId,
       },
       data: { vars, hidden, answers },
     };
@@ -256,6 +260,7 @@ Deno.serve(async (req: Request) => {
     const externalId = typeof body.externalId === "string" ? body.externalId : null;
     const clickId = typeof body.clickId === "string" ? body.clickId : null;
     const utmSource = typeof body.utmSource === "string" ? body.utmSource : null;
+    const formId = typeof body.formId === "string" ? body.formId : "unknown";
 
     const payload = {
       formSchema: [],
@@ -267,6 +272,7 @@ Deno.serve(async (req: Request) => {
         ipFrom,
         sessionId: externalId ?? crypto.randomUUID(),
         containerHref: sentFrom,
+        formId,
       },
       data: { vars, hidden, answers },
     };

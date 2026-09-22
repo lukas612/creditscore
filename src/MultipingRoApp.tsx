@@ -138,7 +138,7 @@ export default function MultipingRoApp() {
       };
       const raceTimer = attempt > 1 ? setTimeout(launchNext, RACE_TIMEOUT_MS) : undefined;
 
-      requestWitmeLenderOfferRo(fullAnswers, clickId, utmSource, sessionId, witmeOfferIdRo(attempt)).then((result) => {
+      requestWitmeLenderOfferRo(fullAnswers, clickId, utmSource, "creditio-multiping-ro-v1", sessionId, witmeOfferIdRo(attempt)).then((result) => {
         clearTimeout(raceTimer);
         active--;
         if (result.offer) {

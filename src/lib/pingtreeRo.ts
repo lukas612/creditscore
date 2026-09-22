@@ -8,6 +8,10 @@ import { supabase } from "./supabase";
 // de aval-coche/reunificación todavía, así que servy_id_2/3 van vacíos.
 const SERVY_ID_PINGTREE_RO = 259;
 
+// Identifica el formulario que envía cada petición a Witme (meta.formId).
+// Súbele la versión (v1 -> v2...) cuando cambien las preguntas de este flujo.
+const FORM_ID = "creditio-pingtree-ro-v1";
+
 export interface PingtreeResult {
   redirectUrl: string | null;
   succeeded: boolean;
@@ -24,6 +28,7 @@ export async function submitPingtreeLeadRo(
     const { data, error } = await supabase.functions.invoke("witme-proxy", {
       body: {
         action: "submit_pingtree",
+        formId: FORM_ID,
         externalId,
         sentFrom: window.location.href,
         vars: {
