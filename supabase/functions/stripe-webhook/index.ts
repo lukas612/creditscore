@@ -39,14 +39,9 @@ async function fetchPdfBase64(): Promise<string> {
 // payout=0. Se dispara aquí (no en el frontend) porque el webhook es la
 // única confirmación de que el pago de verdad se completó - un pixel en la
 // pantalla de "pago confirmado" se podría disparar sin haber pagado nada.
-//
-// currency=EUR fijo (igual que el resto de postbacks de ES/RO, que tampoco
-// usan la divisa local) - el payout es el importe pagado en MXN tal cual,
-// sin conversión de cambio. Si tu plataforma de tracking espera el importe
-// ya convertido a euros, dilo y lo ajusto.
 async function fireSalePostback(clickId: string, amountCents: number): Promise<void> {
   const payout = (amountCents / 100).toFixed(2);
-  const url = `https://go.servy.es/postback?cid=${encodeURIComponent(clickId)}&payout=${payout}&currency=EUR&param1=Scorea_sale`;
+  const url = `https://go.servy.es/postback?cid=${encodeURIComponent(clickId)}&payout=${payout}&currency=MXN&param1=Scorea_sale`;
   try {
     await fetch(url);
   } catch (err) {
