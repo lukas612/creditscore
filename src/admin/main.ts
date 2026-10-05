@@ -112,7 +112,7 @@ let currentPreset: PresetKey = "all";
 let customFrom = toDateInputValue(today);
 let customTo = toDateInputValue(today);
 
-type SourceKey = "all" | "quiz" | "solicitud" | "pingtree" | "multiping_ro" | "pingtree_ro" | "credit_ro";
+type SourceKey = "all" | "quiz" | "solicitud" | "pingtree" | "multiping_ro" | "pingtree_ro" | "credit_ro" | "credito_claro_mx";
 let currentSource: SourceKey = "all";
 
 // Solicitud/pingtree = España; multiping_ro/pingtree_ro/credit_ro = Rumanía.
@@ -138,6 +138,9 @@ let currentWitmeCarPage = 0;
 
 const PINGTREE_PAGE_SIZE = 10;
 let currentPingtreePage = 0;
+
+const CREDITO_CLARO_PAGE_SIZE = 10;
+let currentCreditoClaroPage = 0;
 
 type Tab = "dashboard" | "leads" | "scoring" | "fieldstats";
 let currentTab: Tab = "dashboard";
@@ -171,6 +174,7 @@ const SOURCE_LABELS: Record<SourceKey, string> = {
   multiping_ro: "Multiping RO",
   pingtree_ro: "Pingtree RO",
   credit_ro: "Credit RO",
+  credito_claro_mx: "Scorea (MX)",
 };
 
 function periodFor(preset: PresetKey): Period {
@@ -281,6 +285,18 @@ const STEP_DEFS_CREDIT_RO: StepDef[] = [
   { key: "financial_details", label: "Detalles financieros (nacimiento, ingresos, estado civil)" },
   { key: "final_details", label: "Últimos datos (CNP, ciudad, dirección)" },
   { key: "application_completed", label: "✅ Termina la solicitud" },
+];
+
+// Scorea (MX): 5 preguntas del quiz (ver src/credito-claro-main.ts), sin gate
+// de contacto propio - el email se pide después, solo si decide comprar la
+// guía (ver sección de pedidos más abajo en vez de "leads" con contacto).
+const STEP_DEFS_CREDITO_CLARO_MX: StepDef[] = [
+  { key: "activo", label: "¿Tiene crédito activo?" },
+  { key: "atrasos", label: "Atrasos en pagos (12 meses)" },
+  { key: "uso", label: "Uso del límite de crédito" },
+  { key: "antiguedad", label: "Antigüedad del crédito más viejo" },
+  { key: "solicitudes", label: "Solicitudes de crédito recientes" },
+  { key: "application_completed", label: "✅ Termina el quiz" },
 ];
 
 interface Lead {
@@ -461,6 +477,35 @@ async function fetchPingtreeApplications(password: string, page: number, country
   });
   if (error) throw error;
   return (data ?? []) as PingtreeApplication[];
+}
+
+// Pedidos de la guía "Scorea" (México), pago real con Stripe - ver
+// supabase/functions/stripe-checkout y stripe-webhook. A diferencia de los
+// prestamistas (Witme/Pingtree), aquí no hay click_id ni redirectUrl: el
+// "estado" relevante es si Stripe confirmó el pago o no.
+interface CreditoClaroOrder {
+  id: string;
+  created_at: string;
+  email: string;
+  amount_cents: number;
+  currency: string;
+  status: string;
+  paid_at: string | null;
+  score: number | null;
+  score_band: string | null;
+  total_count: number;
+}
+
+async function fetchCreditoClaroOrders(password: string, period: Period, page: number): Promise<CreditoClaroOrder[]> {
+  const { data, error } = await supabase.rpc("admin_get_credito_claro_orders", {
+    p_password: password,
+    p_since: period.since,
+    p_until: period.until,
+    p_limit: CREDITO_CLARO_PAGE_SIZE,
+    p_offset: page * CREDITO_CLARO_PAGE_SIZE,
+  });
+  if (error) throw error;
+  return (data ?? []) as CreditoClaroOrder[];
 }
 
 interface PingtreeResponseStats {
@@ -816,7 +861,9 @@ async function renderDashboard(password: string) {
           ? STEP_DEFS_MULTIPING_RO
           : currentSource === "credit_ro"
             ? STEP_DEFS_CREDIT_RO
-            : STEP_DEFS;
+            : currentSource === "credito_claro_mx"
+              ? STEP_DEFS_CREDITO_CLARO_MX
+              : STEP_DEFS;
 
     root.innerHTML = `
       <div class="admin-shell">
@@ -941,13 +988,14 @@ async function renderLeadsTab(password: string) {
   try {
     const country = countryParam(currentSource);
     const source = sourceParam(currentSource);
-    const [leads, witmeApps, witmeResponseStats, witmeCarApps, pingtreeApps, pingtreeResponseStats] = await Promise.all([
+    const [leads, witmeApps, witmeResponseStats, witmeCarApps, pingtreeApps, pingtreeResponseStats, creditoClaroOrders] = await Promise.all([
       fetchLeads(password, period, currentSource, currentLeadsPage),
       fetchWitmeApplications(password, currentWitmePage, source),
       fetchWitmeResponseStats(password, source),
       fetchWitmeCarApplications(password, currentWitmeCarPage),
       fetchPingtreeApplications(password, currentPingtreePage, country),
       fetchPingtreeResponseStats(password, country),
+      fetchCreditoClaroOrders(password, period, currentCreditoClaroPage),
     ]);
     const totalLeadsCount = leads[0]?.total_count ?? 0;
     const totalLeadsPages = Math.max(1, Math.ceil(totalLeadsCount / LEADS_PAGE_SIZE));
@@ -957,6 +1005,8 @@ async function renderLeadsTab(password: string) {
     const totalWitmeCarPages = Math.max(1, Math.ceil(totalWitmeCarCount / WITME_CAR_PAGE_SIZE));
     const totalPingtreeCount = pingtreeApps[0]?.total_count ?? 0;
     const totalPingtreePages = Math.max(1, Math.ceil(totalPingtreeCount / PINGTREE_PAGE_SIZE));
+    const totalCreditoClaroCount = creditoClaroOrders[0]?.total_count ?? 0;
+    const totalCreditoClaroPages = Math.max(1, Math.ceil(totalCreditoClaroCount / CREDITO_CLARO_PAGE_SIZE));
 
     root.innerHTML = `
       <div class="admin-shell">
@@ -1226,12 +1276,62 @@ async function renderLeadsTab(password: string) {
           </div>
         </section>
         ` : ""}
+
+        ${(currentSource === "all" || currentSource === "credito_claro_mx") ? `
+        <section class="admin-card">
+          <p class="admin-card-title">Pedidos Scorea · guía PDF (${totalCreditoClaroCount})</p>
+          <p class="admin-card-sub">
+            Compras de la guía "Scorea" ($149 MXN) pagadas con Stripe. "Pagado" solo lo
+            marca el webhook de Stripe tras confirmar el cobro (nunca el checkout en sí) -
+            ver supabase/functions/stripe-webhook.
+          </p>
+          <div class="admin-table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Fecha</th><th>Email</th><th>Importe</th><th>Estado</th><th>Pagado</th><th>Score</th></tr>
+              </thead>
+              <tbody>
+                ${creditoClaroOrders
+                  .map(
+                    (o) => `
+                  <tr>
+                    <td>${dateFmt.format(new Date(o.created_at))}</td>
+                    <td><div class="admin-table-name-cell" title="${escapeHtml(o.email)}">${escapeHtml(o.email)}</div></td>
+                    <td>${(o.amount_cents / 100).toFixed(2)} ${escapeHtml(o.currency)}</td>
+                    <td><span class="admin-badge ${o.status === "paid" ? "band-excelente" : o.status === "pending" ? "band-regular" : "band-bajo"}">${escapeHtml(o.status)}</span></td>
+                    <td>${o.paid_at ? dateFmt.format(new Date(o.paid_at)) : "—"}</td>
+                    <td>${o.score != null ? `${o.score} (${escapeHtml(o.score_band ?? "")})` : "—"}</td>
+                  </tr>
+                `,
+                  )
+                  .join("")}
+                ${creditoClaroOrders.length === 0 ? `<tr><td colspan="6" class="admin-empty">Todavía no hay pedidos.</td></tr>` : ""}
+              </tbody>
+            </table>
+          </div>
+          <div class="admin-pagination">
+            <button class="admin-btn-ghost" id="credito-claro-prev-btn" ${currentCreditoClaroPage === 0 ? "disabled" : ""}>← Anterior</button>
+            <span class="admin-pagination-label">Página ${currentCreditoClaroPage + 1} de ${totalCreditoClaroPages}</span>
+            <button class="admin-btn-ghost" id="credito-claro-next-btn" ${currentCreditoClaroPage + 1 >= totalCreditoClaroPages ? "disabled" : ""}>Siguiente →</button>
+          </div>
+        </section>
+        ` : ""}
       </div>
     `;
 
     wireHeader(password);
     wireFilterBars(password);
 
+    document.getElementById("credito-claro-prev-btn")?.addEventListener("click", () => {
+      if (currentCreditoClaroPage > 0) {
+        currentCreditoClaroPage--;
+        renderLeadsTab(password);
+      }
+    });
+    document.getElementById("credito-claro-next-btn")?.addEventListener("click", () => {
+      currentCreditoClaroPage++;
+      renderLeadsTab(password);
+    });
     document.getElementById("leads-prev-btn")!.addEventListener("click", () => {
       if (currentLeadsPage > 0) {
         currentLeadsPage--;

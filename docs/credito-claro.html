@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scorea — Calcula tu score gratis</title>
+<meta
+  name="description"
+  content="Responde 5 preguntas rápidas y descubre qué tan sano está tu crédito en México, con Scorea."
+/>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://pgyaigdsedkdqvhtexrz.supabase.co" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,500&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink: #1A2233;
+    --ink-soft: #4B5468;
+    --ink-faint: #8B93A0;
+    --brand: #146356;
+    --brand-dark: #0E4A40;
+    --brand-light: #E4F0EC;
+    --accent: #E8703A;
+    --accent-dark: #C85A28;
+    --accent-light: #FCEAE0;
+    --warn: #B23B3B;
+    --warn-light: #FBEAEA;
+    --paper: #FFFFFF;
+    --surface: #F6F7F5;
+    --line: #E2E4E0;
+    --radius: 14px;
+    --radius-sm: 9px;
+    --shadow: 0 14px 34px rgba(20,99,86,0.12);
+    --shadow-sm: 0 6px 16px rgba(20,30,40,0.07);
+    --font-head: 'Lora', serif;
+    --font-ui: 'Poppins', -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#11161B; --surface:#171D22; --ink:#ECEFF1; --ink-soft:#B6C0C6; --ink-faint:#798489;
+      --line:#262E33; --brand-light:#102823; --accent-light:#2B1B12; --warn-light:#2E1515;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#11161B; --surface:#171D22; --ink:#ECEFF1; --ink-soft:#B6C0C6; --ink-faint:#798489;
+    --line:#262E33; --brand-light:#102823; --accent-light:#2B1B12; --warn-light:#2E1515;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; height:100%; }
+  html{ scroll-padding-top: env(safe-area-inset-top,0px); }
+  body{
+    background: var(--paper); color: var(--ink); font-family: var(--font-ui);
+    line-height:1.55; -webkit-font-smoothing:antialiased;
+    padding-top: env(safe-area-inset-top,0px); padding-bottom: env(safe-area-inset-bottom,0px);
+  }
+  a{ color:inherit; }
+  .wrap{ max-width: 1040px; margin:0 auto; padding:0 20px; }
+  .wrap-narrow{ max-width: 620px; margin:0 auto; padding:0 20px; }
+  img,svg{ max-width:100%; }
+
+  header.masthead{
+    padding: 16px 0; display:flex; align-items:center; justify-content:space-between;
+    position: sticky; top:0; background: rgba(255,255,255,0.9); backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--line); z-index: 20;
+    padding-top: calc(16px + env(safe-area-inset-top,0px));
+  }
+  @media (prefers-color-scheme: dark){ header.masthead{ background: rgba(17,22,27,0.9);} }
+  :root[data-theme="dark"] header.masthead{ background: rgba(17,22,27,0.9); }
+  .brand{ display:flex; align-items:center; gap:8px; font-family: var(--font-head); font-weight:600; font-size:19px; color: var(--brand); }
+  .brand svg{ flex-shrink:0; }
+  .nav-cta{
+    font-family: var(--font-ui); font-weight:600; font-size:13px; color:#fff; background: var(--brand);
+    padding: 9px 16px; border-radius: 20px; white-space:nowrap;
+  }
+
+  .disclaimer-strip{
+    font-size:11.5px; color: var(--ink-faint); text-align:center; padding:7px 20px;
+    background: var(--surface); border-bottom:1px solid var(--line);
+  }
+
+  /* ---- HERO ---- */
+  .hero{ background: linear-gradient(180deg, var(--brand-light) 0%, var(--paper) 100%); padding: 44px 0 10px; text-align:center; }
+  .hero h1{ font-family: var(--font-head); font-weight:600; font-size:32px; line-height:1.18; margin:0 0 14px; text-wrap: balance; }
+  .hero h1 .hl{ color: var(--brand); }
+  .hero .lede{ font-size:15.5px; color: var(--ink-soft); max-width:46ch; margin: 0 auto 26px; }
+  .btn{
+    font-family: var(--font-ui); font-weight:700; font-size:15px; border:none; border-radius: var(--radius-sm);
+    cursor:pointer; padding:14px 22px; display:inline-flex; align-items:center; gap:8px; white-space:nowrap;
+  }
+  .btn-accent{ background: var(--accent); color:#2B1200; box-shadow: 0 8px 18px rgba(232,112,58,0.32); }
+  .btn-accent:hover{ background: var(--accent-dark); }
+  .btn-brand{ background: var(--brand); color:#fff; }
+  .btn-brand:hover{ background: var(--brand-dark); }
+  .btn-outline{ background:transparent; border:1.5px solid var(--brand); color: var(--brand); }
+  .btn:disabled{ opacity:0.55; cursor:default; }
+  .btn-block{ width:100%; justify-content:center; }
+
+  .trust-row{ display:flex; gap:16px; justify-content:center; flex-wrap:wrap; font-size:12px; color: var(--ink-faint); margin-top:18px; }
+  .trust-row span{ display:flex; align-items:center; gap:5px; }
+
+  /* ---- QUIZ CARD ---- */
+  .quiz-section{ padding: 30px 0 10px; }
+  .quiz-card{
+    background: var(--paper); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 26px; max-width: 580px; margin: 0 auto; position: relative;
+  }
+  .quiz-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+  .quiz-head .step-label{ font-size:11.5px; color: var(--ink-faint); font-weight:600; letter-spacing:0.03em; }
+  .progress-bar{ height:5px; background: var(--line); border-radius:3px; overflow:hidden; margin-bottom:22px; }
+  .progress-fill{ height:100%; background: var(--accent); width:20%; transition: width 0.3s ease; border-radius:3px; }
+
+  .q-title{ font-family: var(--font-head); font-size:18px; font-weight:600; margin: 0 0 18px; text-wrap: balance; }
+  .options{ display:flex; flex-direction:column; gap:10px; }
+  .option{
+    display:block; width:100%; text-align:left; background: var(--surface); border:1.5px solid var(--line);
+    border-radius: var(--radius-sm); padding:13px 16px; font-family: var(--font-ui); font-size:14.5px; color: var(--ink);
+    cursor:pointer;
+  }
+  .option:hover{ border-color: var(--brand); }
+  .option.selected{ border-color: var(--brand); background: var(--brand-light); font-weight:600; }
+
+  .quiz-nav{ display:flex; justify-content:space-between; margin-top:20px; }
+  .link-btn{ background:none; border:none; font-family: var(--font-ui); font-size:13.5px; color: var(--ink-faint); cursor:pointer; padding:8px 4px; }
+
+  .banner{
+    max-width: 580px; margin: 0 auto 14px; padding: 11px 16px; border-radius: var(--radius-sm);
+    font-size: 13px; text-align:center;
+  }
+  .banner-info{ background: var(--brand-light); color: var(--brand-dark); }
+  .banner-warn{ background: var(--warn-light); color: var(--warn); }
+
+  /* ---- RESULT ---- */
+  .result-wrap, .success-wrap{ display:none; }
+  .result-wrap.show, .success-wrap.show{ display:block; }
+  .score-ring{ display:flex; justify-content:center; margin-bottom: 14px; }
+  .score-badge{
+    display:inline-block; font-size:11.5px; font-weight:700; letter-spacing:0.03em; text-transform:uppercase;
+    padding:5px 14px; border-radius:20px; margin-bottom:6px;
+  }
+  .badge-good{ background: var(--brand-light); color: var(--brand-dark); }
+  .badge-mid{ background: var(--accent-light); color: var(--accent-dark); }
+  .badge-low{ background: var(--warn-light); color: var(--warn); }
+  .result-title{ font-family: var(--font-head); font-size:22px; font-weight:600; text-align:center; margin:4px 0 6px; text-wrap: balance; }
+  .result-sub{ text-align:center; font-size:13.5px; color: var(--ink-soft); margin-bottom:20px; }
+
+  .result-tip{
+    background: var(--surface); border-left:3px solid var(--brand); border-radius:3px; padding:14px 16px;
+    font-size:13.5px; color: var(--ink-soft); margin-bottom: 20px;
+  }
+  .result-tip strong{ color: var(--ink); }
+
+  .upsell{ border-top:1px solid var(--line); padding-top:20px; text-align:center; }
+  .upsell p{ font-size:13.5px; color: var(--ink-soft); margin: 0 0 14px; }
+  .price-tag{ font-family: var(--font-head); font-size:26px; font-weight:600; color: var(--brand-dark); }
+  .price-tag .was{ font-size:15px; color: var(--ink-faint); text-decoration: line-through; font-weight:400; margin-right:6px; }
+  .checkout-note{ font-size:11px; color: var(--ink-faint); margin-top:10px; }
+  .buy-error{ display:none; font-size:12.5px; color: var(--warn); margin-top:10px; }
+  .buy-error.show{ display:block; }
+
+  .demo-tag{
+    position:absolute; top:-10px; left:50%; transform:translateX(-50%);
+    font-size:10.5px; font-weight:600; color:#fff; background: var(--ink); border-radius:20px; padding:4px 12px;
+  }
+
+  /* ---- PRODUCT SECTION ---- */
+  section.product{ padding: 60px 0; background: var(--surface); }
+  .section-title{ font-family: var(--font-head); font-size:25px; font-weight:600; text-align:center; margin:0 0 10px; text-wrap: balance; }
+  .section-sub{ text-align:center; color: var(--ink-soft); font-size:14.5px; margin: 0 0 34px; }
+  .product-grid{ display:flex; gap:30px; align-items:center; flex-wrap:wrap; justify-content:center; }
+  .product-cover{
+    width: 220px; aspect-ratio: 3/4; background: linear-gradient(160deg, var(--brand-dark), var(--brand));
+    border-radius: 10px; box-shadow: var(--shadow); color:#fff; padding:24px; display:flex; flex-direction:column; justify-content:space-between;
+    flex-shrink:0;
+  }
+  .product-cover .kick{ font-size:9px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.75; }
+  .product-cover h3{ font-family: var(--font-head); font-size:21px; margin:10px 0 0; }
+  .product-cover .pages{ font-size:11px; opacity:0.85; }
+  .product-info{ max-width: 420px; }
+  .product-info ul{ padding-left:20px; margin: 0 0 20px; font-size:14px; color: var(--ink-soft); }
+  .product-info li{ margin-bottom:8px; }
+  .product-price-row{ display:flex; align-items:center; gap:14px; margin-bottom: 6px; }
+
+  /* ---- CREDIT OFFERS ---- */
+  section.offers{ padding: 60px 0; }
+  .offers-grid{ display:grid; grid-template-columns: repeat(3,1fr); gap:20px; }
+  .offer-card{
+    background: var(--paper); border:1px solid var(--line); border-radius: var(--radius); padding:22px; text-align:center;
+    box-shadow: var(--shadow-sm);
+  }
+  .offer-icon{ width:46px; height:46px; margin: 0 auto 14px; }
+  .offer-card h4{ font-family: var(--font-head); font-size:15.5px; margin:0 0 8px; }
+  .offer-card p{ font-size:13px; color: var(--ink-soft); margin:0 0 16px; }
+  .offer-card .btn{ font-size:13px; padding:10px 16px; }
+  .affiliate-note{ text-align:center; font-size:11.5px; color: var(--ink-faint); margin-top:24px; }
+
+  section.cta-band{ background: var(--brand); color:#fff; text-align:center; padding:46px 0; }
+  .cta-band h2{ font-family: var(--font-head); font-size:24px; font-weight:600; margin:0 0 20px; text-wrap: balance; }
+
+  footer{ padding: 30px 0 40px; font-size:11.5px; color: var(--ink-faint); }
+  footer p{ margin:0 0 8px; max-width:70ch; }
+
+  .confirm{ display:none; font-size:13.5px; color: var(--brand-dark); font-weight:600; margin-top:10px; }
+  .confirm.show{ display:block; }
+  .email-row{ display:flex; gap:10px; margin-top:14px; }
+  input[type="email"]{
+    flex:1; min-width:0; font-family: var(--font-ui); font-size:14.5px; padding:12px 14px;
+    border:1.5px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink);
+  }
+  input[type="email"]:focus{ outline:none; border-color: var(--brand); background: var(--paper); }
+
+  .loading-dots::after{ content:"…"; }
+
+  @media (max-width: 760px){
+    .offers-grid{ grid-template-columns: 1fr; }
+    .product-grid{ flex-direction:column; }
+  }
+  @media (max-width: 480px){
+    .hero h1{ font-size:26px; }
+    .quiz-card{ padding:20px; }
+    .email-row{ flex-direction:column; }
+    .email-row button{ width:100%; justify-content:center; }
+  }
+</style>
+  <script type="module" crossorigin src="./assets/credito-claro-Do6vCGrO.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/index-DBuN83Yj.js">
+  <link rel="modulepreload" crossorigin href="./assets/funnel-BUadXclZ.js">
+</head>
+<body>
+
+<header class="masthead">
+  <span class="brand">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    Scorea
+  </span>
+  <a href="#quiz" class="nav-cta">Calcula tu score</a>
+</header>
+<div class="disclaimer-strip">Contenido educativo. No afiliado a Buró de Crédito, Círculo de Crédito ni CONDUSEF.</div>
+
+<section class="hero">
+  <div class="wrap-narrow">
+    <h1>¿Qué tan <span class="hl">sano</span> está tu crédito?</h1>
+    <p class="lede">Responde 5 preguntas rápidas y te decimos qué tan bien vas — y qué es lo primero que deberías arreglar para mejorar tu historial en México.</p>
+    <a href="#quiz" class="btn btn-accent">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      Calcular mi score gratis
+    </a>
+    <div class="trust-row">
+      <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="var(--brand)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>100% gratis</span>
+      <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="var(--brand)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Resultado en 1 minuto</span>
+      <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="var(--brand)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Sin tarjeta</span>
+    </div>
+  </div>
+</section>
+
+<section class="quiz-section" id="quiz">
+  <div class="wrap-narrow">
+    <div id="banner-slot"></div>
+    <div class="quiz-card">
+
+      <div id="quizFlow">
+        <div class="quiz-head">
+          <span class="step-label" id="stepLabel">PREGUNTA 1 DE 5</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="q-title" id="qTitle"></div>
+        <div class="options" id="qOptions"></div>
+        <div class="quiz-nav">
+          <button class="link-btn" id="backBtn">&larr; Atrás</button>
+          <span></span>
+        </div>
+      </div>
+
+      <div class="result-wrap" id="resultWrap">
+        <span class="demo-tag">Resultado estimado</span>
+        <div style="text-align:center; margin-top:10px;">
+          <span class="score-badge" id="scoreBadge"></span>
+        </div>
+        <div class="result-title" id="resultTitle"></div>
+        <p class="result-sub" id="resultSub"></p>
+        <div class="result-tip" id="resultTip"></div>
+
+        <div class="upsell">
+          <p>Si quieres el plan completo para trabajar esto paso a paso — con un calendario de 90 días y checklist incluido:</p>
+          <div class="price-tag"><span class="was">$349</span>$149 MXN</div>
+          <p style="margin:6px 0 16px; font-size:12.5px;">Guía "Scorea" · PDF descargable · 13 páginas</p>
+          <button class="btn btn-brand btn-block" id="buyBtn">Quiero la guía completa — $149 MXN</button>
+          <div class="email-row" id="emailRow" style="display:none;">
+            <input type="email" id="emailInput" placeholder="tu@email.com">
+            <button class="btn btn-accent" id="emailConfirmBtn">Continuar</button>
+          </div>
+          <p class="buy-error" id="buyError"></p>
+          <p class="checkout-note">Al continuar te llevamos a Stripe para pagar de forma segura. Tras el pago, te enviamos el PDF por email.</p>
+        </div>
+      </div>
+
+      <div class="success-wrap" id="successWrap">
+        <div style="text-align:center;">
+          <span class="score-badge badge-good">Pago confirmado</span>
+          <div class="result-title">¡Gracias por tu compra!</div>
+          <p class="result-sub">Te enviamos la guía Scorea en PDF por email en los próximos minutos. Si no la ves, revisa spam/promociones.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="product">
+  <div class="wrap">
+    <h2 class="section-title">La guía completa</h2>
+    <p class="section-sub">Todo lo que necesitas para entender y mejorar tu historial, en un solo documento</p>
+    <div class="product-grid">
+      <div class="product-cover">
+        <div>
+          <div class="kick">Guía educativa</div>
+          <h3>Scorea</h3>
+        </div>
+        <div class="pages">13 páginas · Plan de 90 días incluido</div>
+      </div>
+      <div class="product-info">
+        <ul>
+          <li>Cómo funciona Buró de Crédito y Círculo de Crédito en México</li>
+          <li>Los factores que realmente mueven tu score</li>
+          <li>Cómo pedir tu reporte gratis paso a paso (sin pagar nada)</li>
+          <li>Plan de 90 días dividido en diagnóstico, optimización y consolidación</li>
+          <li>Qué hacer si tienes cuentas atrasadas o en cobranza</li>
+          <li>Checklist final + glosario</li>
+        </ul>
+        <button class="btn btn-brand" onclick="document.getElementById('quiz').scrollIntoView({behavior:'smooth'});">Hacer el quiz y ver mi precio</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="offers">
+  <div class="wrap">
+    <h2 class="section-title">Mientras mejoras tu historial</h2>
+    <p class="section-sub">Opciones comunes para empezar a construir crédito en México, según tu punto de partida</p>
+    <div class="offers-grid">
+      <div class="offer-card">
+        <svg class="offer-icon" viewBox="0 0 40 40" fill="none"><rect x="5" y="10" width="30" height="20" rx="3" stroke="var(--brand)" stroke-width="1.6"/><rect x="5" y="16" width="30" height="4" fill="var(--brand)"/></svg>
+        <h4>Tarjeta departamental</h4>
+        <p>Suelen tener aprobación más flexible y sí reportan a buró — una puerta de entrada común si nunca has tenido crédito.</p>
+        <button class="btn btn-outline" data-offer="tarjeta_departamental">Ver opciones</button>
+      </div>
+      <div class="offer-card">
+        <svg class="offer-icon" viewBox="0 0 40 40" fill="none"><path d="M20 6l12 5v8c0 7-5 12-12 15-7-3-12-8-12-15v-8l12-5z" stroke="var(--brand)" stroke-width="1.6"/><path d="M14 20l4 4 8-9" stroke="var(--brand)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <h4>Tarjeta garantizada</h4>
+        <p>Depositas una garantía y el límite se basa en ese depósito — bajo riesgo para empezar a generar historial sólido.</p>
+        <button class="btn btn-outline" data-offer="tarjeta_garantizada">Ver opciones</button>
+      </div>
+      <div class="offer-card">
+        <svg class="offer-icon" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="14" stroke="var(--brand)" stroke-width="1.6"/><path d="M14 20h12M20 14v12" stroke="var(--brand)" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <h4>Tarjeta fintech</h4>
+        <p>Aprobación más ágil que la banca tradicional — confirma siempre que el producto reporte a Buró o Círculo de Crédito.</p>
+        <button class="btn btn-outline" data-offer="tarjeta_fintech">Ver opciones</button>
+      </div>
+    </div>
+    <p class="affiliate-note">Algunas de estas opciones pueden generarnos una comisión si decides contratarlas, sin costo adicional para ti. Eso no cambia nuestra recomendación educativa — revisa siempre condiciones y CAT antes de contratar cualquier producto.</p>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="wrap">
+    <h2>Conoce tu punto de partida. Es gratis.</h2>
+    <button class="btn btn-accent" onclick="document.getElementById('quiz').scrollIntoView({behavior:'smooth'});">Calcular mi score gratis</button>
+  </div>
+</section>
+
+<div class="wrap">
+  <footer>
+    <p>Scorea es un material educativo independiente. No está afiliado, patrocinado ni respaldado por Buró de Crédito, S.A. de C.V., Círculo de Crédito, S.A. de C.V., la CNBV ni la CONDUSEF. El cálculo de score de esta página es una estimación propia con fines ilustrativos, no un reporte oficial ni un dato proveniente de ninguna Sociedad de Información Crediticia.</p>
+    <p>Este contenido no constituye asesoría financiera, legal ni fiscal personalizada. Para tu caso particular, consulta a un profesional o acude de forma gratuita a CONDUSEF.</p>
+    <p>&copy; 2026 Scorea</p>
+  </footer>
+</div>
+
+</body>
+</html>

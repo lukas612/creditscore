@@ -18,6 +18,7 @@ export default defineConfig({
         "multiping-ro": resolve(__dirname, "multiping-ro.html"),
         "pingtree-ro": resolve(__dirname, "pingtree-ro.html"),
         "credit-ro": resolve(__dirname, "credit-ro.html"),
+        "credito-claro": resolve(__dirname, "credito-claro.html"),
       },
     },
   },
