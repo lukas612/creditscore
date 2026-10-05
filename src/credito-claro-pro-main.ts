@@ -1,14 +1,14 @@
 import { supabase } from "./lib/supabase";
 import { trackFunnelEvent } from "./lib/funnel";
 
-// Scorea (MX): a diferencia de ES/RO, aquí no hay prestamistas ni cascada de
-// Witme - el quiz es un lead magnet que lleva a la venta de la guía en PDF
-// (pago real con Stripe, ver supabase/functions/stripe-checkout y
-// stripe-webhook). Reutiliza el mismo patrón de create_quiz_session +
-// funnel_events que el resto de países para que salga en el panel admin,
-// pero el cálculo de score vive en calculate_score_mx (scoring_rules
-// 'mx_%'), no en este archivo.
-const SOURCE = "credito_claro_mx";
+// Scorea Pro (MX): variante "elaborada" de credito-claro.html para test A/B -
+// 7 factores reales de buró en vez de 5 (ver scoring_rules 'mxpro_%' /
+// calculate_score_mx_pro) y un gate de email antes de revelar el score
+// completo (igual que WitmeGate en ES), que sí crea un lead aunque no
+// compren - credito-claro.html (la versión simple) no lo hacía. El resto
+// del embudo (venta de la guía vía Stripe) es idéntico y comparte las
+// mismas edge functions.
+const SOURCE = "credito_claro_mx_pro";
 
 interface QuestionOption {
   label: string;
@@ -17,61 +17,94 @@ interface QuestionOption {
 
 interface Question {
   title: string;
+  help: string;
   options: QuestionOption[];
-  // Clave del objeto de respuestas que espera calculate_score_mx en el backend.
-  answerKey: "mxActivo" | "mxAtrasos" | "mxUso" | "mxAntiguedad" | "mxSolicitudes";
-  // Clave corta solo para trackFunnelEvent (pasos del embudo en el admin).
+  answerKey:
+    | "mxProActivo"
+    | "mxProAtrasos"
+    | "mxProUso"
+    | "mxProEndeudamiento"
+    | "mxProAntiguedad"
+    | "mxProTipos"
+    | "mxProSolicitudes";
   stepKey: string;
 }
 
 const QUESTIONS: Question[] = [
   {
     title: "¿Tienes alguna tarjeta de crédito o préstamo activo actualmente?",
+    help: "Tener crédito activo es lo que genera historial — sin eso, el buró no tiene nada que evaluar.",
     options: [
       { label: "Sí, tengo al menos una", value: "si" },
       { label: "No, nunca he tenido crédito", value: "no" },
     ],
-    answerKey: "mxActivo",
+    answerKey: "mxProActivo",
     stepKey: "activo",
   },
   {
     title: "En los últimos 12 meses, ¿te has atrasado en algún pago?",
+    help: "El historial de pagos es, por mucho, el factor que más pesa en tu score.",
     options: [
       { label: "Nunca", value: "nunca" },
       { label: "1 o 2 veces", value: "una_dos" },
       { label: "Varias veces", value: "varias" },
     ],
-    answerKey: "mxAtrasos",
+    answerKey: "mxProAtrasos",
     stepKey: "atrasos",
   },
   {
     title: "¿Qué porcentaje de tu límite de crédito usas normalmente?",
+    help: "Usar más del 30% de tu límite disponible, aunque pagues a tiempo, ya resta puntos.",
     options: [
       { label: "Menos del 30%", value: "bajo" },
       { label: "Entre 30% y 70%", value: "medio" },
       { label: "Más del 70%", value: "alto" },
     ],
-    answerKey: "mxUso",
+    answerKey: "mxProUso",
     stepKey: "uso",
   },
   {
+    title: "¿Qué parte de tu ingreso mensual se va en pagar deudas (tarjetas, préstamos, etc.)?",
+    help: "Es tu nivel de endeudamiento — cuánto de lo que ganas ya está comprometido en pagos fijos.",
+    options: [
+      { label: "Menos del 20%", value: "bajo" },
+      { label: "Entre 20% y 40%", value: "medio" },
+      { label: "Más del 40%", value: "alto" },
+    ],
+    answerKey: "mxProEndeudamiento",
+    stepKey: "endeudamiento",
+  },
+  {
     title: "¿Hace cuánto tiempo tienes tu crédito más antiguo?",
+    help: "La antigüedad se construye solo con tiempo — por eso cuenta tanto no cancelar tus cuentas más viejas.",
     options: [
       { label: "Menos de 1 año (o no tengo)", value: "nuevo" },
       { label: "Entre 1 y 5 años", value: "medio" },
       { label: "Más de 5 años", value: "antiguo" },
     ],
-    answerKey: "mxAntiguedad",
+    answerKey: "mxProAntiguedad",
     stepKey: "antiguedad",
   },
   {
+    title: "¿Qué tipo de productos de crédito tienes o has tenido?",
+    help: "Manejar distintos tipos (tarjeta, préstamo personal, automotriz...) suma, mientras lo hagas bien.",
+    options: [
+      { label: "Ninguno", value: "ninguno" },
+      { label: "Solo uno (ej. solo tarjeta)", value: "uno" },
+      { label: "Varios tipos distintos", value: "variados" },
+    ],
+    answerKey: "mxProTipos",
+    stepKey: "tipos",
+  },
+  {
     title: "¿Cuántas veces has solicitado crédito nuevo en los últimos 6 meses?",
+    help: "Varias solicitudes en poco tiempo se leen como urgencia por financiamiento.",
     options: [
       { label: "Ninguna", value: "ninguna" },
       { label: "1 o 2 veces", value: "pocas" },
       { label: "3 veces o más", value: "muchas" },
     ],
-    answerKey: "mxSolicitudes",
+    answerKey: "mxProSolicitudes",
     stepKey: "solicitudes",
   },
 ];
@@ -86,14 +119,23 @@ const TIP_COPY: Record<string, string> = {
   activo: "Empezar a generar historial —aunque sea con un producto pequeño— suele ser el primer paso cuando nunca has tenido crédito.",
   atrasos: "El historial de pagos es, por mucho, el factor que más pesa. Automatizar al menos el pago mínimo ayuda a evitar atrasos por olvido.",
   uso: "Bajar tu uso del límite disponible por debajo del 30% suele tener un impacto más rápido de lo que la gente espera.",
+  endeudamiento: "Bajar el porcentaje de tu ingreso comprometido en deudas, aunque sea abonando a la más cara primero, libera mucha capacidad.",
   antiguedad: "La antigüedad se construye solo con tiempo y constancia — evita cancelar tus cuentas más viejas aunque no las uses seguido.",
+  tipos: "Diversificar el tipo de crédito que manejas (sin abusar) suele verse bien, siempre que todo se pague a tiempo.",
   solicitudes: "Solicitar varios créditos en poco tiempo puede leerse como urgencia. Espaciar tus solicitudes ayuda a tu score.",
 };
+
+interface BreakdownItem {
+  key: string;
+  label: string;
+  points: number;
+  max: number;
+}
 
 interface ScoreResult {
   score: number;
   score_band: string;
-  breakdown: Array<{ key: string; label: string; points: number }>;
+  breakdown: BreakdownItem[];
 }
 
 const params = new URLSearchParams(window.location.search);
@@ -101,24 +143,28 @@ const utmSource = params.get("utm_source");
 const pago = params.get("pago");
 
 const quizFlow = document.getElementById("quizFlow")!;
+const gateWrap = document.getElementById("gateWrap")!;
 const resultWrap = document.getElementById("resultWrap")!;
 const successWrap = document.getElementById("successWrap")!;
 const bannerSlot = document.getElementById("banner-slot")!;
 const stepLabel = document.getElementById("stepLabel")!;
 const progressFill = document.getElementById("progressFill")!;
 const qTitle = document.getElementById("qTitle")!;
+const qHelp = document.getElementById("qHelp")!;
 const qOptions = document.getElementById("qOptions")!;
 const backBtn = document.getElementById("backBtn") as HTMLButtonElement;
 
 let current = 0;
 const answers: Record<string, string> = {};
 let quizSessionId: string | null = null;
+let scoreResult: ScoreResult | null = null;
 
 function renderQuestion() {
   const q = QUESTIONS[current];
   stepLabel.textContent = `PREGUNTA ${current + 1} DE ${QUESTIONS.length}`;
   progressFill.style.width = `${(current / QUESTIONS.length) * 100 + 10}%`;
   qTitle.textContent = q.title;
+  qHelp.textContent = q.help;
   qOptions.innerHTML = "";
   q.options.forEach((opt) => {
     const btn = document.createElement("button");
@@ -150,7 +196,8 @@ backBtn.addEventListener("click", () => {
 });
 
 async function finishQuiz() {
-  qTitle.textContent = "Calculando tu score…";
+  qTitle.textContent = "Calculando tu análisis…";
+  qHelp.textContent = "";
   qOptions.innerHTML = "";
 
   const { data: sessionId, error: sessionError } = await supabase.rpc("create_quiz_session", {
@@ -161,7 +208,7 @@ async function finishQuiz() {
   });
 
   const { data: scored, error: scoreError } = await supabase
-    .rpc("calculate_score_mx", { p_answers: answers })
+    .rpc("calculate_score_mx_pro", { p_answers: answers })
     .single<ScoreResult>();
 
   if (sessionError || scoreError || !scored) {
@@ -170,15 +217,68 @@ async function finishQuiz() {
   }
 
   quizSessionId = typeof sessionId === "string" ? sessionId : null;
+  scoreResult = scored;
+  if (quizSessionId) {
+    trackFunnelEvent("question_reached", "gate_contact", SOURCE, quizSessionId);
+  }
+
+  showGate(scored.score);
+}
+
+function showGate(score: number) {
+  quizFlow.style.display = "none";
+  gateWrap.classList.add("show");
+  document.getElementById("teaserScore")!.textContent = String(score);
+}
+
+const gateForm = document.getElementById("gateForm") as HTMLFormElement;
+const gateEmailInput = document.getElementById("gateEmailInput") as HTMLInputElement;
+const gateSubmitBtn = document.getElementById("gateSubmitBtn") as HTMLButtonElement;
+const gateError = document.getElementById("gateError")!;
+
+gateForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  void unlockResult();
+});
+
+async function unlockResult() {
+  const email = gateEmailInput.value.trim();
+  if (!email || !email.includes("@")) {
+    gateError.textContent = "Escribe un email válido.";
+    gateError.classList.add("show");
+    return;
+  }
+  if (!scoreResult) return;
+  gateError.classList.remove("show");
+  gateSubmitBtn.disabled = true;
+  gateSubmitBtn.textContent = "Enviando…";
+
+  const { error: insertError } = await supabase.from("leads").insert({
+    quiz_session_id: quizSessionId,
+    email,
+    score: scoreResult.score,
+    score_band: scoreResult.score_band,
+    source: SOURCE,
+  });
+
+  gateSubmitBtn.disabled = false;
+  gateSubmitBtn.textContent = "Ver mi análisis completo";
+
+  if (insertError) {
+    gateError.textContent = "No hemos podido guardar tus datos. Inténtalo de nuevo.";
+    gateError.classList.add("show");
+    return;
+  }
+
   if (quizSessionId) {
     trackFunnelEvent("question_reached", "application_completed", SOURCE, quizSessionId);
   }
 
-  showResult(scored);
+  gateWrap.classList.remove("show");
+  showResult(scoreResult);
 }
 
 function showResult(scored: ScoreResult) {
-  quizFlow.style.display = "none";
   resultWrap.classList.add("show");
 
   const copy = BAND_COPY[scored.score_band] ?? BAND_COPY.construccion;
@@ -189,9 +289,27 @@ function showResult(scored: ScoreResult) {
   badge.className = `score-badge ${copy.badgeClass}`;
   badge.textContent = copy.badgeText;
   title.textContent = copy.title;
-  sub.textContent = `Estimación propia: ${scored.score}/100 puntos, según tus respuestas.`;
+  sub.textContent = `Análisis completo: ${scored.score}/100 puntos, según tus 7 respuestas.`;
 
-  const weakest = scored.breakdown.reduce((min, item) => (item.points < min.points ? item : min), scored.breakdown[0]);
+  const breakdownEl = document.getElementById("breakdown")!;
+  breakdownEl.innerHTML = scored.breakdown
+    .map((item) => {
+      const pct = item.max > 0 ? Math.round((item.points / item.max) * 100) : 0;
+      return `
+        <div class="breakdown-row">
+          <span class="breakdown-label">${item.label}</span>
+          <span class="breakdown-track"><span class="breakdown-fill" style="width:${pct}%"></span></span>
+          <span class="breakdown-pts">${item.points}/${item.max}</span>
+        </div>
+      `;
+    })
+    .join("");
+
+  const weakest = scored.breakdown.reduce((min, item) => {
+    const ratio = item.max > 0 ? item.points / item.max : 1;
+    const minRatio = min.max > 0 ? min.points / min.max : 1;
+    return ratio < minRatio ? item : min;
+  }, scored.breakdown[0]);
   document.getElementById("resultTip")!.innerHTML =
     `<strong>Lo primero que trabajaríamos en tu caso:</strong> ${TIP_COPY[weakest?.key] ?? TIP_COPY.atrasos}`;
 }
@@ -228,7 +346,7 @@ async function startCheckout() {
         email,
         quizSessionId,
         origin: window.location.origin,
-        returnPath: "/credito-claro.html",
+        returnPath: "/credito-claro-pro.html",
       },
     });
     if (error || !data?.checkoutUrl) throw error ?? new Error("Sin checkoutUrl");
@@ -245,8 +363,6 @@ async function startCheckout() {
   }
 }
 
-// Clicks en las tarjetas de afiliados (aval coche/tarjetas): de momento son
-// placeholders sin acuerdo real (ver brief), pero se registra el interés.
 document.querySelectorAll<HTMLButtonElement>("[data-offer]").forEach((btn) => {
   btn.addEventListener("click", () => {
     trackFunnelEvent("offer_click", btn.dataset.offer, SOURCE, quizSessionId ?? undefined);

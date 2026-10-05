@@ -112,7 +112,7 @@ let currentPreset: PresetKey = "all";
 let customFrom = toDateInputValue(today);
 let customTo = toDateInputValue(today);
 
-type SourceKey = "all" | "quiz" | "solicitud" | "pingtree" | "multiping_ro" | "pingtree_ro" | "credit_ro" | "credito_claro_mx";
+type SourceKey = "all" | "quiz" | "solicitud" | "pingtree" | "multiping_ro" | "pingtree_ro" | "credit_ro" | "credito_claro_mx" | "credito_claro_mx_pro";
 let currentSource: SourceKey = "all";
 
 // Solicitud/pingtree = España; multiping_ro/pingtree_ro/credit_ro = Rumanía.
@@ -175,6 +175,7 @@ const SOURCE_LABELS: Record<SourceKey, string> = {
   pingtree_ro: "Pingtree RO",
   credit_ro: "Credit RO",
   credito_claro_mx: "Scorea (MX)",
+  credito_claro_mx_pro: "Scorea Pro (MX)",
 };
 
 function periodFor(preset: PresetKey): Period {
@@ -299,10 +300,25 @@ const STEP_DEFS_CREDITO_CLARO_MX: StepDef[] = [
   { key: "application_completed", label: "✅ Termina el quiz" },
 ];
 
+// Variante "pro" (test A/B contra credito_claro_mx): 7 preguntas en vez de 5
+// y, a diferencia de la simple, SÍ tiene gate de contacto (email) antes de
+// revelar el score completo - ver credito-claro-pro-main.ts.
+const STEP_DEFS_CREDITO_CLARO_MX_PRO: StepDef[] = [
+  { key: "activo", label: "¿Tiene crédito activo?" },
+  { key: "atrasos", label: "Atrasos en pagos (12 meses)" },
+  { key: "uso", label: "Uso del límite de crédito" },
+  { key: "endeudamiento", label: "% de ingreso en pagar deudas" },
+  { key: "antiguedad", label: "Antigüedad del crédito más viejo" },
+  { key: "tipos", label: "Variedad de productos de crédito" },
+  { key: "solicitudes", label: "Solicitudes de crédito recientes" },
+  { key: "gate_contact", label: "Deja su email para ver el score completo" },
+  { key: "application_completed", label: "✅ Termina el análisis" },
+];
+
 interface Lead {
   id: string;
   created_at: string;
-  first_name: string;
+  first_name: string | null;
   last_name: string | null;
   email: string;
   phone: string | null;
@@ -345,12 +361,13 @@ interface CreditoClaroStats {
   revenue_cents: number;
 }
 
-async function fetchCreditoClaroStats(password: string, period: Period): Promise<CreditoClaroStats> {
+async function fetchCreditoClaroStats(password: string, period: Period, source: string | null): Promise<CreditoClaroStats> {
   const { data, error } = await supabase
     .rpc("admin_get_credito_claro_stats", {
       p_password: password,
       p_since: period.since,
       p_until: period.until,
+      p_source: source,
     })
     .single<CreditoClaroStats>();
   if (error || !data) throw error ?? new Error("No data");
@@ -517,13 +534,14 @@ interface CreditoClaroOrder {
   total_count: number;
 }
 
-async function fetchCreditoClaroOrders(password: string, period: Period, page: number): Promise<CreditoClaroOrder[]> {
+async function fetchCreditoClaroOrders(password: string, period: Period, page: number, source: string | null): Promise<CreditoClaroOrder[]> {
   const { data, error } = await supabase.rpc("admin_get_credito_claro_orders", {
     p_password: password,
     p_since: period.since,
     p_until: period.until,
     p_limit: CREDITO_CLARO_PAGE_SIZE,
     p_offset: page * CREDITO_CLARO_PAGE_SIZE,
+    p_source: source,
   });
   if (error) throw error;
   return (data ?? []) as CreditoClaroOrder[];
@@ -870,7 +888,9 @@ async function renderDashboard(password: string) {
       fetchFunnelOverview(password, period, currentSource),
       fetchFunnelSteps(password, period, currentSource),
       fetchOfferClicks(password, period, currentSource),
-      currentSource === "credito_claro_mx" ? fetchCreditoClaroStats(password, period) : Promise.resolve(null),
+      currentSource === "credito_claro_mx" || currentSource === "credito_claro_mx_pro"
+        ? fetchCreditoClaroStats(password, period, sourceParam(currentSource))
+        : Promise.resolve(null),
     ]);
     const totalBands = stats.band_excelente + stats.band_bueno + stats.band_regular + stats.band_bajo;
     // Pingtree reutiliza exactamente las mismas preguntas que la solicitud
@@ -885,7 +905,9 @@ async function renderDashboard(password: string) {
             ? STEP_DEFS_CREDIT_RO
             : currentSource === "credito_claro_mx"
               ? STEP_DEFS_CREDITO_CLARO_MX
-              : STEP_DEFS;
+              : currentSource === "credito_claro_mx_pro"
+                ? STEP_DEFS_CREDITO_CLARO_MX_PRO
+                : STEP_DEFS;
 
     root.innerHTML = `
       <div class="admin-shell">
@@ -903,7 +925,7 @@ async function renderDashboard(password: string) {
 
         ${creditoClaroStats ? `
         <section class="admin-card">
-          <p class="admin-card-title">Altas Scorea (guía PDF, periodo seleccionado)</p>
+          <p class="admin-card-title">Altas ${escapeHtml(SOURCE_LABELS[currentSource])} · guía PDF (periodo seleccionado)</p>
           <p class="admin-card-sub">
             "Alta" = alguien que llegó a dejar su email para comprar la guía (crea una
             orden en <code>credito_claro_orders</code>), compre o no llegue a pagar.
@@ -1037,7 +1059,7 @@ async function renderLeadsTab(password: string) {
       fetchWitmeCarApplications(password, currentWitmeCarPage),
       fetchPingtreeApplications(password, currentPingtreePage, country),
       fetchPingtreeResponseStats(password, country),
-      fetchCreditoClaroOrders(password, period, currentCreditoClaroPage),
+      fetchCreditoClaroOrders(password, period, currentCreditoClaroPage, source),
     ]);
     const totalLeadsCount = leads[0]?.total_count ?? 0;
     const totalLeadsPages = Math.max(1, Math.ceil(totalLeadsCount / LEADS_PAGE_SIZE));
@@ -1073,7 +1095,7 @@ async function renderLeadsTab(password: string) {
                     (l) => `
                   <tr>
                     <td>${dateFmt.format(new Date(l.created_at))}</td>
-                    <td><div class="admin-table-name-cell" title="${escapeHtml(l.first_name)} ${escapeHtml(l.last_name ?? "")}">${escapeHtml(l.first_name)} ${escapeHtml(l.last_name ?? "")}</div></td>
+                    <td><div class="admin-table-name-cell" title="${escapeHtml(l.first_name ?? "")} ${escapeHtml(l.last_name ?? "")}">${escapeHtml(l.first_name ?? "—")} ${escapeHtml(l.last_name ?? "")}</div></td>
                     <td><div class="admin-table-name-cell" title="${escapeHtml(l.email)}">${escapeHtml(l.email)}</div></td>
                     <td>${escapeHtml(l.phone ?? "")}</td>
                     <td>${escapeHtml(l.zip_code ?? "")}</td>
@@ -1319,9 +1341,9 @@ async function renderLeadsTab(password: string) {
         </section>
         ` : ""}
 
-        ${(currentSource === "all" || currentSource === "credito_claro_mx") ? `
+        ${(currentSource === "all" || currentSource === "credito_claro_mx" || currentSource === "credito_claro_mx_pro") ? `
         <section class="admin-card">
-          <p class="admin-card-title">Pedidos Scorea · guía PDF (${totalCreditoClaroCount})</p>
+          <p class="admin-card-title">Pedidos ${escapeHtml(SOURCE_LABELS[currentSource])} · guía PDF (${totalCreditoClaroCount})</p>
           <p class="admin-card-sub">
             Compras de la guía "Scorea" ($149 MXN) pagadas con Stripe. "Pagado" solo lo
             marca el webhook de Stripe tras confirmar el cobro (nunca el checkout en sí) -

@@ -9,6 +9,12 @@ import Stripe from "npm:stripe@17.4.0";
 const AMOUNT_CENTS = 14900;
 const CURRENCY = "mxn";
 const PRODUCT_NAME = "Guía Scorea";
+// Qué página de origen recibe la redirección tras el pago - ambas variantes
+// del quiz (simple y "pro", para el test A/B) venden la misma guía con el
+// mismo checkout, solo cambia a dónde vuelve Stripe. Whitelist cerrada para
+// no construir un open redirect a partir de 'origin'.
+const ALLOWED_RETURN_PATHS = ["/credito-claro.html", "/credito-claro-pro.html"];
+const DEFAULT_RETURN_PATH = "/credito-claro.html";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -52,6 +58,7 @@ Deno.serve(async (req: Request) => {
   const email = typeof body.email === "string" ? body.email.trim() : "";
   const quizSessionId = typeof body.quizSessionId === "string" ? body.quizSessionId : null;
   const origin = typeof body.origin === "string" ? body.origin : null;
+  const returnPath = ALLOWED_RETURN_PATHS.includes(body.returnPath as string) ? (body.returnPath as string) : DEFAULT_RETURN_PATH;
 
   if (!isValidEmail(email)) {
     return jsonResponse({ error: "Email inválido" }, 400);
@@ -95,8 +102,8 @@ Deno.serve(async (req: Request) => {
           quantity: 1,
         },
       ],
-      success_url: `${origin}/credito-claro.html?pago=exito&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/credito-claro.html?pago=cancelado`,
+      success_url: `${origin}${returnPath}?pago=exito&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}${returnPath}?pago=cancelado`,
       metadata: {
         order_id: order.id,
         quiz_session_id: quizSessionId ?? "",

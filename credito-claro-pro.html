@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Scorea — Calcula tu score gratis</title>
+<title>Scorea Pro — Análisis completo de tu crédito</title>
 <meta
   name="description"
-  content="Responde 5 preguntas rápidas y descubre qué tan sano está tu crédito en México, con Scorea."
+  content="Un análisis más completo de tu crédito en México: 7 factores reales de buró, con desglose detallado, con Scorea."
 />
 <meta name="robots" content="noindex" />
 <link rel="preconnect" href="https://pgyaigdsedkdqvhtexrz.supabase.co" />
@@ -111,7 +111,8 @@
   .progress-bar{ height:5px; background: var(--line); border-radius:3px; overflow:hidden; margin-bottom:22px; }
   .progress-fill{ height:100%; background: var(--accent); width:20%; transition: width 0.3s ease; border-radius:3px; }
 
-  .q-title{ font-family: var(--font-head); font-size:18px; font-weight:600; margin: 0 0 18px; text-wrap: balance; }
+  .q-title{ font-family: var(--font-head); font-size:18px; font-weight:600; margin: 0 0 8px; text-wrap: balance; }
+  .q-help{ font-size:12.5px; color: var(--ink-faint); margin: 0 0 18px; }
   .options{ display:flex; flex-direction:column; gap:10px; }
   .option{
     display:block; width:100%; text-align:left; background: var(--surface); border:1.5px solid var(--line);
@@ -150,6 +151,25 @@
     font-size:13.5px; color: var(--ink-soft); margin-bottom: 20px;
   }
   .result-tip strong{ color: var(--ink); }
+
+  /* ---- GATE (email antes del resultado completo) ---- */
+  .gate-wrap{ display:none; }
+  .gate-wrap.show{ display:block; }
+  .score-teaser{ text-align:center; margin-bottom:14px; }
+  .score-teaser-value{ font-family: var(--font-head); font-size:48px; font-weight:600; color: var(--brand); }
+  .score-teaser-blur{ font-size:16px; color: var(--ink-faint); filter: blur(3px); user-select:none; margin-left:4px; }
+  .gate-sub{ text-align:center; font-size:13.5px; color: var(--ink-soft); margin: 0 0 18px; }
+  .gate-form{ display:flex; flex-direction:column; gap:10px; }
+  .gate-error{ display:none; font-size:12.5px; color: var(--warn); margin:0; }
+  .gate-error.show{ display:block; }
+
+  /* ---- BREAKDOWN (desglose de los 7 factores) ---- */
+  .breakdown{ margin-bottom:20px; }
+  .breakdown-row{ display:flex; align-items:center; gap:10px; margin-bottom:9px; }
+  .breakdown-label{ font-size:12px; color: var(--ink-soft); width:140px; flex-shrink:0; }
+  .breakdown-track{ flex:1; height:7px; background: var(--surface); border-radius:4px; overflow:hidden; }
+  .breakdown-fill{ height:100%; background: var(--brand); border-radius:4px; }
+  .breakdown-pts{ font-size:11.5px; color: var(--ink-faint); width:46px; text-align:right; flex-shrink:0; font-variant-numeric: tabular-nums; }
 
   .upsell{ border-top:1px solid var(--line); padding-top:20px; text-align:center; }
   .upsell p{ font-size:13.5px; color: var(--ink-soft); margin: 0 0 14px; }
@@ -223,9 +243,6 @@
     .email-row button{ width:100%; justify-content:center; }
   }
 </style>
-  <script type="module" crossorigin src="./assets/credito-claro-DIWjf4gM.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/index-DBuN83Yj.js">
-  <link rel="modulepreload" crossorigin href="./assets/funnel-BUadXclZ.js">
 </head>
 <body>
 
@@ -241,14 +258,14 @@
 <section class="hero">
   <div class="wrap-narrow">
     <h1>¿Qué tan <span class="hl">sano</span> está tu crédito?</h1>
-    <p class="lede">Responde 5 preguntas rápidas y te decimos qué tan bien vas — y qué es lo primero que deberías arreglar para mejorar tu historial en México.</p>
+    <p class="lede">Un análisis más completo, con 7 factores reales de buró: historial de pagos, nivel de endeudamiento, mix de productos y más — con el desglose exacto de qué está pesando en tu score.</p>
     <a href="#quiz" class="btn btn-accent">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
       Calcular mi score gratis
     </a>
     <div class="trust-row">
       <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="var(--brand)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>100% gratis</span>
-      <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="var(--brand)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Resultado en 1 minuto</span>
+      <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="var(--brand)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Análisis en 2 minutos</span>
       <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="var(--brand)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Sin tarjeta</span>
     </div>
   </div>
@@ -261,10 +278,11 @@
 
       <div id="quizFlow">
         <div class="quiz-head">
-          <span class="step-label" id="stepLabel">PREGUNTA 1 DE 5</span>
+          <span class="step-label" id="stepLabel">PREGUNTA 1 DE 7</span>
         </div>
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
         <div class="q-title" id="qTitle"></div>
+        <p class="q-help" id="qHelp"></p>
         <div class="options" id="qOptions"></div>
         <div class="quiz-nav">
           <button class="link-btn" id="backBtn">&larr; Atrás</button>
@@ -272,13 +290,28 @@
         </div>
       </div>
 
+      <div class="gate-wrap" id="gateWrap">
+        <div class="score-teaser">
+          <span class="score-teaser-value" id="teaserScore"></span>
+          <span class="score-teaser-blur">/ 100</span>
+        </div>
+        <div class="result-title">Tu análisis ya está listo</div>
+        <p class="gate-sub">Déjanos tu email para desbloquear tu score completo y el desglose de los 7 factores.</p>
+        <form class="gate-form" id="gateForm">
+          <input type="email" id="gateEmailInput" placeholder="tu@email.com" required>
+          <p class="gate-error" id="gateError"></p>
+          <button class="btn btn-brand btn-block" type="submit" id="gateSubmitBtn">Ver mi análisis completo</button>
+        </form>
+      </div>
+
       <div class="result-wrap" id="resultWrap">
-        <span class="demo-tag">Resultado estimado</span>
+        <span class="demo-tag">Resultado completo</span>
         <div style="text-align:center; margin-top:10px;">
           <span class="score-badge" id="scoreBadge"></span>
         </div>
         <div class="result-title" id="resultTitle"></div>
         <p class="result-sub" id="resultSub"></p>
+        <div class="breakdown" id="breakdown"></div>
         <div class="result-tip" id="resultTip"></div>
 
         <div class="upsell">
@@ -378,5 +411,6 @@
   </footer>
 </div>
 
+<script type="module" src="/src/credito-claro-pro-main.ts"></script>
 </body>
 </html>
