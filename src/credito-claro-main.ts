@@ -1,5 +1,6 @@
 import { supabase } from "./lib/supabase";
 import { trackFunnelEvent } from "./lib/funnel";
+import { getClickId, fireServyPostback } from "./lib/postback";
 
 // Scorea (MX): a diferencia de ES/RO, aquí no hay prestamistas ni cascada de
 // Witme - el quiz es un lead magnet que lleva a la venta de la guía en PDF
@@ -99,6 +100,8 @@ interface ScoreResult {
 const params = new URLSearchParams(window.location.search);
 const utmSource = params.get("utm_source");
 const pago = params.get("pago");
+const clickId = getClickId();
+let leadPostbackFired = false;
 
 const quizFlow = document.getElementById("quizFlow")!;
 const resultWrap = document.getElementById("resultWrap")!;
@@ -222,6 +225,14 @@ async function startCheckout() {
   emailConfirmBtn.disabled = true;
   emailConfirmBtn.textContent = "Procesando…";
 
+  // Postback de "lead" (payout=0): dejar el email con intención de compra,
+  // compre o no llegue a pagar - igual que el gate de ES/RO. La venta real
+  // (con revenue) la dispara stripe-webhook, no esto.
+  if (clickId && !leadPostbackFired) {
+    leadPostbackFired = true;
+    fireServyPostback(clickId, "Scorea_lead");
+  }
+
   try {
     const { data, error } = await supabase.functions.invoke("stripe-checkout", {
       body: {
@@ -229,6 +240,7 @@ async function startCheckout() {
         quizSessionId,
         origin: window.location.origin,
         returnPath: "/credito-claro.html",
+        clickId,
       },
     });
     if (error || !data?.checkoutUrl) throw error ?? new Error("Sin checkoutUrl");

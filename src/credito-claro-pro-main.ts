@@ -1,5 +1,6 @@
 import { supabase } from "./lib/supabase";
 import { trackFunnelEvent } from "./lib/funnel";
+import { getClickId, fireServyPostback } from "./lib/postback";
 
 // Scorea Pro (MX): variante "elaborada" de credito-claro.html para test A/B -
 // 7 factores reales de buró en vez de 5 (ver scoring_rules 'mxpro_%' /
@@ -141,6 +142,7 @@ interface ScoreResult {
 const params = new URLSearchParams(window.location.search);
 const utmSource = params.get("utm_source");
 const pago = params.get("pago");
+const clickId = getClickId();
 
 const quizFlow = document.getElementById("quizFlow")!;
 const gateWrap = document.getElementById("gateWrap")!;
@@ -270,6 +272,10 @@ async function unlockResult() {
     return;
   }
 
+  if (clickId) {
+    fireServyPostback(clickId, "Scorea_lead");
+  }
+
   if (quizSessionId) {
     trackFunnelEvent("question_reached", "application_completed", SOURCE, quizSessionId);
   }
@@ -347,6 +353,7 @@ async function startCheckout() {
         quizSessionId,
         origin: window.location.origin,
         returnPath: "/credito-claro-pro.html",
+        clickId,
       },
     });
     if (error || !data?.checkoutUrl) throw error ?? new Error("Sin checkoutUrl");

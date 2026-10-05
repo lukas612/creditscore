@@ -58,6 +58,7 @@ Deno.serve(async (req: Request) => {
   const email = typeof body.email === "string" ? body.email.trim() : "";
   const quizSessionId = typeof body.quizSessionId === "string" ? body.quizSessionId : null;
   const origin = typeof body.origin === "string" ? body.origin : null;
+  const clickId = typeof body.clickId === "string" ? body.clickId : null;
   const returnPath = ALLOWED_RETURN_PATHS.includes(body.returnPath as string) ? (body.returnPath as string) : DEFAULT_RETURN_PATH;
 
   if (!isValidEmail(email)) {
@@ -75,6 +76,7 @@ Deno.serve(async (req: Request) => {
       amount_cents: AMOUNT_CENTS,
       currency: CURRENCY.toUpperCase(),
       status: "pending",
+      click_id: clickId,
     })
     .select("id")
     .single();

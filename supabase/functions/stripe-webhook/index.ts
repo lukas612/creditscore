@@ -34,6 +34,26 @@ async function fetchPdfBase64(): Promise<string> {
   return toBase64(bytes);
 }
 
+// Postback de venta: único punto donde se manda revenue real (payout), a
+// diferencia del pixel de "lead" que dispara el propio frontend con
+// payout=0. Se dispara aquí (no en el frontend) porque el webhook es la
+// única confirmación de que el pago de verdad se completó - un pixel en la
+// pantalla de "pago confirmado" se podría disparar sin haber pagado nada.
+//
+// currency=EUR fijo (igual que el resto de postbacks de ES/RO, que tampoco
+// usan la divisa local) - el payout es el importe pagado en MXN tal cual,
+// sin conversión de cambio. Si tu plataforma de tracking espera el importe
+// ya convertido a euros, dilo y lo ajusto.
+async function fireSalePostback(clickId: string, amountCents: number): Promise<void> {
+  const payout = (amountCents / 100).toFixed(2);
+  const url = `https://go.servy.es/postback?cid=${encodeURIComponent(clickId)}&payout=${payout}&currency=EUR&param1=Scorea_sale`;
+  try {
+    await fetch(url);
+  } catch (err) {
+    console.error("Error disparando el postback de venta:", err instanceof Error ? err.message : String(err));
+  }
+}
+
 const supabaseAdmin = createClient(
   Deno.env.get("SUPABASE_URL")!,
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
@@ -118,7 +138,7 @@ Deno.serve(async (req: Request) => {
 
   const { data: order, error: fetchError } = await supabaseAdmin
     .from("credito_claro_orders")
-    .select("id, email, status")
+    .select("id, email, status, amount_cents, click_id")
     .eq("stripe_checkout_session_id", session.id)
     .single();
 
@@ -144,6 +164,10 @@ Deno.serve(async (req: Request) => {
     .eq("id", order.id);
   if (updateError) {
     console.error("Error marcando la orden como pagada:", updateError.message);
+  }
+
+  if (order.click_id) {
+    await fireSalePostback(order.click_id, order.amount_cents);
   }
 
   const emailResult = await sendGuideEmail(order.email);
