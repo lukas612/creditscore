@@ -336,6 +336,27 @@ function sourceParam(source: SourceKey): string | null {
   return source === "all" ? null : source;
 }
 
+interface CreditoClaroStats {
+  total_orders: number;
+  paid_orders: number;
+  pending_orders: number;
+  failed_orders: number;
+  conversion_rate: number;
+  revenue_cents: number;
+}
+
+async function fetchCreditoClaroStats(password: string, period: Period): Promise<CreditoClaroStats> {
+  const { data, error } = await supabase
+    .rpc("admin_get_credito_claro_stats", {
+      p_password: password,
+      p_since: period.since,
+      p_until: period.until,
+    })
+    .single<CreditoClaroStats>();
+  if (error || !data) throw error ?? new Error("No data");
+  return data;
+}
+
 async function fetchStats(password: string, period: Period, source: SourceKey): Promise<Stats> {
   const { data, error } = await supabase
     .rpc("admin_get_stats", {
@@ -844,11 +865,12 @@ async function renderDashboard(password: string) {
   const period = periodFor(currentPreset);
 
   try {
-    const [stats, funnelOverview, funnelSteps, offerClicks] = await Promise.all([
+    const [stats, funnelOverview, funnelSteps, offerClicks, creditoClaroStats] = await Promise.all([
       fetchStats(password, period, currentSource),
       fetchFunnelOverview(password, period, currentSource),
       fetchFunnelSteps(password, period, currentSource),
       fetchOfferClicks(password, period, currentSource),
+      currentSource === "credito_claro_mx" ? fetchCreditoClaroStats(password, period) : Promise.resolve(null),
     ]);
     const totalBands = stats.band_excelente + stats.band_bueno + stats.band_regular + stats.band_bajo;
     // Pingtree reutiliza exactamente las mismas preguntas que la solicitud
@@ -878,6 +900,26 @@ async function renderDashboard(password: string) {
           ${statCard("Tasa de conversión", `${stats.period_conversion_rate}%`)}
           ${statCard("Score medio (periodo)", stats.avg_score != null ? String(stats.avg_score) : "—")}
         </section>
+
+        ${creditoClaroStats ? `
+        <section class="admin-card">
+          <p class="admin-card-title">Altas Scorea (guía PDF, periodo seleccionado)</p>
+          <p class="admin-card-sub">
+            "Alta" = alguien que llegó a dejar su email para comprar la guía (crea una
+            orden en <code>credito_claro_orders</code>), compre o no llegue a pagar.
+          </p>
+          <section class="admin-stats-grid admin-stats-grid-compact">
+            ${statCard("Altas (total pedidos)", String(creditoClaroStats.total_orders))}
+            ${statCard("Pagados", String(creditoClaroStats.paid_orders))}
+            ${statCard("Pendientes", String(creditoClaroStats.pending_orders))}
+            ${statCard("Tasa de pago", `${creditoClaroStats.conversion_rate}%`)}
+          </section>
+          <section class="admin-stats-grid admin-stats-grid-compact">
+            ${statCard("Ingresos (pagados)", `$${(creditoClaroStats.revenue_cents / 100).toFixed(2)} MXN`)}
+            ${statCard("Fallidos/expirados", String(creditoClaroStats.failed_orders))}
+          </section>
+        </section>
+        ` : ""}
 
         <section class="admin-card">
           <p class="admin-card-title">Embudo: visita → lead</p>
