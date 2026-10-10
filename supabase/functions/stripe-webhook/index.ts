@@ -59,6 +59,11 @@ const stripe = Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
   apiVersion: "2024-11-20.acacia",
 });
 const cryptoProvider = Stripe.createSubtleCryptoProvider();
+// .trim() defensivo: un espacio o salto de línea de más al pegar el secret
+// en el dashboard de Supabase rompe la verificación de la firma sin avisar
+// (confirmado por el propio mensaje de error de Stripe: "the provided
+// signing secret contains whitespace").
+const WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET")!.trim();
 
 async function sendGuideEmail(toEmail: string): Promise<{ ok: boolean; messageId: string | null; error: string | null }> {
   let pdfBase64: string;
@@ -113,7 +118,7 @@ Deno.serve(async (req: Request) => {
     event = await stripe.webhooks.constructEventAsync(
       rawBody,
       signature,
-      Deno.env.get("STRIPE_WEBHOOK_SECRET")!,
+      WEBHOOK_SECRET,
       undefined,
       cryptoProvider,
     );
