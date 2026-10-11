@@ -124,6 +124,43 @@
 
   .updated-note{ text-align:center; font-size:11px; color: var(--ink-faint); margin: 2px 0 14px; }
 
+  .social-proof-row{
+    display:none; justify-content:center; gap:8px; flex-wrap:wrap; margin: 0 0 14px;
+  }
+  .social-proof-row.show{ display:flex; }
+  .social-pill{
+    display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:600; color: var(--ink-soft);
+    background: var(--surface); border:1px solid var(--line); border-radius:20px; padding:5px 11px;
+  }
+  .social-pill .dot{ width:7px; height:7px; border-radius:50%; background:#2EA85C; flex-shrink:0; animation: pulse-dot 1.6s ease-in-out infinite; }
+  @keyframes pulse-dot{ 0%,100%{ opacity:1; } 50%{ opacity:0.35; } }
+
+  .trust-badges{
+    display:flex; justify-content:center; gap:14px; flex-wrap:wrap; margin: 14px 0 2px;
+    font-size:11.5px; color: var(--ink-faint);
+  }
+  .trust-badges span{ display:flex; align-items:center; gap:5px; }
+
+  .fomo-toast{
+    position:fixed; left:16px; bottom:16px; max-width:300px; z-index:50;
+    background: var(--paper); border:1px solid var(--line); border-radius: var(--radius-sm); box-shadow: var(--shadow);
+    padding:12px 14px; display:flex; align-items:flex-start; gap:10px;
+    transform: translateY(16px); opacity:0; pointer-events:none; transition: transform 0.35s ease, opacity 0.35s ease;
+  }
+  .fomo-toast.show{ transform: translateY(0); opacity:1; pointer-events:auto; }
+  .fomo-toast .fomo-icon{
+    width:30px; height:30px; border-radius:50%; background: var(--brand-light); color: var(--brand-dark);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:15px;
+  }
+  .fomo-toast .fomo-text{ font-size:12.5px; color: var(--ink); line-height:1.4; }
+  .fomo-toast .fomo-text strong{ display:block; font-size:12.5px; margin-bottom:1px; }
+  .fomo-toast .fomo-close{
+    background:none; border:none; color: var(--ink-faint); cursor:pointer; font-size:14px; padding:0 0 0 4px; line-height:1;
+  }
+  @media (max-width: 480px){
+    .fomo-toast{ left:12px; right:12px; max-width:none; bottom:12px; }
+  }
+
   .score-display{ display:flex; align-items:baseline; justify-content:center; gap:6px; margin: 4px 0 4px; }
   .score-display .num{ font-family: var(--font-head); font-size:56px; font-weight:600; color: var(--warn); line-height:1; }
   .score-display .denom{ font-size:16px; color: var(--ink-faint); }
@@ -268,6 +305,7 @@
       <div class="result-wrap show" id="resultWrap">
         <span class="demo-tag">Resultado de tu evaluación</span>
         <p class="updated-note" id="updatedNote"></p>
+        <div class="social-proof-row" id="socialProofRow"></div>
         <div style="text-align:center;">
           <span class="score-badge badge-low">Score bajo</span>
         </div>
@@ -301,6 +339,11 @@
           </div>
           <p class="buy-error" id="buyError"></p>
           <p class="checkout-note">Al continuar te llevamos a Stripe para pagar de forma segura. Tras el pago, te enviamos el PDF por email al instante.</p>
+          <div class="trust-badges">
+            <span>🔒 Pago 100% seguro</span>
+            <span>💳 Visa · Mastercard · Amex</span>
+            <span>⚡ Entrega inmediata</span>
+          </div>
         </div>
       </div>
 
@@ -385,6 +428,12 @@
     <p>Este contenido no constituye asesoría financiera, legal ni fiscal personalizada. Para tu caso particular, consulta a un profesional o acude de forma gratuita a CONDUSEF.</p>
     <p>&copy; 2026 Scorea</p>
   </footer>
+</div>
+
+<div class="fomo-toast" id="fomoToast">
+  <span class="fomo-icon">✓</span>
+  <span class="fomo-text" id="fomoText"></span>
+  <button class="fomo-close" id="fomoClose" aria-label="Cerrar">✕</button>
 </div>
 
 <script type="module" src="/src/credito-claro-resultado-main.ts"></script>

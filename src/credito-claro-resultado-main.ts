@@ -54,6 +54,86 @@ function pickFactors(): Factor[] {
   return chosen;
 }
 
+// Prueba social: todo lo que se muestra sale de get_scorea_social_proof (RPC
+// pública, solo agregados, sin PII) - nunca se inventan nombres, ciudades ni
+// historias. Si el volumen real es bajo, los widgets simplemente no se
+// muestran (ver umbrales abajo) en vez de aparentar una actividad que no
+// existe.
+const FOMO_SHOWN_KEY = "scorea_resultado_fomo_shown";
+const MIN_PURCHASES_FOR_BADGE = 5;
+const MAX_MINUTES_FOR_FOMO_TOAST = 180;
+
+interface SocialProof {
+  paid_total: number;
+  paid_last_7d: number;
+  minutes_since_last_sale: number | null;
+  live_visitors: number;
+}
+
+async function fetchSocialProof(): Promise<SocialProof | null> {
+  const { data, error } = await supabase
+    .rpc("get_scorea_social_proof", { p_source: SOURCE })
+    .single<SocialProof>();
+  if (error || !data) return null;
+  return data;
+}
+
+function formatMinutesAgo(minutes: number): string {
+  if (minutes < 1) return "hace instantes";
+  if (minutes < 60) return `hace ${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  return hours === 1 ? "hace 1 hora" : `hace ${hours} horas`;
+}
+
+function renderSocialProofRow(proof: SocialProof) {
+  const pills: string[] = [];
+
+  if (proof.live_visitors >= 1) {
+    const label = proof.live_visitors === 1 ? "1 persona viendo esto ahora" : `${proof.live_visitors} personas viendo esto ahora`;
+    pills.push(`<span class="social-pill"><span class="dot"></span>${label}</span>`);
+  }
+
+  if (proof.paid_last_7d >= 3) {
+    pills.push(`<span class="social-pill">📈 ${proof.paid_last_7d} compraron la guía esta semana</span>`);
+  } else if (proof.paid_total >= MIN_PURCHASES_FOR_BADGE) {
+    pills.push(`<span class="social-pill">✅ +${proof.paid_total} guías descargadas</span>`);
+  }
+
+  const row = document.getElementById("socialProofRow")!;
+  if (pills.length === 0) {
+    row.classList.remove("show");
+    return;
+  }
+  row.innerHTML = pills.join("");
+  row.classList.add("show");
+}
+
+function maybeShowFomoToast(proof: SocialProof) {
+  if (sessionStorage.getItem(FOMO_SHOWN_KEY)) return;
+  if (proof.minutes_since_last_sale == null || proof.minutes_since_last_sale > MAX_MINUTES_FOR_FOMO_TOAST) return;
+
+  const toast = document.getElementById("fomoToast")!;
+  const text = document.getElementById("fomoText")!;
+  text.innerHTML = `<strong>Alguien compró la guía Scorea</strong>${formatMinutesAgo(proof.minutes_since_last_sale)}`;
+
+  setTimeout(() => {
+    toast.classList.add("show");
+    sessionStorage.setItem(FOMO_SHOWN_KEY, "1");
+    setTimeout(() => toast.classList.remove("show"), 8000);
+  }, 4000);
+}
+
+document.getElementById("fomoClose")?.addEventListener("click", () => {
+  document.getElementById("fomoToast")!.classList.remove("show");
+});
+
+async function loadSocialProof() {
+  const proof = await fetchSocialProof();
+  if (!proof) return;
+  renderSocialProofRow(proof);
+  maybeShowFomoToast(proof);
+}
+
 const params = new URLSearchParams(window.location.search);
 const utmSource = params.get("utm_source");
 const pago = params.get("pago");
@@ -179,6 +259,10 @@ async function init() {
   }
 
   renderBanner();
+  void loadSocialProof();
+  // Refresca solo el contador de visitantes en vivo cada 45s - el toast de
+  // "alguien compró" ya se marcó como mostrado (FOMO_SHOWN_KEY) y no se repite.
+  setInterval(() => void loadSocialProof(), 45000);
   await createSession();
 }
 
