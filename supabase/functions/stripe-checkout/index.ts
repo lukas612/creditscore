@@ -9,6 +9,11 @@ import Stripe from "npm:stripe@17.4.0";
 const AMOUNT_CENTS = 14900;
 const CURRENCY = "mxn";
 const PRODUCT_NAME = "Guía Scorea";
+// A/B test de precios de Scorea Resultado: el frontend solo "sugiere" un
+// priceCents (la variante que le tocó a ese visitante), pero el monto real
+// que se cobra SIEMPRE sale de esta whitelist, nunca del valor que mande el
+// navegador - si no, cualquiera podría manipular el monto de la petición.
+const ALLOWED_PRICE_CENTS = [4900, 14900, 29900];
 // Qué página de origen recibe la redirección tras el pago - ambas variantes
 // del quiz (simple y "pro", para el test A/B) venden la misma guía con el
 // mismo checkout, solo cambia a dónde vuelve Stripe. Whitelist cerrada para
@@ -65,6 +70,7 @@ Deno.serve(async (req: Request) => {
   // siguen con el Checkout Session alojado de siempre. Mismo endpoint para
   // ambas para no duplicar la lógica de creación de orden.
   const embedded = body.embedded === true;
+  const amountCents = ALLOWED_PRICE_CENTS.includes(body.priceCents as number) ? (body.priceCents as number) : AMOUNT_CENTS;
 
   if (!isValidEmail(email)) {
     return jsonResponse({ error: "Email inválido" }, 400);
@@ -78,7 +84,7 @@ Deno.serve(async (req: Request) => {
     .insert({
       quiz_session_id: quizSessionId,
       email,
-      amount_cents: AMOUNT_CENTS,
+      amount_cents: amountCents,
       currency: CURRENCY.toUpperCase(),
       status: "pending",
       click_id: clickId,
@@ -95,7 +101,7 @@ Deno.serve(async (req: Request) => {
     {
       price_data: {
         currency: CURRENCY,
-        unit_amount: AMOUNT_CENTS,
+        unit_amount: amountCents,
         product_data: {
           name: PRODUCT_NAME,
           description: "Plan 90 días para mejorar tu Buró de Crédito y Círculo de Crédito en México",

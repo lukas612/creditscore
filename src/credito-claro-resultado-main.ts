@@ -31,6 +31,46 @@ const SCORE_KEY = "scorea_resultado_score";
 const FACTORS_KEY = "scorea_resultado_factors";
 const DAYS_KEY = "scorea_resultado_days";
 
+// A/B test de precios: variante aleatoria pero estable por visitante
+// (sessionStorage), igual de probable cada una. El precio real que se cobra
+// SIEMPRE se valida en stripe-checkout contra esta misma whitelist - nunca
+// nos fiamos de lo que mande el navegador. Cada variante guarda su propio
+// "antes" como ancla de descuento, manteniendo una proporción parecida al
+// 149/349 original.
+const PRICE_VARIANT_KEY = "scorea_price_variant_cents";
+interface PriceVariant {
+  cents: number;
+  wasCents: number;
+}
+const PRICE_VARIANTS: PriceVariant[] = [
+  { cents: 4900, wasCents: 14900 },
+  { cents: 14900, wasCents: 34900 },
+  { cents: 29900, wasCents: 69900 },
+];
+
+function formatMxn(cents: number): string {
+  return `$${Math.round(cents / 100)}`;
+}
+
+function getPriceVariant(): PriceVariant {
+  const stored = sessionStorage.getItem(PRICE_VARIANT_KEY);
+  if (stored) {
+    const found = PRICE_VARIANTS.find((v) => String(v.cents) === stored);
+    if (found) return found;
+  }
+  const variant = PRICE_VARIANTS[Math.floor(Math.random() * PRICE_VARIANTS.length)];
+  sessionStorage.setItem(PRICE_VARIANT_KEY, String(variant.cents));
+  return variant;
+}
+
+const priceVariant = getPriceVariant();
+
+function renderPrice() {
+  document.getElementById("priceWas")!.textContent = formatMxn(priceVariant.wasCents);
+  document.getElementById("priceNow")!.textContent = `${formatMxn(priceVariant.cents)} MXN`;
+  document.getElementById("buyBtnPrice")!.textContent = `${formatMxn(priceVariant.cents)} MXN`;
+}
+
 interface Factor {
   key: string;
   label: string;
@@ -163,7 +203,7 @@ const bannerSlot = document.getElementById("banner-slot")!;
 
 async function createSession() {
   const { data: sessionId, error } = await supabase.rpc("create_quiz_session", {
-    p_answers: { resultado_preexistente: true },
+    p_answers: { resultado_preexistente: true, price_variant_cents: priceVariant.cents },
     p_utm_source: utmSource,
     p_click_id: null,
     p_source: SOURCE,
@@ -253,6 +293,7 @@ async function startCheckout() {
         returnPath: "/credito-claro-resultado.html",
         clickId,
         embedded: true,
+        priceCents: priceVariant.cents,
       },
     });
     if (error || !data?.clientSecret || !data?.sessionId) throw error ?? new Error("Sin clientSecret");
@@ -308,6 +349,7 @@ document.querySelectorAll<HTMLButtonElement>("[data-offer]").forEach((btn) => {
 async function init() {
   trackFunnelEvent("page_view", undefined, SOURCE);
   renderResult();
+  renderPrice();
 
   if (pago === "exito") {
     document.getElementById("resultado")!.scrollIntoView();

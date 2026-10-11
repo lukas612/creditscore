@@ -382,6 +382,28 @@ async function fetchCreditoClaroStats(password: string, period: Period, source: 
   return data;
 }
 
+interface PriceVariantStat {
+  price_cents: number;
+  sessions: number;
+  paid_orders: number;
+  revenue_cents: number;
+  conversion_rate: number;
+}
+
+// A/B test de precios de Scorea Resultado ($49/$149/$299) - ver
+// credito-claro-resultado-main.ts (variante asignada por visitante) y
+// stripe-checkout (whitelist de precios permitidos).
+async function fetchPriceVariantStats(password: string, period: Period): Promise<PriceVariantStat[]> {
+  const { data, error } = await supabase.rpc("admin_get_price_variant_stats", {
+    p_password: password,
+    p_since: period.since,
+    p_until: period.until,
+    p_source: "credito_claro_mx_resultado",
+  });
+  if (error) throw error;
+  return (data ?? []) as PriceVariantStat[];
+}
+
 async function fetchStats(password: string, period: Period, source: SourceKey): Promise<Stats> {
   const { data, error } = await supabase
     .rpc("admin_get_stats", {
@@ -891,7 +913,7 @@ async function renderDashboard(password: string) {
   const period = periodFor(currentPreset);
 
   try {
-    const [stats, funnelOverview, funnelSteps, offerClicks, creditoClaroStats] = await Promise.all([
+    const [stats, funnelOverview, funnelSteps, offerClicks, creditoClaroStats, priceVariantStats] = await Promise.all([
       fetchStats(password, period, currentSource),
       fetchFunnelOverview(password, period, currentSource),
       fetchFunnelSteps(password, period, currentSource),
@@ -899,6 +921,7 @@ async function renderDashboard(password: string) {
       currentSource === "credito_claro_mx" || currentSource === "credito_claro_mx_pro" || currentSource === "credito_claro_mx_resultado"
         ? fetchCreditoClaroStats(password, period, sourceParam(currentSource))
         : Promise.resolve(null),
+      currentSource === "credito_claro_mx_resultado" ? fetchPriceVariantStats(password, period) : Promise.resolve(null),
     ]);
     const totalBands = stats.band_excelente + stats.band_bueno + stats.band_regular + stats.band_bajo;
     // Pingtree reutiliza exactamente las mismas preguntas que la solicitud
@@ -950,6 +973,34 @@ async function renderDashboard(password: string) {
             ${statCard("Ingresos (pagados)", `$${(creditoClaroStats.revenue_cents / 100).toFixed(2)} MXN`)}
             ${statCard("Fallidos/expirados", String(creditoClaroStats.failed_orders))}
           </section>
+        </section>
+        ` : ""}
+
+        ${priceVariantStats ? `
+        <section class="admin-card">
+          <p class="admin-card-title">A/B test de precios ($49 / $149 / $299)</p>
+          <p class="admin-card-sub">
+            "Sesiones" = visitantes a los que les tocó esa variante (hayan comprado o no).
+            La tasa de conversión compara eso contra pagos reales - es la métrica que
+            importa para decidir el precio, no solo la tasa de pago entre quien ya
+            empezó el checkout.
+          </p>
+          <table class="admin-table">
+            <thead><tr><th>Precio</th><th>Sesiones</th><th>Pagados</th><th>Conversión</th><th>Ingresos</th></tr></thead>
+            <tbody>
+              ${priceVariantStats
+                .map(
+                  (v) => `<tr>
+                    <td>$${(v.price_cents / 100).toFixed(0)} MXN</td>
+                    <td>${v.sessions}</td>
+                    <td>${v.paid_orders}</td>
+                    <td>${v.conversion_rate}%</td>
+                    <td>$${(v.revenue_cents / 100).toFixed(2)} MXN</td>
+                  </tr>`,
+                )
+                .join("")}
+            </tbody>
+          </table>
         </section>
         ` : ""}
 
