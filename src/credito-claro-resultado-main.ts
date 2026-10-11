@@ -266,6 +266,10 @@ async function startCheckout() {
     const checkoutContainer = document.getElementById("checkoutContainer")!;
     checkoutContainer.style.display = "block";
     document.getElementById("checkoutNote")!.textContent = "Completa tu pago aquí abajo. Al terminar, te enviamos el PDF por email al instante.";
+    // El propio recuadro de Stripe ya muestra nombre, precio y descripción
+    // del producto - ocultamos los nuestros para no repetirlo.
+    document.getElementById("priceTag")!.style.display = "none";
+    document.getElementById("priceDesc")!.style.display = "none";
 
     const checkout = await stripeClient.createEmbeddedCheckoutPage({
       fetchClientSecret: async () => clientSecret,
