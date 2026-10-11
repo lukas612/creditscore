@@ -98,7 +98,7 @@ Deno.serve(async (req: Request) => {
         unit_amount: AMOUNT_CENTS,
         product_data: {
           name: PRODUCT_NAME,
-          description: "Guía educativa en PDF sobre Buró de Crédito y Círculo de Crédito en México (13 páginas, plan de 90 días).",
+          description: "Plan 90 días para mejorar tu Buró de Crédito y Círculo de Crédito en México",
         },
       },
       quantity: 1,
