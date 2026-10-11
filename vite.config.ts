@@ -20,6 +20,7 @@ export default defineConfig({
         "credit-ro": resolve(__dirname, "credit-ro.html"),
         "credito-claro": resolve(__dirname, "credito-claro.html"),
         "credito-claro-pro": resolve(__dirname, "credito-claro-pro.html"),
+        "credito-claro-resultado": resolve(__dirname, "credito-claro-resultado.html"),
       },
     },
   },

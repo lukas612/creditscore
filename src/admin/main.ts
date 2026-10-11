@@ -112,7 +112,7 @@ let currentPreset: PresetKey = "all";
 let customFrom = toDateInputValue(today);
 let customTo = toDateInputValue(today);
 
-type SourceKey = "all" | "quiz" | "solicitud" | "pingtree" | "multiping_ro" | "pingtree_ro" | "credit_ro" | "credito_claro_mx" | "credito_claro_mx_pro";
+type SourceKey = "all" | "quiz" | "solicitud" | "pingtree" | "multiping_ro" | "pingtree_ro" | "credit_ro" | "credito_claro_mx" | "credito_claro_mx_pro" | "credito_claro_mx_resultado";
 let currentSource: SourceKey = "all";
 
 // Solicitud/pingtree = España; multiping_ro/pingtree_ro/credit_ro = Rumanía.
@@ -176,6 +176,7 @@ const SOURCE_LABELS: Record<SourceKey, string> = {
   credit_ro: "Credit RO",
   credito_claro_mx: "Scorea (MX)",
   credito_claro_mx_pro: "Scorea Pro (MX)",
+  credito_claro_mx_resultado: "Scorea Resultado (MX)",
 };
 
 function periodFor(preset: PresetKey): Period {
@@ -298,6 +299,13 @@ const STEP_DEFS_CREDITO_CLARO_MX: StepDef[] = [
   { key: "antiguedad", label: "Antigüedad del crédito más viejo" },
   { key: "solicitudes", label: "Solicitudes de crédito recientes" },
   { key: "application_completed", label: "✅ Termina el quiz" },
+];
+
+// Resultado directo (tráfico de pago, sin quiz): la persona llega ya con un
+// score "conocido" (bajo) precargado, no responde preguntas - por eso el
+// único paso es "ve su resultado", disparado en cuanto se crea la sesión.
+const STEP_DEFS_CREDITO_CLARO_RESULTADO: StepDef[] = [
+  { key: "application_completed", label: "✅ Ve su resultado" },
 ];
 
 // Variante "pro" (test A/B contra credito_claro_mx): 7 preguntas en vez de 5
@@ -888,7 +896,7 @@ async function renderDashboard(password: string) {
       fetchFunnelOverview(password, period, currentSource),
       fetchFunnelSteps(password, period, currentSource),
       fetchOfferClicks(password, period, currentSource),
-      currentSource === "credito_claro_mx" || currentSource === "credito_claro_mx_pro"
+      currentSource === "credito_claro_mx" || currentSource === "credito_claro_mx_pro" || currentSource === "credito_claro_mx_resultado"
         ? fetchCreditoClaroStats(password, period, sourceParam(currentSource))
         : Promise.resolve(null),
     ]);
@@ -907,7 +915,9 @@ async function renderDashboard(password: string) {
               ? STEP_DEFS_CREDITO_CLARO_MX
               : currentSource === "credito_claro_mx_pro"
                 ? STEP_DEFS_CREDITO_CLARO_MX_PRO
-                : STEP_DEFS;
+                : currentSource === "credito_claro_mx_resultado"
+                  ? STEP_DEFS_CREDITO_CLARO_RESULTADO
+                  : STEP_DEFS;
 
     root.innerHTML = `
       <div class="admin-shell">
@@ -1341,7 +1351,7 @@ async function renderLeadsTab(password: string) {
         </section>
         ` : ""}
 
-        ${(currentSource === "all" || currentSource === "credito_claro_mx" || currentSource === "credito_claro_mx_pro") ? `
+        ${(currentSource === "all" || currentSource === "credito_claro_mx" || currentSource === "credito_claro_mx_pro" || currentSource === "credito_claro_mx_resultado") ? `
         <section class="admin-card">
           <p class="admin-card-title">Pedidos ${escapeHtml(SOURCE_LABELS[currentSource])} · guía PDF (${totalCreditoClaroCount})</p>
           <p class="admin-card-sub">
