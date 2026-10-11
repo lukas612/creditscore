@@ -154,9 +154,20 @@
 
   .verdict-box{
     background: var(--warn-light); border-left:3px solid var(--warn); border-radius:3px; padding:14px 16px;
-    font-size:13.5px; color: var(--warn); margin-bottom: 22px; font-weight:500;
+    font-size:13.5px; color: var(--warn); margin-bottom: 14px; font-weight:500;
   }
   .verdict-box strong{ display:block; font-family: var(--font-head); font-size:15px; font-weight:600; margin-bottom:4px; }
+
+  .recommend-box{
+    background: var(--accent-light); border:1.5px solid var(--accent); border-radius: var(--radius-sm);
+    padding: 14px 16px; margin-bottom: 20px; font-size:13.5px; color: var(--accent-dark);
+  }
+  .recommend-box .recommend-kick{
+    display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; letter-spacing:0.03em;
+    text-transform:uppercase; color:#fff; background: var(--accent); padding:3px 10px; border-radius:20px; margin-bottom:8px;
+  }
+  .recommend-box p{ margin: 0; color: var(--ink); }
+  .recommend-box strong{ color: var(--accent-dark); }
 
   .upsell{ border-top:1px solid var(--line); padding-top:20px; text-align:center; }
   .upsell p{ font-size:13.5px; color: var(--ink-soft); margin: 0 0 14px; }
@@ -240,7 +251,7 @@
 <section class="hero">
   <div class="wrap-narrow">
     <h1>Tu evaluación de <span class="hl">Creditio</span> ya está lista</h1>
-    <p class="lede">Ya completaste tu evaluación gratuita de crédito. Esto es lo que encontramos sobre tu historial — y qué significa para poder acceder a un crédito ahora mismo.</p>
+    <p class="lede">Ya completaste tu evaluación gratuita de crédito. Esto es lo que encontramos sobre tu historial — y por qué, si no actúas antes de tu próxima solicitud, es muy probable que te vuelvan a rechazar.</p>
     <a href="#resultado" class="btn btn-accent">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
       Ver mi resultado
@@ -274,20 +285,25 @@
 
         <div class="verdict-box">
           <strong>Con este score, actualmente no es posible otorgarte un crédito</strong>
-          Las instituciones financieras usan este tipo de evaluación para decidir si prestarte o no — con un resultado así, lo normal es que te rechacen o te ofrezcan condiciones muy desfavorables.
+          Las instituciones financieras usan este tipo de evaluación para decidir si prestarte o no — con un resultado así, lo normal es que te rechacen o te ofrezcan condiciones muy desfavorables. Y si vuelves a solicitar crédito sin corregir esto primero, cada rechazo nuevo se suma a tu historial de consultas y puede hacer que tu score baje todavía más.
+        </div>
+
+        <div class="recommend-box">
+          <span class="recommend-kick">⚠ Recomendación</span>
+          <p><strong>Te recomendamos encarecidamente no volver a solicitar crédito todavía.</strong> Antes de tu próxima solicitud, corrige los puntos de abajo — es la diferencia entre que te aprueben o que te vuelvan a rechazar.</p>
         </div>
 
         <div class="upsell">
-          <p>Lo bueno: un score bajo se puede mejorar. Con un plan claro de 90 días puedes subirlo y volver a calificar — esto es justo lo que trae la guía:</p>
+          <p><strong>Lo bueno: un score bajo sí se puede mejorar — pero cuanto antes empieces, antes puedes volver a calificar.</strong> La guía te da el plan exacto de 90 días para hacerlo, paso a paso:</p>
           <div class="price-tag"><span class="was">$349</span>$149 MXN</div>
-          <p style="margin:6px 0 16px; font-size:12.5px;">Guía "Scorea" · PDF descargable · 13 páginas</p>
-          <button class="btn btn-brand btn-block" id="buyBtn">Quiero mejorar mi score — $149 MXN</button>
+          <p style="margin:6px 0 16px; font-size:12.5px;">Guía "Scorea" · PDF descargable · 13 páginas · acceso inmediato</p>
+          <button class="btn btn-brand btn-block" id="buyBtn">Sí, quiero arreglar mi score ahora — $149 MXN</button>
           <div class="email-row" id="emailRow" style="display:none;">
             <input type="email" id="emailInput" placeholder="tu@email.com">
             <button class="btn btn-accent" id="emailConfirmBtn">Continuar</button>
           </div>
           <p class="buy-error" id="buyError"></p>
-          <p class="checkout-note">Al continuar te llevamos a Stripe para pagar de forma segura. Tras el pago, te enviamos el PDF por email.</p>
+          <p class="checkout-note">Al continuar te llevamos a Stripe para pagar de forma segura. Tras el pago, te enviamos el PDF por email al instante.</p>
         </div>
       </div>
 
@@ -361,8 +377,8 @@
 
 <section class="cta-band">
   <div class="wrap">
-    <h2>Mejora tu score antes de volver a solicitar crédito</h2>
-    <button class="btn btn-accent" onclick="document.getElementById('resultado').scrollIntoView({behavior:'smooth'});">Ver mi resultado</button>
+    <h2>No vuelvas a solicitar crédito sin arreglar esto primero</h2>
+    <button class="btn btn-accent" onclick="document.getElementById('resultado').scrollIntoView({behavior:'smooth'});">Quiero arreglar mi score</button>
   </div>
 </section>
 
