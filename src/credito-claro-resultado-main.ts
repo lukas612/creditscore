@@ -8,8 +8,24 @@ import { getClickId, fireServyPostback } from "./lib/postback";
 // número y los factores se generan una sola vez por sesión (no en cada
 // recarga, para que no parezca que se está recalculando en vivo) y no hay
 // llamada a calculate_score_mx. El resto del flujo de venta (email -> Stripe
-// -> PDF por email) es idéntico al de credito-claro-main.ts.
+// -> PDF por email) es idéntico al de credito-claro-main.ts, salvo que el
+// pago ocurre embebido en esta misma página (Stripe Embedded Checkout) en
+// vez de redirigir a checkout.stripe.com - de ahí el <script src="js.stripe.com">
+// en el head y el cliente `Stripe(...)` global de abajo.
 const SOURCE = "credito_claro_mx_resultado";
+
+declare const Stripe: (publishableKey: string) => {
+  createEmbeddedCheckoutPage(options: {
+    fetchClientSecret: () => Promise<string>;
+    onComplete?: () => void;
+  }): Promise<{ mount(selector: string): void }>;
+};
+
+const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+if (!STRIPE_PUBLISHABLE_KEY) {
+  throw new Error("Missing VITE_STRIPE_PUBLISHABLE_KEY");
+}
+const stripeClient = Stripe(STRIPE_PUBLISHABLE_KEY);
 
 const SCORE_KEY = "scorea_resultado_score";
 const FACTORS_KEY = "scorea_resultado_factors";
@@ -191,6 +207,25 @@ emailConfirmBtn.addEventListener("click", () => {
   void startCheckout();
 });
 
+// Tras volver (o terminar) el pago embebido, el único estado del que nos
+// podemos fiar es el que confirma el propio Stripe (vía stripe-session-status,
+// que consulta con la secret key) - nunca el query param ?pago=exito a secas,
+// ni el hecho de que onComplete se haya disparado en el frontend. La venta
+// real (email + PDF + postback) la sigue disparando solo stripe-webhook.
+async function checkSessionStatus(sessionId: string | null): Promise<string | null> {
+  if (!sessionId) return null;
+  const { data, error } = await supabase.functions.invoke("stripe-session-status", {
+    body: { sessionId },
+  });
+  if (error || !data?.status) return null;
+  return data.status as string;
+}
+
+function showPaidSuccess() {
+  resultWrap.classList.remove("show");
+  successWrap.classList.add("show");
+}
+
 async function startCheckout() {
   const email = emailInput.value.trim();
   if (!email || !email.includes("@")) {
@@ -200,7 +235,7 @@ async function startCheckout() {
   }
   buyError.classList.remove("show");
   emailConfirmBtn.disabled = true;
-  emailConfirmBtn.textContent = "Procesando…";
+  emailConfirmBtn.textContent = "Cargando pago…";
 
   // Postback de "lead" (payout=0): igual que en credito-claro-main.ts, la
   // venta real (con revenue) la dispara stripe-webhook, no esto.
@@ -217,14 +252,39 @@ async function startCheckout() {
         origin: window.location.origin,
         returnPath: "/credito-claro-resultado.html",
         clickId,
+        embedded: true,
       },
     });
-    if (error || !data?.checkoutUrl) throw error ?? new Error("Sin checkoutUrl");
+    if (error || !data?.clientSecret || !data?.sessionId) throw error ?? new Error("Sin clientSecret");
+    const { clientSecret, sessionId } = data as { clientSecret: string; sessionId: string };
 
     if (quizSessionId) {
       trackFunnelEvent("offer_click", "guia_pdf", SOURCE, quizSessionId);
     }
-    window.location.href = data.checkoutUrl;
+
+    emailRow.style.display = "none";
+    const checkoutContainer = document.getElementById("checkoutContainer")!;
+    checkoutContainer.style.display = "block";
+    document.getElementById("checkoutNote")!.textContent = "Completa tu pago aquí abajo. Al terminar, te enviamos el PDF por email al instante.";
+
+    const checkout = await stripeClient.createEmbeddedCheckoutPage({
+      fetchClientSecret: async () => clientSecret,
+      onComplete: () => {
+        // onComplete solo dice que Stripe terminó el flujo en el iframe sin
+        // navegar fuera - igual se reconfirma el status real antes de mostrar
+        // el éxito, por si acaso (pago rechazado tras 3DS, etc.).
+        void (async () => {
+          const status = await checkSessionStatus(sessionId);
+          if (status === "complete") {
+            showPaidSuccess();
+          } else {
+            buyError.textContent = "El pago no se completó. Puedes intentarlo de nuevo.";
+            buyError.classList.add("show");
+          }
+        })();
+      },
+    });
+    checkout.mount("#checkoutContainer");
   } catch {
     buyError.textContent = "No se pudo iniciar el pago. Inténtalo de nuevo en unos segundos.";
     buyError.classList.add("show");
@@ -241,24 +301,24 @@ document.querySelectorAll<HTMLButtonElement>("[data-offer]").forEach((btn) => {
   });
 });
 
-function renderBanner() {
-  if (pago === "cancelado") {
-    bannerSlot.innerHTML = `<div class="banner banner-warn">Cancelaste el pago. Puedes volver a intentarlo cuando quieras.</div>`;
-  }
-}
-
 async function init() {
   trackFunnelEvent("page_view", undefined, SOURCE);
   renderResult();
 
   if (pago === "exito") {
     document.getElementById("resultado")!.scrollIntoView();
-    resultWrap.classList.remove("show");
-    successWrap.classList.add("show");
+    const status = await checkSessionStatus(params.get("session_id"));
+    if (status === "complete") {
+      showPaidSuccess();
+    } else {
+      // El embedded checkout solo vuelve aquí si el pago ya terminó (éxito o
+      // fallo/cancelación) - si no está "complete", simplemente se quedaron
+      // sin pagar; dejamos resultWrap visible para que puedan reintentarlo.
+      bannerSlot.innerHTML = `<div class="banner banner-warn">Tu pago no se completó. Puedes volver a intentarlo cuando quieras.</div>`;
+    }
     return;
   }
 
-  renderBanner();
   void loadSocialProof();
   // Refresca solo el contador de visitantes en vivo cada 45s - el toast de
   // "alguien compró" ya se marcó como mostrado (FOMO_SHOWN_KEY) y no se repite.

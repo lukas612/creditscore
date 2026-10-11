@@ -60,6 +60,11 @@ Deno.serve(async (req: Request) => {
   const origin = typeof body.origin === "string" ? body.origin : null;
   const clickId = typeof body.clickId === "string" ? body.clickId : null;
   const returnPath = ALLOWED_RETURN_PATHS.includes(body.returnPath as string) ? (body.returnPath as string) : DEFAULT_RETURN_PATH;
+  // Scorea Resultado usa Embedded Checkout (el pago se abre dentro de la
+  // propia página, sin redirigir a checkout.stripe.com); las otras variantes
+  // siguen con el Checkout Session alojado de siempre. Mismo endpoint para
+  // ambas para no duplicar la lógica de creación de orden.
+  const embedded = body.embedded === true;
 
   if (!isValidEmail(email)) {
     return jsonResponse({ error: "Email inválido" }, 400);
@@ -86,31 +91,46 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ error: "No se pudo crear la orden" }, 500);
   }
 
-  try {
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      payment_method_types: ["card"],
-      customer_email: email,
-      line_items: [
-        {
-          price_data: {
-            currency: CURRENCY,
-            unit_amount: AMOUNT_CENTS,
-            product_data: {
-              name: PRODUCT_NAME,
-              description: "Guía educativa en PDF sobre Buró de Crédito y Círculo de Crédito en México (13 páginas, plan de 90 días).",
-            },
-          },
-          quantity: 1,
+  const lineItems = [
+    {
+      price_data: {
+        currency: CURRENCY,
+        unit_amount: AMOUNT_CENTS,
+        product_data: {
+          name: PRODUCT_NAME,
+          description: "Guía educativa en PDF sobre Buró de Crédito y Círculo de Crédito en México (13 páginas, plan de 90 días).",
         },
-      ],
-      success_url: `${origin}${returnPath}?pago=exito&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}${returnPath}?pago=cancelado`,
-      metadata: {
-        order_id: order.id,
-        quiz_session_id: quizSessionId ?? "",
       },
-    });
+      quantity: 1,
+    },
+  ];
+  const metadata = { order_id: order.id, quiz_session_id: quizSessionId ?? "" };
+
+  try {
+    const session = embedded
+      ? await stripe.checkout.sessions.create({
+          mode: "payment",
+          ui_mode: "embedded",
+          // if_required: con tarjeta, Stripe resuelve el pago dentro del
+          // propio iframe (onComplete en el frontend) sin navegar nunca fuera
+          // de la página; return_url sigue siendo obligatorio como fallback
+          // para los casos que sí necesitan salir (p.ej. un 3DS que redirige).
+          redirect_on_completion: "if_required",
+          payment_method_types: ["card"],
+          customer_email: email,
+          line_items: lineItems,
+          return_url: `${origin}${returnPath}?pago=exito&session_id={CHECKOUT_SESSION_ID}`,
+          metadata,
+        })
+      : await stripe.checkout.sessions.create({
+          mode: "payment",
+          payment_method_types: ["card"],
+          customer_email: email,
+          line_items: lineItems,
+          success_url: `${origin}${returnPath}?pago=exito&session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${origin}${returnPath}?pago=cancelado`,
+          metadata,
+        });
 
     const { error: updateError } = await supabaseAdmin
       .from("credito_claro_orders")
@@ -120,7 +140,7 @@ Deno.serve(async (req: Request) => {
       console.error("Error guardando stripe_checkout_session_id:", updateError.message);
     }
 
-    return jsonResponse({ checkoutUrl: session.url });
+    return jsonResponse(embedded ? { clientSecret: session.client_secret, sessionId: session.id } : { checkoutUrl: session.url });
   } catch (err) {
     console.error("Error creando Checkout Session de Stripe:", err instanceof Error ? err.message : String(err));
     await supabaseAdmin.from("credito_claro_orders").update({ status: "failed" }).eq("id", order.id);
