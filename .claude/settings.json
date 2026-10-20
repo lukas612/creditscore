@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc -b --noEmit)",
+      "Bash(npm run build)",
+      "mcp__Supabase__query_logs",
+      "mcp__Supabase__execute_sql",
+      "mcp__Witme_Forms__list_templates",
+      "mcp__Witme_Forms__summarize_template"
+    ]
+  }
+}
