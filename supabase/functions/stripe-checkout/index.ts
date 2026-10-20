@@ -18,7 +18,12 @@ const ALLOWED_PRICE_CENTS = [4900, 14900, 29900];
 // del quiz (simple y "pro", para el test A/B) venden la misma guía con el
 // mismo checkout, solo cambia a dónde vuelve Stripe. Whitelist cerrada para
 // no construir un open redirect a partir de 'origin'.
-const ALLOWED_RETURN_PATHS = ["/credito-claro.html", "/credito-claro-pro.html", "/credito-claro-resultado.html"];
+const ALLOWED_RETURN_PATHS = [
+  "/credito-claro.html",
+  "/credito-claro-pro.html",
+  "/credito-claro-resultado.html",
+  "/credito-claro-resultado-v2.html",
+];
 const DEFAULT_RETURN_PATH = "/credito-claro.html";
 
 const CORS_HEADERS = {

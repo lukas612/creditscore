@@ -112,7 +112,7 @@ let currentPreset: PresetKey = "all";
 let customFrom = toDateInputValue(today);
 let customTo = toDateInputValue(today);
 
-type SourceKey = "all" | "quiz" | "solicitud" | "pingtree" | "multiping_ro" | "pingtree_ro" | "credit_ro" | "credito_claro_mx" | "credito_claro_mx_pro" | "credito_claro_mx_resultado";
+type SourceKey = "all" | "quiz" | "solicitud" | "pingtree" | "multiping_ro" | "pingtree_ro" | "credit_ro" | "credito_claro_mx" | "credito_claro_mx_pro" | "credito_claro_mx_resultado" | "credito_claro_mx_resultado_v2";
 let currentSource: SourceKey = "all";
 
 // Solicitud/pingtree = España; multiping_ro/pingtree_ro/credit_ro = Rumanía.
@@ -177,6 +177,7 @@ const SOURCE_LABELS: Record<SourceKey, string> = {
   credito_claro_mx: "Scorea (MX)",
   credito_claro_mx_pro: "Scorea Pro (MX)",
   credito_claro_mx_resultado: "Scorea Resultado (MX)",
+  credito_claro_mx_resultado_v2: "Scorea Resultado V2 (MX)",
 };
 
 function periodFor(preset: PresetKey): Period {
@@ -393,12 +394,12 @@ interface PriceVariantStat {
 // A/B test de precios de Scorea Resultado ($49/$149/$299) - ver
 // credito-claro-resultado-main.ts (variante asignada por visitante) y
 // stripe-checkout (whitelist de precios permitidos).
-async function fetchPriceVariantStats(password: string, period: Period): Promise<PriceVariantStat[]> {
+async function fetchPriceVariantStats(password: string, period: Period, source: SourceKey): Promise<PriceVariantStat[]> {
   const { data, error } = await supabase.rpc("admin_get_price_variant_stats", {
     p_password: password,
     p_since: period.since,
     p_until: period.until,
-    p_source: "credito_claro_mx_resultado",
+    p_source: source,
   });
   if (error) throw error;
   return (data ?? []) as PriceVariantStat[];
@@ -918,10 +919,15 @@ async function renderDashboard(password: string) {
       fetchFunnelOverview(password, period, currentSource),
       fetchFunnelSteps(password, period, currentSource),
       fetchOfferClicks(password, period, currentSource),
-      currentSource === "credito_claro_mx" || currentSource === "credito_claro_mx_pro" || currentSource === "credito_claro_mx_resultado"
+      currentSource === "credito_claro_mx" ||
+      currentSource === "credito_claro_mx_pro" ||
+      currentSource === "credito_claro_mx_resultado" ||
+      currentSource === "credito_claro_mx_resultado_v2"
         ? fetchCreditoClaroStats(password, period, sourceParam(currentSource))
         : Promise.resolve(null),
-      currentSource === "credito_claro_mx_resultado" ? fetchPriceVariantStats(password, period) : Promise.resolve(null),
+      currentSource === "credito_claro_mx_resultado" || currentSource === "credito_claro_mx_resultado_v2"
+        ? fetchPriceVariantStats(password, period, currentSource)
+        : Promise.resolve(null),
     ]);
     const totalBands = stats.band_excelente + stats.band_bueno + stats.band_regular + stats.band_bajo;
     // Pingtree reutiliza exactamente las mismas preguntas que la solicitud
@@ -938,7 +944,7 @@ async function renderDashboard(password: string) {
               ? STEP_DEFS_CREDITO_CLARO_MX
               : currentSource === "credito_claro_mx_pro"
                 ? STEP_DEFS_CREDITO_CLARO_MX_PRO
-                : currentSource === "credito_claro_mx_resultado"
+                : currentSource === "credito_claro_mx_resultado" || currentSource === "credito_claro_mx_resultado_v2"
                   ? STEP_DEFS_CREDITO_CLARO_RESULTADO
                   : STEP_DEFS;
 
@@ -1402,7 +1408,7 @@ async function renderLeadsTab(password: string) {
         </section>
         ` : ""}
 
-        ${(currentSource === "all" || currentSource === "credito_claro_mx" || currentSource === "credito_claro_mx_pro" || currentSource === "credito_claro_mx_resultado") ? `
+        ${(currentSource === "all" || currentSource === "credito_claro_mx" || currentSource === "credito_claro_mx_pro" || currentSource === "credito_claro_mx_resultado" || currentSource === "credito_claro_mx_resultado_v2") ? `
         <section class="admin-card">
           <p class="admin-card-title">Pedidos ${escapeHtml(SOURCE_LABELS[currentSource])} · guía PDF (${totalCreditoClaroCount})</p>
           <p class="admin-card-sub">
