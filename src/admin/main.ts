@@ -1412,7 +1412,7 @@ async function renderLeadsTab(password: string) {
         <section class="admin-card">
           <p class="admin-card-title">Pedidos ${escapeHtml(SOURCE_LABELS[currentSource])} · guía PDF (${totalCreditoClaroCount})</p>
           <p class="admin-card-sub">
-            Compras de la guía "Scorea" ($149 MXN) pagadas con Stripe. "Pagado" solo lo
+            Compras de la guía "Scorea" ($299 MXN) pagadas con Stripe. "Pagado" solo lo
             marca el webhook de Stripe tras confirmar el cobro (nunca el checkout en sí) -
             ver supabase/functions/stripe-webhook.
           </p>

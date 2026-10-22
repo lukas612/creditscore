@@ -2,17 +2,18 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import Stripe from "npm:stripe@17.4.0";
 
-// Checkout real de Stripe para "Crédito Claro" (guía PDF, $149 MXN): crea la
+// Checkout real de Stripe para "Crédito Claro" (guía PDF, $299 MXN): crea la
 // orden en credito_claro_orders como 'pending' y una Checkout Session; el
 // pago se confirma de verdad en stripe-webhook (checkout.session.completed),
 // nunca aquí - este endpoint solo abre la puerta al pago.
-const AMOUNT_CENTS = 14900;
+const AMOUNT_CENTS = 29900;
 const CURRENCY = "mxn";
 const PRODUCT_NAME = "Guía Scorea";
-// Precio de Scorea Resultado tras el A/B ($49/$149/$299): se quedó en $299.
-// El frontend "sugiere" un priceCents, pero el monto real que se cobra
-// SIEMPRE sale de esta whitelist, nunca del valor que mande el navegador -
-// si no, cualquiera podría manipular el monto de la petición.
+// Único precio válido para todas las variantes de Scorea ($299 MXN, tras el
+// A/B de $49/$149/$299 en Resultado). El frontend "sugiere" un priceCents,
+// pero el monto real que se cobra SIEMPRE sale de esta whitelist, nunca del
+// valor que mande el navegador - si no, cualquiera podría manipular el
+// monto de la petición.
 const ALLOWED_PRICE_CENTS = [29900];
 // Qué página de origen recibe la redirección tras el pago - ambas variantes
 // del quiz (simple y "pro", para el test A/B) venden la misma guía con el

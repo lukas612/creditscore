@@ -399,7 +399,7 @@ import{c as ze}from"./index-DBuN83Yj.js";import{q as Be}from"./questions-D4Dn-9Y
         <section class="admin-card">
           <p class="admin-card-title">Pedidos ${o(z[r])} · guía PDF (${Se})</p>
           <p class="admin-card-sub">
-            Compras de la guía "Scorea" ($149 MXN) pagadas con Stripe. "Pagado" solo lo
+            Compras de la guía "Scorea" ($299 MXN) pagadas con Stripe. "Pagado" solo lo
             marca el webhook de Stripe tras confirmar el cobro (nunca el checkout en sí) -
             ver supabase/functions/stripe-webhook.
           </p>
