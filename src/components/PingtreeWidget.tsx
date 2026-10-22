@@ -100,7 +100,10 @@ export function PingtreeWidget({
           <p className="result-sub">
             Tu score de {scoreData.score} puntos {REDIRECT_COPY[scoreData.scoreBand] ?? REDIRECT_COPY.regular}.
           </p>
-          <LoadingSpinner text="Te estamos redirigiendo a la oferta que mejor se adapta a tus necesidades…" />
+          <LoadingSpinner
+            text="Te estamos redirigiendo a la oferta que mejor se adapta a tus necesidades…"
+            longWaitText="Estamos consultando con varias entidades a la vez - puede tardar un poco más de lo normal, no cierres esta ventana."
+          />
         </div>
       )}
 
