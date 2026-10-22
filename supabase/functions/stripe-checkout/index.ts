@@ -9,11 +9,11 @@ import Stripe from "npm:stripe@17.4.0";
 const AMOUNT_CENTS = 14900;
 const CURRENCY = "mxn";
 const PRODUCT_NAME = "Guía Scorea";
-// A/B test de precios de Scorea Resultado: el frontend solo "sugiere" un
-// priceCents (la variante que le tocó a ese visitante), pero el monto real
-// que se cobra SIEMPRE sale de esta whitelist, nunca del valor que mande el
-// navegador - si no, cualquiera podría manipular el monto de la petición.
-const ALLOWED_PRICE_CENTS = [4900, 14900, 29900];
+// Precio de Scorea Resultado tras el A/B ($49/$149/$299): se quedó en $299.
+// El frontend "sugiere" un priceCents, pero el monto real que se cobra
+// SIEMPRE sale de esta whitelist, nunca del valor que mande el navegador -
+// si no, cualquiera podría manipular el monto de la petición.
+const ALLOWED_PRICE_CENTS = [29900];
 // Qué página de origen recibe la redirección tras el pago - ambas variantes
 // del quiz (simple y "pro", para el test A/B) venden la misma guía con el
 // mismo checkout, solo cambia a dónde vuelve Stripe. Whitelist cerrada para
