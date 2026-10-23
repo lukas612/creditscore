@@ -8,6 +8,12 @@ const WITME_TIMEOUT_MS = 20_000;
 // siempre - endpoint y esquema de payload totalmente distintos, sin token
 // (confirmado con Witme).
 const WITME_CAR_URL = "https://gestion.servy.es/webhooks/servy-form-wait";
+// submit_pingtree y submit_lender bloquean al usuario (ve un spinner hasta
+// que resuelve). Con datos reales (30 días): solo ~1.3% de pingtree y
+// ~0.16% de submit_lender (RO) tardan más de 1 min, y de esos la tasa de
+// aceptación es igual o peor que la del resto - esperar más no mejora las
+// probabilidades, solo aumenta el abandono. Cortamos ahí.
+const WITME_FORM_WAIT_TIMEOUT_MS = 60_000;
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -186,6 +192,7 @@ Deno.serve(async (req: Request) => {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(WITME_FORM_WAIT_TIMEOUT_MS),
       });
       responseBody = await upstream.text();
     } catch (err) {
@@ -288,6 +295,7 @@ Deno.serve(async (req: Request) => {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(WITME_FORM_WAIT_TIMEOUT_MS),
       });
       responseBody = await upstream.text();
     } catch (err) {
