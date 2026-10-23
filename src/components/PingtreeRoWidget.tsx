@@ -173,7 +173,10 @@ export function PingtreeRoWidget({
           <p className="result-sub">
             Scorul tău de {scoreData.score} puncte {REDIRECT_COPY[scoreData.scoreBand] ?? REDIRECT_COPY.regular}.
           </p>
-          <LoadingSpinner text="Te redirecționăm către oferta care se potrivește cel mai bine nevoilor tale…" />
+          <LoadingSpinner
+            text="Te redirecționăm către oferta care se potrivește cel mai bine nevoilor tale…"
+            longWaitText="Verificăm oferta cu mai mulți parteneri în același timp - poate dura puțin mai mult ca de obicei, nu închide pagina."
+          />
         </div>
       )}
 
