@@ -84,7 +84,10 @@ export function CreditRoWidget({
 
       {stage === "submitting" && (
         <div className="quiz-card">
-          <LoadingSpinner text="Îți procesăm cererea, așteaptă câteva secunde…" />
+          <LoadingSpinner
+            text="Îți procesăm cererea, așteaptă câteva secunde…"
+            longWaitText="Verificăm oferta cu mai mulți parteneri în același timp - poate dura puțin mai mult ca de obicei, nu închide pagina."
+          />
         </div>
       )}
 

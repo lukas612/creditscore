@@ -79,7 +79,10 @@ export function SolicitudWidget({
 
       {stage === "submitting" && (
         <div className="quiz-card">
-          <LoadingSpinner text="Estamos tramitando tu solicitud, danos unos segundos…" />
+          <LoadingSpinner
+            text="Estamos tramitando tu solicitud, danos unos segundos…"
+            longWaitText="Estamos consultando con varias entidades a la vez - puede tardar un poco más de lo normal, no cierres esta ventana."
+          />
         </div>
       )}
 
