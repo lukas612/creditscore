@@ -38,6 +38,7 @@ interface Props {
   submitLabel?: string;
   submittingLabel?: string;
   reassuranceLine?: string;
+  safetyLine?: string;
   onUnlock: (contact: GateContact) => void;
 }
 
@@ -68,6 +69,7 @@ export function WitmeGate({
   submitLabel = "Ver mi informe completo",
   submittingLabel = "Enviando…",
   reassuranceLine = "🔒 Conexión cifrada · Tus datos nunca se venden a terceros",
+  safetyLine = "✅ Consultar tu puntuación aquí no afecta a tu historial crediticio real - es una estimación propia, no una consulta al buró de crédito.",
   onUnlock,
 }: Props) {
   const [name, setName] = useState("");
@@ -140,6 +142,7 @@ export function WitmeGate({
       )}
       <h2>{title}</h2>
       <p className="result-sub">{subText}</p>
+      <p className="safety-line">{safetyLine}</p>
       <form className="lead-form" onSubmit={handleSubmit}>
         <div className="lead-form-row">
           <input

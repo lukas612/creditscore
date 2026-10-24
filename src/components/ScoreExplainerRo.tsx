@@ -1,18 +1,26 @@
 const BANDS = [
-  { label: "Scăzut", range: "300–549", className: "band-bajo" },
-  { label: "Mediu", range: "550–649", className: "band-regular" },
-  { label: "Bun", range: "650–749", className: "band-bueno" },
-  { label: "Excelent", range: "750–850", className: "band-excelente" },
+  { label: "Scăzut", range: "300–550", className: "band-bajo" },
+  { label: "Mediu", range: "551–650", className: "band-regular" },
+  { label: "Bun", range: "651–750", className: "band-bueno" },
+  { label: "Excelent", range: "751–850", className: "band-excelente" },
 ];
 
+// Los 4 primeros son nuestra aproximación a los factores oficiales del
+// modelo FICO que usa el Biroul de Credit (historial de pagos ~35%,
+// cantidades adeudadas ~30%, antigüedad del historial ~15%, tipos de
+// crédito ~10%) - no tenemos acceso a tu informe real del buró, así que
+// cada uno usa la señal más parecida que sí recogemos. No incluimos
+// "nuevas consultas de crédito" (el 5º factor oficial, ~10%) porque no
+// tenemos ese dato. Ingresos y situación laboral no forman parte del
+// score FICO real, pero los mantenemos porque, con nuestros propios datos,
+// predicen mejor si un prestamista acabará aceptando la solicitud.
 const FACTORS = [
-  { factor: "Restanțe la Biroul de Credit sau alte registre", peso: "Ridicat" },
-  { factor: "Venit lunar", peso: "Ridicat" },
+  { factor: "Istoric de plăți (restanțe la Biroul de Credit)", peso: "Ridicat" },
   { factor: "Datorii actuale raportat la venitul tău", peso: "Ridicat" },
-  { factor: "Situație profesională (angajat, PFA, pensionar…)", peso: "Mediu" },
-  { factor: "Vechimea în activitatea actuală", peso: "Mediu" },
-  { factor: "Locuință în proprietate", peso: "Mediu" },
-  { factor: "Vârstă", peso: "Scăzut" },
+  { factor: "Vechimea istoricului tău financiar", peso: "Mediu" },
+  { factor: "Tipuri de credit utilizate (ex. locuință în proprietate)", peso: "Mediu" },
+  { factor: "Venit lunar", peso: "Mediu" },
+  { factor: "Situație profesională (angajat, PFA, pensionar…)", peso: "Scăzut" },
 ];
 
 export function ScoreExplainerRo() {
@@ -41,6 +49,10 @@ export function ScoreExplainerRo() {
               </div>
             ))}
           </div>
+          <p className="score-benchmark">
+            📊 Media națională estimată în România este de aproximativ{" "}
+            <strong>635 de puncte</strong> (bandă "Mediu").
+          </p>
         </div>
         <div className="explainer-table-wrap">
           <p className="explainer-table-title">Ce influențează rezultatul tău</p>

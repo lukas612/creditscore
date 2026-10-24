@@ -553,6 +553,16 @@ h3,
   margin: 0 0 20px;
 }
 
+.safety-line {
+  background: #E2F8F4;
+  color: #0F8C78;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 0 0 18px;
+}
+
 .breakdown-section {
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
@@ -1640,6 +1650,12 @@ h3,
   border-radius: 10px;
   overflow: hidden;
   margin-top: 20px;
+}
+
+.score-benchmark {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin: 10px 0 0;
 }
 
 @media (max-width: 480px) {

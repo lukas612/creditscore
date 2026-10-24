@@ -142,6 +142,7 @@ export function MultipingRoWidget({
           submitLabel="Vezi raportul meu complet"
           submittingLabel="Se trimite…"
           reassuranceLine="🔒 Conexiune criptată · Datele tale nu se vând niciodată către terți"
+          safetyLine="✅ Verificarea scorului aici nu îți afectează istoricul real la Biroul de Credit - este o estimare proprie, nu o interogare la birou."
           onUnlock={onGateUnlock}
         />
       )}
