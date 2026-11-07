@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { supabase, BASE_PATH } from "@/lib/supabase/client";
 
 export function LoginForm() {
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") ?? "/dashboard";
+  const next = searchParams.get("next") ?? "/dashboard/";
 
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
@@ -17,11 +17,12 @@ export function LoginForm() {
     e.preventDefault();
     setStatus("sending");
 
-    const supabase = createClient();
+    // Flujo implícito: el enlace del correo ya trae los tokens en el hash,
+    // así que apunta directo al destino final (no hay ruta de callback).
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        emailRedirectTo: `${window.location.origin}${BASE_PATH}${next}`,
       },
     });
 

@@ -1,19 +1,42 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+"use client";
 
-export default async function AppLayout({
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase/client";
+
+export default function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const router = useRouter();
+  const [ready, setReady] = useState(false);
 
-  if (!user) {
-    redirect("/login");
-  }
+  useEffect(() => {
+    let cancelled = false;
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (cancelled) return;
+      if (!session) {
+        router.replace("/login/");
+        return;
+      }
+      setReady(true);
+    });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!session) router.replace("/login/");
+      },
+    );
+
+    return () => {
+      cancelled = true;
+      subscription.subscription.unsubscribe();
+    };
+  }, [router]);
+
+  if (!ready) return null;
 
   return <div className="min-h-screen">{children}</div>;
 }
