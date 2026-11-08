@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { useCuenta } from "@/lib/supabase/useCuenta";
+import { trackPixelEvent } from "@/lib/pixel";
 
 const FILAS: Array<[string, string, string]> = [
   ["Simulador \"¿Me cabe?\"", "Sí, sin registro", "Sí"],
@@ -23,6 +24,14 @@ export default function PlanPage() {
 
   const [enviando, setEnviando] = useState<"month" | "year" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const yaDisparado = useRef(false);
+
+  useEffect(() => {
+    if (pago === "exito" && !yaDisparado.current) {
+      yaDisparado.current = true;
+      trackPixelEvent("CompraPro");
+    }
+  }, [pago]);
 
   async function handleUpgrade(interval: "month" | "year") {
     setError(null);

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { simularCompraRapida, type Plazo } from "@/lib/msi";
 import { SEMAFORO_ESTILO, formatMXN } from "@/lib/ui/semaforo";
+import { trackPixelEvent } from "@/lib/pixel";
 
 const PLAZOS: Plazo[] = [3, 6, 9, 12, 18, 24];
 
@@ -23,7 +24,9 @@ export function SimuladorLanding() {
     const actual = totalActualEnCuotas ? Number(totalActualEnCuotas) : 0;
     const monto = Number(importe);
 
-    setResultado(simularCompraRapida(monto, meses, ingreso, actual));
+    const r = simularCompraRapida(monto, meses, ingreso, actual);
+    setResultado(r);
+    trackPixelEvent("SimulacionCompletada", { semaforo: r.semaforo });
   }
 
   if (resultado) {

@@ -33,6 +33,15 @@ export default function HomePage() {
       <p className="mt-8 text-center text-xs text-gray-400">
         Herramienta informativa, no es asesoría financiera.
       </p>
+      <p className="mt-2 text-center text-xs text-gray-400">
+        <Link href="/legal/privacidad/" className="underline">
+          Aviso de privacidad
+        </Link>{" "}
+        ·{" "}
+        <Link href="/legal/terminos/" className="underline">
+          Términos
+        </Link>
+      </p>
     </main>
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase, BASE_PATH } from "@/lib/supabase/client";
+import { trackPixelEvent } from "@/lib/pixel";
 
 export function LoginForm() {
   const searchParams = useSearchParams();
@@ -27,6 +28,7 @@ export function LoginForm() {
     });
 
     setStatus(error ? "error" : "sent");
+    if (!error) trackPixelEvent("Registro");
   }
 
   if (status === "sent") {
