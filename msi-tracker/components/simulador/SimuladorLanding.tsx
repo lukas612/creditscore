@@ -3,22 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { simularCompraRapida, type Plazo } from "@/lib/msi";
+import { SEMAFORO_ESTILO, formatMXN } from "@/lib/ui/semaforo";
 
 const PLAZOS: Plazo[] = [3, 6, 9, 12, 18, 24];
-
-const SEMAFORO_ESTILO: Record<string, { bg: string; texto: string; etiqueta: string }> = {
-  verde: { bg: "bg-semaforo-verde", texto: "text-white", etiqueta: "Vas bien" },
-  amarillo: { bg: "bg-semaforo-amarillo", texto: "text-white", etiqueta: "Vigílalo" },
-  rojo: { bg: "bg-semaforo-rojo", texto: "text-white", etiqueta: "Se te complica" },
-};
-
-function formatMXN(n: number): string {
-  return n.toLocaleString("es-MX", {
-    style: "currency",
-    currency: "MXN",
-    minimumFractionDigits: 2,
-  });
-}
 
 export function SimuladorLanding() {
   const [ingresoMensual, setIngresoMensual] = useState("");
@@ -40,12 +27,12 @@ export function SimuladorLanding() {
   }
 
   if (resultado) {
-    const estilo = SEMAFORO_ESTILO[resultado.semaforo] ?? SEMAFORO_ESTILO.verde;
+    const estilo = SEMAFORO_ESTILO[resultado.semaforo];
 
     return (
       <section className="flex flex-col gap-4">
-        <div className={`rounded-xl p-5 ${estilo!.bg} ${estilo!.texto}`}>
-          <p className="text-sm opacity-90">{estilo!.etiqueta}</p>
+        <div className={`rounded-xl p-5 ${estilo.bg} ${estilo.texto}`}>
+          <p className="text-sm opacity-90">{estilo.etiqueta}</p>
           <p className="mt-1 text-3xl font-bold">{formatMXN(resultado.cuotaMensual)}</p>
           <p className="text-sm opacity-90">cuota mensual de esta compra</p>
         </div>
